@@ -6,6 +6,7 @@ import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.struct.ChoreographedEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -36,8 +37,8 @@ public class ChoreographedEventPersistenceService {
         .eventOutcome(choreographedEvent.getEventOutcome().toString())
         .eventPayload(choreographedEvent.getEventPayload())
         .eventStatus(DB_COMMITTED.toString())
-        .createUser(choreographedEvent.getCreateUser())
-        .updateUser(choreographedEvent.getUpdateUser())
+        .createUser(StringUtils.isBlank(choreographedEvent.getCreateUser()) ? "PEN-REPLICATION-API" : choreographedEvent.getCreateUser())
+        .updateUser(StringUtils.isBlank(choreographedEvent.getUpdateUser()) ? "PEN-REPLICATION-API" : choreographedEvent.getUpdateUser())
         .build();
     return eventRepository.save(event);
   }
