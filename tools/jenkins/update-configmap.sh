@@ -60,7 +60,7 @@ oc create -n "$PEN_NAMESPACE"-"$envValue" configmap "$APP_NAME"-config-map --fro
 echo
 echo Setting environment variables for $APP_NAME-$SOAM_KC_REALM_ID application
 oc project $PEN_NAMESPACE-$envValue
-oc set env --from=configmap/$APP_NAME-config-map dc/$APP_NAME-$SOAM_KC_REALM_ID
+oc set env --from=configmap/$APP_NAME-config-map dc/$APP_NAME-main
 
 echo Creating config map "$APP_NAME"-flb-sc-config-map
 oc create -n "$PEN_NAMESPACE"-"$envValue" configmap "$APP_NAME"-flb-sc-config-map --from-literal=fluent-bit.conf="$FLB_CONFIG"  --dry-run -o yaml | oc apply -f -
