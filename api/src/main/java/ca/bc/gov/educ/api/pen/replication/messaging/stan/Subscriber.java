@@ -62,6 +62,7 @@ public class Subscriber implements Closeable {
     Options options = new Options.Builder()
         .clusterId(applicationProperties.getStanCluster())
         .connectionLostHandler(this::connectionLostHandler)
+        .connectWait(Duration.ofSeconds(30))
         .natsConn(natsConnection.getNatsCon())
         .traceConnection()
         .maxPingsOut(30)
