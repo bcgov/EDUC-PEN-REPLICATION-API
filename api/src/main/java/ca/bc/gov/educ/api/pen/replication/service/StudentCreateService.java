@@ -3,7 +3,6 @@ package ca.bc.gov.educ.api.pen.replication.service;
 import ca.bc.gov.educ.api.pen.replication.mappers.PenDemogStudentMapper;
 import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.model.PenAuditEntity;
-import ca.bc.gov.educ.api.pen.replication.model.PenAuditPK;
 import ca.bc.gov.educ.api.pen.replication.model.PenDemographicsEntity;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.PenAuditRepository;
@@ -46,6 +45,7 @@ public class StudentCreateService implements EventService {
     StudentCreate studentCreate = (StudentCreate) request;
     PenDemographicsEntity penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(studentCreate);
     PenAuditEntity penAuditEntity = PenDemogStudentMapper.mapper.toPenAudit(studentCreate);
+    penAuditEntity.setActivityDate(formatDateTime(penAuditEntity.getActivityDate()));
     var existingPenDemogRecord = penDemogRepository.findById(StringUtils.rightPad(penDemographicsEntity.getStudNo(), 10));
     if (existingPenDemogRecord.isPresent()) {
       var existingRecord = existingPenDemogRecord.get();
@@ -54,9 +54,24 @@ public class StudentCreateService implements EventService {
     } else {
       penDemogRepository.save(penDemographicsEntity);
     }
-    var existingAudit = penAuditRepository.findById(PenAuditPK.builder().auditCode(studentCreate.getHistoryActivityCode()).activityDate(studentCreate.getCreateDate()).pen(studentCreate.getPen()).build());
-    if (existingAudit.isEmpty()) {
+    var existingAudits = penAuditRepository.findAllByPen(StringUtils.rightPad(penDemographicsEntity.getStudNo(), 10));
+    if (existingAudits.isEmpty()) {
       penAuditRepository.save(penAuditEntity);
+    } else {
+      boolean isRecordPresent = false;
+      for (var existingAudit : existingAudits) {
+        if (StringUtils.isNotBlank(existingAudit.getActivityDate())
+            && StringUtils.isNotBlank(penAuditEntity.getActivityDate())
+            && areDateTimeSame(existingAudit.getActivityDate(), penAuditEntity.getActivityDate())
+            && StringUtils.equalsIgnoreCase(existingAudit.getAuditCode(), penAuditEntity.getAuditCode())) {
+          isRecordPresent = true;
+          break;
+        }
+      }
+      if (!isRecordPresent) {
+        penAuditRepository.save(penAuditEntity);
+      }
+
     }
     var existingEvent = eventRepository.findById(event.getEventId());
     existingEvent.ifPresent(record -> {
@@ -65,6 +80,30 @@ public class StudentCreateService implements EventService {
       eventRepository.save(record);
     });
   }
+
+  private String formatDateTime(String activityDate) {
+    if (StringUtils.isBlank(activityDate)) {
+      return activityDate;
+    }
+    activityDate = activityDate.replace("T", " ");
+    if (activityDate.length() > 19) {
+      activityDate = activityDate.substring(0, 19);
+    }
+    return activityDate;
+  }
+
+  private boolean areDateTimeSame(String existingAuditActivityDate, String activityDate) {
+    existingAuditActivityDate = existingAuditActivityDate.replace("T", " ");
+    if (existingAuditActivityDate.length() > 19) {
+      existingAuditActivityDate = existingAuditActivityDate.substring(0, 19);
+    }
+    activityDate = activityDate.replace("T", " ");
+    if (activityDate.length() > 19) {
+      activityDate = activityDate.substring(0, 19);
+    }
+    return StringUtils.equals(existingAuditActivityDate, activityDate);
+  }
+
 
   @Override
   public String getEventType() {
