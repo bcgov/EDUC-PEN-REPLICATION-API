@@ -31,6 +31,7 @@ public class ChoreographedEventPersistenceService {
       throw new BusinessException(BusinessError.EVENT_ALREADY_PERSISTED, choreographedEvent.getEventID().toString());
     }
     final Event event = Event.builder()
+        .eventType(choreographedEvent.getEventType().toString())
         .eventId(choreographedEvent.getEventID())
         .eventOutcome(choreographedEvent.getEventOutcome().toString())
         .eventPayload(choreographedEvent.getEventPayload())
