@@ -12,4 +12,12 @@ public enum EventOutcome {
    * Possible match deleted event outcome.
    */
   POSSIBLE_MATCH_DELETED,
+  /**
+   * Student created event outcome.
+   */
+  STUDENT_CREATED,
+  /**
+   * Student updated event outcome.
+   */
+  STUDENT_UPDATED
 }

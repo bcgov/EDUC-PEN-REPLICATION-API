@@ -53,7 +53,7 @@ public class NatsConnection implements Closeable {
         .connectionListener(this::connectionListener)
         .maxPingsOut(5)
         .pingInterval(Duration.ofSeconds(2))
-        .connectionName("PEN-MATCH-API")
+        .connectionName("PEN-REPLICATION-API")
         .connectionTimeout(Duration.ofSeconds(5))
         .executor(new EnhancedQueueExecutor.Builder()
             .setThreadFactory(new ThreadFactoryBuilder().setNameFormat("core-nats-%d").build())
