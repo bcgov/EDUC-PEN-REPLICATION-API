@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 import static ca.bc.gov.educ.api.pen.replication.constants.EventStatus.PROCESSED;
 import static ca.bc.gov.educ.api.pen.replication.struct.EventType.CREATE_STUDENT;
 
@@ -59,6 +61,7 @@ public class StudentCreateService implements EventService {
     var existingEvent = eventRepository.findById(event.getEventId());
     existingEvent.ifPresent(record -> {
       record.setEventStatus(PROCESSED.toString());
+      record.setUpdateDate(LocalDateTime.now());
       eventRepository.save(record);
     });
   }

@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 import static ca.bc.gov.educ.api.pen.replication.constants.EventStatus.DB_COMMITTED;
 
 
@@ -39,6 +41,8 @@ public class ChoreographedEventPersistenceService {
         .eventStatus(DB_COMMITTED.toString())
         .createUser(StringUtils.isBlank(choreographedEvent.getCreateUser()) ? "PEN-REPLICATION-API" : choreographedEvent.getCreateUser())
         .updateUser(StringUtils.isBlank(choreographedEvent.getUpdateUser()) ? "PEN-REPLICATION-API" : choreographedEvent.getUpdateUser())
+        .createDate(LocalDateTime.now())
+        .updateDate(LocalDateTime.now())
         .build();
     return eventRepository.save(event);
   }
