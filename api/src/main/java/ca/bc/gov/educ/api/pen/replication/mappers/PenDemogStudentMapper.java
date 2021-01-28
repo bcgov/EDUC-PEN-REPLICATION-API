@@ -25,7 +25,6 @@ public interface PenDemogStudentMapper {
   @Mapping(source = "legalLastName", target = "studSurname")
   @Mapping(source = "legalFirstName", target = "studGiven")
   @Mapping(source = "gradeCode", target = "grade")
-  @Mapping(source = "genderCode", target = "studSex")
   @Mapping(source = "localID", target = "localID")
   @Mapping(source = "dob", target = "studBirth")
   @Mapping(source = "createUser", target = "createUser", defaultValue = "PEN_REPLICATION_API")
