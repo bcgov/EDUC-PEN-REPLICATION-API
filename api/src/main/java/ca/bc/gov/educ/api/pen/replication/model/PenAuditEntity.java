@@ -59,9 +59,6 @@ public class PenAuditEntity implements Serializable {
   @Column(name = "STUD_SEX")
   String sexCode;
 
-  @Column(name = "STUD_SEX")
-  String genderCode;
-
   @Column(name = "USUAL_GIVEN")
   String usualFirstName;
 
