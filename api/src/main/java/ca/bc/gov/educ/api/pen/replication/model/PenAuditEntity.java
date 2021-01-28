@@ -78,10 +78,6 @@ public class PenAuditEntity implements Serializable {
   String createUser;
 
 
-  @Column(name = "USER_NAME")
-  String updateUser;
-
-
   public PenAuditPK getId() {
     return new PenAuditPK(
         this.activityDate, this.auditCode, this.pen);
