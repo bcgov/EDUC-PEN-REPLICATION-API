@@ -20,7 +20,7 @@ import javax.persistence.Table;
 @AllArgsConstructor
 @NoArgsConstructor
 @DynamicUpdate
-@Table(name = "PEN_DEMOG@PENLINK.WORLD")
+@Table(name = "PEN_DEMOG")
 public class PenDemographicsEntity {
 
   @Id

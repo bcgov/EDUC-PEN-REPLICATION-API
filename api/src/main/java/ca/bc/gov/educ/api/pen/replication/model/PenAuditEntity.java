@@ -13,7 +13,7 @@ import java.io.Serializable;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "PEN_AUDIT@PENLINK.WORLD")
+@Table(name = "PEN_AUDIT")
 @IdClass(PenAuditPK.class)
 public class PenAuditEntity implements Serializable {
 
