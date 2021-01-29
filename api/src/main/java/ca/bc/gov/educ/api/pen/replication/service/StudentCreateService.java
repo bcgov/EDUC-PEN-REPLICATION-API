@@ -2,7 +2,6 @@ package ca.bc.gov.educ.api.pen.replication.service;
 
 import ca.bc.gov.educ.api.pen.replication.mappers.PenDemogStudentMapper;
 import ca.bc.gov.educ.api.pen.replication.model.Event;
-import ca.bc.gov.educ.api.pen.replication.model.PenAuditEntity;
 import ca.bc.gov.educ.api.pen.replication.model.PenDemographicsEntity;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.PenDemogRepository;
@@ -10,7 +9,6 @@ import ca.bc.gov.educ.api.pen.replication.struct.BaseRequest;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentCreate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +25,7 @@ import static ca.bc.gov.educ.api.pen.replication.struct.EventType.CREATE_STUDENT
  */
 @Service
 @Slf4j
-public class StudentCreateService implements EventService {
+public class StudentCreateService extends BaseStudentService {
   private final EntityManagerFactory emf;
   private final PenDemogRepository penDemogRepository;
   private final EventRepository eventRepository;
@@ -46,22 +44,17 @@ public class StudentCreateService implements EventService {
     penDemographicsEntity.setCreateDate(formatDateTime(penDemographicsEntity.getCreateDate()));
     penDemographicsEntity.setUpdateDate(formatDateTime(penDemographicsEntity.getUpdateDate()));
     penDemographicsEntity.setStudBirth(StringUtils.replace(penDemographicsEntity.getStudBirth(), "-", ""));
-    PenAuditEntity penAuditEntity = PenDemogStudentMapper.mapper.toPenAudit(studentCreate);
-    penAuditEntity.setActivityDate(formatDateTime(penAuditEntity.getActivityDate()));
     var existingPenDemogRecord = penDemogRepository.findById(StringUtils.rightPad(penDemographicsEntity.getStudNo(), 10));
     EntityManager em = this.emf.createEntityManager();
     EntityTransaction tx = em.getTransaction();
-    tx.begin();
+
     try {
       // below timeout is in milli seconds, so it is 10 seconds.
-      if (existingPenDemogRecord.isPresent()) {
-        var existingRecord = existingPenDemogRecord.get();
-        BeanUtils.copyProperties(penDemographicsEntity, existingRecord);
-        em.createNativeQuery(buildInsert(existingRecord)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
-      } else {
+      if (existingPenDemogRecord.isEmpty()) {
+        tx.begin();
         em.createNativeQuery(buildInsert(penDemographicsEntity)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
+        tx.commit();
       }
-      tx.commit();
       var existingEvent = eventRepository.findByEventId(event.getEventId());
       existingEvent.ifPresent(record -> {
         record.setEventStatus(PROCESSED.toString());
@@ -72,18 +65,6 @@ public class StudentCreateService implements EventService {
       log.error("Error occurred saving entity " + e.getMessage());
       tx.rollback();
     }
-  }
-
-
-  private String formatDateTime(String activityDate) {
-    if (StringUtils.isBlank(activityDate)) {
-      return activityDate;
-    }
-    activityDate = activityDate.replace("T", " ");
-    if (activityDate.length() > 19) {
-      activityDate = activityDate.substring(0, 19);
-    }
-    return activityDate;
   }
 
 

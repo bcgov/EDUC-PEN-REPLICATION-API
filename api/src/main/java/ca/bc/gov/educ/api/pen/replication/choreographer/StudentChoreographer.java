@@ -3,6 +3,7 @@ package ca.bc.gov.educ.api.pen.replication.choreographer;
 import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.service.EventService;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentCreate;
+import ca.bc.gov.educ.api.pen.replication.struct.StudentUpdate;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 import static ca.bc.gov.educ.api.pen.replication.struct.EventType.CREATE_STUDENT;
+import static ca.bc.gov.educ.api.pen.replication.struct.EventType.UPDATE_STUDENT;
 
 
 /**
@@ -45,6 +47,8 @@ public class StudentChoreographer {
             eventServiceMap.get(CREATE_STUDENT.toString()).processEvent(studentCreate, event);
             break;
           case "UPDATE_STUDENT":
+            final StudentUpdate studentUpdate = JsonUtil.getJsonObjectFromString(StudentUpdate.class, event.getEventPayload());
+            eventServiceMap.get(UPDATE_STUDENT.toString()).processEvent(studentUpdate, event);
             break;
           default:
             break;

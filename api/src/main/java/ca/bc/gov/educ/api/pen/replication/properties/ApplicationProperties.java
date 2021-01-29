@@ -20,6 +20,22 @@ public class ApplicationProperties {
   public static final String API_NAME = "PEN_REPLICATION_API";
 
   /**
+   * The Client id.
+   */
+  @Value("${client.id}")
+  private String clientID;
+  /**
+   * The Client secret.
+   */
+  @Value("${client.secret}")
+  private String clientSecret;
+  /**
+   * The Token url.
+   */
+  @Value("${url.token}")
+  private String tokenURL;
+
+  /**
    * The Stan url.
    */
   @Value("${stan.url}")
@@ -36,4 +52,10 @@ public class ApplicationProperties {
    */
   @Value("${nats.maxReconnect}")
   Integer natsMaxReconnect;
+
+  /**
+   * The Student api url.
+   */
+  @Value("${url.api.student}")
+  private String studentApiURL;
 }
