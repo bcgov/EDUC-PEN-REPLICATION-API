@@ -2,7 +2,6 @@ package ca.bc.gov.educ.api.pen.replication.schedulers;
 
 import ca.bc.gov.educ.api.pen.replication.choreographer.StudentChoreographer;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
@@ -53,13 +52,7 @@ public class STANEventScheduler {
       results.stream()
           .filter(el -> el.getUpdateDate().isBefore(LocalDateTime.now().minusMinutes(5)))
           .collect(Collectors.toList())
-          .forEach(event -> {
-            try {
-              studentChoreographer.handleEvent(event);
-            } catch (JsonProcessingException e) {
-              log.error("JsonProcessingException for :: {} ", event, e);
-            }
-          });
+          .forEach(studentChoreographer::handleEvent);
     }
   }
 }

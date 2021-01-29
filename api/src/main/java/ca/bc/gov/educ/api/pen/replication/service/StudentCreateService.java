@@ -5,7 +5,6 @@ import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.model.PenAuditEntity;
 import ca.bc.gov.educ.api.pen.replication.model.PenDemographicsEntity;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
-import ca.bc.gov.educ.api.pen.replication.repository.PenAuditRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.PenDemogRepository;
 import ca.bc.gov.educ.api.pen.replication.struct.BaseRequest;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentCreate;
@@ -14,9 +13,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 import java.time.LocalDateTime;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventStatus.PROCESSED;
@@ -28,58 +28,52 @@ import static ca.bc.gov.educ.api.pen.replication.struct.EventType.CREATE_STUDENT
 @Service
 @Slf4j
 public class StudentCreateService implements EventService {
+  private final EntityManagerFactory emf;
   private final PenDemogRepository penDemogRepository;
   private final EventRepository eventRepository;
-  private final PenAuditRepository penAuditRepository;
 
   @Autowired
-  public StudentCreateService(PenDemogRepository penDemogRepository, EventRepository eventRepository, PenAuditRepository penAuditRepository) {
+  public StudentCreateService(EntityManagerFactory emf, PenDemogRepository penDemogRepository, EventRepository eventRepository) {
+    this.emf = emf;
     this.penDemogRepository = penDemogRepository;
     this.eventRepository = eventRepository;
-    this.penAuditRepository = penAuditRepository;
   }
 
   @Override
-  @Transactional(timeout = 30, propagation = Propagation.REQUIRES_NEW) // new transaction with 30 seconds time out.
   public <T extends BaseRequest> void processEvent(T request, Event event) {
     StudentCreate studentCreate = (StudentCreate) request;
     PenDemographicsEntity penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(studentCreate);
+    penDemographicsEntity.setCreateDate(formatDateTime(penDemographicsEntity.getCreateDate()));
+    penDemographicsEntity.setUpdateDate(formatDateTime(penDemographicsEntity.getUpdateDate()));
+    penDemographicsEntity.setStudBirth(StringUtils.replace(penDemographicsEntity.getStudBirth(), "-", ""));
     PenAuditEntity penAuditEntity = PenDemogStudentMapper.mapper.toPenAudit(studentCreate);
     penAuditEntity.setActivityDate(formatDateTime(penAuditEntity.getActivityDate()));
     var existingPenDemogRecord = penDemogRepository.findById(StringUtils.rightPad(penDemographicsEntity.getStudNo(), 10));
-    if (existingPenDemogRecord.isPresent()) {
-      var existingRecord = existingPenDemogRecord.get();
-      BeanUtils.copyProperties(penDemographicsEntity, existingRecord);
-      penDemogRepository.save(existingRecord);
-    } else {
-      penDemogRepository.save(penDemographicsEntity);
-    }
-    var existingAudits = penAuditRepository.findAllByPen(StringUtils.rightPad(penDemographicsEntity.getStudNo(), 10));
-    if (existingAudits.isEmpty()) {
-      penAuditRepository.save(penAuditEntity);
-    } else {
-      boolean isRecordPresent = false;
-      for (var existingAudit : existingAudits) {
-        if (StringUtils.isNotBlank(existingAudit.getActivityDate())
-            && StringUtils.isNotBlank(penAuditEntity.getActivityDate())
-            && areDateTimeSame(existingAudit.getActivityDate(), penAuditEntity.getActivityDate())
-            && StringUtils.equalsIgnoreCase(existingAudit.getAuditCode(), penAuditEntity.getAuditCode())) {
-          isRecordPresent = true;
-          break;
-        }
+    EntityManager em = this.emf.createEntityManager();
+    EntityTransaction tx = em.getTransaction();
+    tx.begin();
+    try {
+      // below timeout is in milli seconds, so it is 10 seconds.
+      if (existingPenDemogRecord.isPresent()) {
+        var existingRecord = existingPenDemogRecord.get();
+        BeanUtils.copyProperties(penDemographicsEntity, existingRecord);
+        em.createNativeQuery(buildInsert(existingRecord)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
+      } else {
+        em.createNativeQuery(buildInsert(penDemographicsEntity)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
       }
-      if (!isRecordPresent) {
-        penAuditRepository.save(penAuditEntity);
-      }
-
+      tx.commit();
+      var existingEvent = eventRepository.findByEventId(event.getEventId());
+      existingEvent.ifPresent(record -> {
+        record.setEventStatus(PROCESSED.toString());
+        record.setUpdateDate(LocalDateTime.now());
+        eventRepository.save(record);
+      });
+    } catch (Exception e) {
+      log.error("Error occurred saving entity " + e.getMessage());
+      tx.rollback();
     }
-    var existingEvent = eventRepository.findById(event.getEventId());
-    existingEvent.ifPresent(record -> {
-      record.setEventStatus(PROCESSED.toString());
-      record.setUpdateDate(LocalDateTime.now());
-      eventRepository.save(record);
-    });
   }
+
 
   private String formatDateTime(String activityDate) {
     if (StringUtils.isBlank(activityDate)) {
@@ -92,21 +86,38 @@ public class StudentCreateService implements EventService {
     return activityDate;
   }
 
-  private boolean areDateTimeSame(String existingAuditActivityDate, String activityDate) {
-    existingAuditActivityDate = existingAuditActivityDate.replace("T", " ");
-    if (existingAuditActivityDate.length() > 19) {
-      existingAuditActivityDate = existingAuditActivityDate.substring(0, 19);
-    }
-    activityDate = activityDate.replace("T", " ");
-    if (activityDate.length() > 19) {
-      activityDate = activityDate.substring(0, 19);
-    }
-    return StringUtils.equals(existingAuditActivityDate, activityDate);
-  }
-
 
   @Override
   public String getEventType() {
     return CREATE_STUDENT.toString();
+  }
+
+  private String buildInsert(PenDemographicsEntity penDemographicsEntity) {
+    return "insert into pen_demog (create_date, create_user_name, stud_demog_code, stud_grade, stud_grade_year, pen_local_id, merge_to_code, merge_to_date, merge_to_user_name, pen_mincode, postal, stud_birth, stud_given, stud_middle, stud_sex, stud_status, stud_surname, stud_true_no, update_date, update_user_name, usual_given, usual_middle, usual_surname, stud_no) values (" +
+        "TO_DATE('" + penDemographicsEntity.getCreateDate() + "'" + ", 'YYYY-MM-DD HH24:MI:SS')," +
+        "'" + penDemographicsEntity.getCreateUser() + "'" + "," +
+        "'" + (penDemographicsEntity.getDemogCode() == null ? "" : penDemographicsEntity.getDemogCode()) + "'" + "," +
+        "'" + (penDemographicsEntity.getGrade() == null ? "" : penDemographicsEntity.getGrade()) + "'" + "," +
+        "'" + (penDemographicsEntity.getGradeYear() == null ? "" : penDemographicsEntity.getGradeYear()) + "'" + "," +
+        "'" + (penDemographicsEntity.getLocalID() == null ? "" : penDemographicsEntity.getLocalID()) + "'" + "," +
+        "'" + "'" + "," +
+        "'" + "'" + "," +
+        "'" + "'" + "," +
+        "'" + (penDemographicsEntity.getMincode() == null ? "" : penDemographicsEntity.getMincode()) + "'" + "," +
+        "'" + (penDemographicsEntity.getPostalCode() == null ? "" : penDemographicsEntity.getPostalCode()) + "'" + "," +
+        "'" + penDemographicsEntity.getStudBirth() + "'" + "," +
+        "'" + (penDemographicsEntity.getStudGiven() == null ? "" : penDemographicsEntity.getStudGiven()) + "'" + "," +
+        "'" + (penDemographicsEntity.getStudMiddle() == null ? "" : penDemographicsEntity.getStudMiddle()) + "'" + "," +
+        "'" + penDemographicsEntity.getStudSex() + "'" + "," +
+        "'" + (penDemographicsEntity.getStudStatus() == null ? "" : penDemographicsEntity.getStudStatus()) + "'" + "," +
+        "'" + penDemographicsEntity.getStudSurname() + "'" + "," +
+        "'" + "'" + "," +
+        "TO_DATE('" + penDemographicsEntity.getUpdateDate() + "'" + ", 'YYYY-MM-DD HH24:MI:SS')," +
+        "'" + penDemographicsEntity.getUpdateUser() + "'" + "," +
+        "'" + (penDemographicsEntity.getUsualGiven() == null ? "" : penDemographicsEntity.getUsualGiven()) + "'" + "," +
+        "'" + (penDemographicsEntity.getUsualMiddle() == null ? "" : penDemographicsEntity.getUsualMiddle()) + "'" + "," +
+        "'" + (penDemographicsEntity.getUsualSurname() == null ? "" : penDemographicsEntity.getUsualSurname()) + "'" + "," +
+        "'" + penDemographicsEntity.getStudNo() + "'" +
+        ")";
   }
 }
