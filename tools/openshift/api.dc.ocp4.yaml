@@ -52,9 +52,9 @@ objects:
                 httpGet:
                   path: /actuator/health
                   port: 8080
-                initialDelaySeconds: 300
-                periodSeconds: 15
-                timeoutSeconds: 5
+                initialDelaySeconds: 120
+                periodSeconds: 60
+                timeoutSeconds: 10
                 failureThreshold: 5
                 successThreshold: 1
               name: "${APP_NAME}-${JOB_NAME}"
