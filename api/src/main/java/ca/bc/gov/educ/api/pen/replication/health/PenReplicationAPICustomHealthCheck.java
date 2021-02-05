@@ -1,6 +1,5 @@
 package ca.bc.gov.educ.api.pen.replication.health;
 
-import ca.bc.gov.educ.api.pen.replication.messaging.NatsConnection;
 import io.nats.client.Connection;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
@@ -14,14 +13,14 @@ public class PenReplicationAPICustomHealthCheck implements HealthIndicator {
   /**
    * The Nats connection.
    */
-  private final NatsConnection natsConnection;
+  private final Connection natsConnection;
 
   /**
    * Instantiates a new Pen match api custom health check.
    *
    * @param natsConnection the nats connection
    */
-  public PenReplicationAPICustomHealthCheck(NatsConnection natsConnection) {
+  public PenReplicationAPICustomHealthCheck(Connection natsConnection) {
     this.natsConnection = natsConnection;
   }
 
@@ -42,9 +41,7 @@ public class PenReplicationAPICustomHealthCheck implements HealthIndicator {
    * @return the health
    */
   private Health healthCheck() {
-    if (this.natsConnection.getNatsCon() == null) {
-      return Health.down().withDetail("NATS", " Connection is null.").build();
-    } else if (this.natsConnection.getNatsCon().getStatus() == Connection.Status.CLOSED) {
+    if (this.natsConnection.getStatus() == Connection.Status.CLOSED) {
       return Health.down().withDetail("NATS", " Connection is Closed.").build();
     }
     return Health.up().build();

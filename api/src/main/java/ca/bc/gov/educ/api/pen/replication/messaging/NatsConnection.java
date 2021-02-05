@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jboss.threads.EnhancedQueueExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.io.Closeable;
@@ -88,5 +89,10 @@ public class NatsConnection implements Closeable {
       }
       log.info("nats connection closed...");
     }
+  }
+
+  @Bean
+  public Connection connection() {
+    return this.natsCon;
   }
 }

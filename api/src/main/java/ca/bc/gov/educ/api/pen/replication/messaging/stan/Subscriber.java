@@ -1,12 +1,12 @@
 package ca.bc.gov.educ.api.pen.replication.messaging.stan;
 
 import ca.bc.gov.educ.api.pen.replication.constants.Topics;
-import ca.bc.gov.educ.api.pen.replication.messaging.NatsConnection;
 import ca.bc.gov.educ.api.pen.replication.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.pen.replication.service.EventHandlerDelegatorService;
 import ca.bc.gov.educ.api.pen.replication.struct.ChoreographedEvent;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.nats.client.Connection;
 import io.nats.streaming.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jboss.threads.EnhancedQueueExecutor;
@@ -57,13 +57,13 @@ public class Subscriber implements Closeable {
    * @throws InterruptedException the interrupted exception
    */
   @Autowired
-  public Subscriber(ApplicationProperties applicationProperties, NatsConnection natsConnection, EventHandlerDelegatorService eventHandlerDelegatorService) throws IOException, InterruptedException {
+  public Subscriber(ApplicationProperties applicationProperties, Connection natsConnection, EventHandlerDelegatorService eventHandlerDelegatorService) throws IOException, InterruptedException {
     this.eventHandlerDelegatorService = eventHandlerDelegatorService;
     Options options = new Options.Builder()
         .clusterId(applicationProperties.getStanCluster())
         .connectionLostHandler(this::connectionLostHandler)
         .connectWait(Duration.ofSeconds(30))
-        .natsConn(natsConnection.getNatsCon())
+        .natsConn(natsConnection)
         .traceConnection()
         .maxPingsOut(30)
         .pingInterval(Duration.ofSeconds(2))

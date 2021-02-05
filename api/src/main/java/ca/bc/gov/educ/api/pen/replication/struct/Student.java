@@ -6,24 +6,21 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
- * The type Student create.
+ * The type Student.
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @SuppressWarnings("java:S1948")
-public class StudentCreate extends BaseStudent implements Serializable {
+public class Student extends BaseStudent implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  /**
-   * The History activity code.
-   */
-  @NotNull(message = "historyActivityCode can not be null.")
-  String historyActivityCode;
+  public String toString() {
+    return super.toString();
+  }
 }

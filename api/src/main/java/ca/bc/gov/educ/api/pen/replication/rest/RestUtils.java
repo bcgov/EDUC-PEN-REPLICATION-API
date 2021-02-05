@@ -1,7 +1,7 @@
 package ca.bc.gov.educ.api.pen.replication.rest;
 
 import ca.bc.gov.educ.api.pen.replication.properties.ApplicationProperties;
-import ca.bc.gov.educ.api.pen.replication.struct.BaseStudent;
+import ca.bc.gov.educ.api.pen.replication.struct.Student;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -40,7 +40,7 @@ public class RestUtils {
 
   @Retryable(value = {Exception.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
   public Optional<String> getStudentTruePen(String trueStudentID) {
-    var studentResponse = webClient.get().uri(props.getStudentApiURL() + "/" + trueStudentID).header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).retrieve().bodyToMono(BaseStudent.class).block();
+    var studentResponse = webClient.get().uri(props.getStudentApiURL() + "/" + trueStudentID).header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).retrieve().bodyToMono(Student.class).block();
     if (studentResponse != null && studentResponse.getPen() != null) {
       return Optional.of(studentResponse.getPen());
     }
