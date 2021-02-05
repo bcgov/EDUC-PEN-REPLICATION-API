@@ -64,6 +64,9 @@ public class StudentCreateService extends BaseStudentService {
     } catch (Exception e) {
       log.error("Error occurred saving entity " + e.getMessage());
       tx.rollback();
+      if (em.isOpen()) {
+        em.close();
+      }
     }
   }
 
