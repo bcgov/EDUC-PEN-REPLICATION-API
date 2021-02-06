@@ -73,6 +73,7 @@ public class NatsConnection implements Closeable {
    * @param events     the events
    */
   private void connectionListener(Connection connection, ConnectionListener.Events events) {
+    connection.getServers().forEach(log::info);
     log.info("NATS -> {}", events.toString());
   }
 

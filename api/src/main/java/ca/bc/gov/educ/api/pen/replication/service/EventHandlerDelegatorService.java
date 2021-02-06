@@ -48,10 +48,11 @@ public class EventHandlerDelegatorService {
     try {
       var persistedEvent = choreographedEventPersistenceService.persistEventToDB(choreographedEvent);
       message.ack(); // acknowledge to STAN that api got the message and it is now in DB.
+      log.info("acknowledged to STAN...");
       studentChoreographer.handleEvent(persistedEvent);
     } catch (final BusinessException businessException) {
-      log.info("this event is already persisted. :: {}", choreographedEvent, businessException);
-      message.ack(); // acknowledge to STAN that api got the message
+      message.ack(); // acknowledge to STAN that api got the message already...
+      log.info("acknowledged to STAN...");
     }
   }
 }
