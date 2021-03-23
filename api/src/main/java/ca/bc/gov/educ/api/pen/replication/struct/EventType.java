@@ -19,5 +19,14 @@ public enum EventType {
   /**
    * Delete possible match event type.
    */
-  DELETE_POSSIBLE_MATCH
+  DELETE_POSSIBLE_MATCH,
+  /**
+   * Create Merge Data.
+   */
+  CREATE_MERGE,
+
+  /**
+   * Delete Merge Data.
+   */
+  DELETE_MERGE
 }

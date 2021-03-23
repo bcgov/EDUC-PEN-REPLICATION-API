@@ -39,8 +39,8 @@ public class RestUtils {
   }
 
   @Retryable(value = {Exception.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
-  public Optional<String> getStudentTruePen(String trueStudentID) {
-    var studentResponse = webClient.get().uri(props.getStudentApiURL() + "/" + trueStudentID).header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).retrieve().bodyToMono(Student.class).block();
+  public Optional<String> getStudentPen(String studentID) {
+    var studentResponse = webClient.get().uri(props.getStudentApiURL() + "/" + studentID).header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).retrieve().bodyToMono(Student.class).block();
     if (studentResponse != null && studentResponse.getPen() != null) {
       return Optional.of(studentResponse.getPen());
     }

@@ -2,7 +2,9 @@ package ca.bc.gov.educ.api.pen.replication.choreographer;
 
 import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.service.EventService;
+import ca.bc.gov.educ.api.pen.replication.struct.PossibleMatch;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentCreate;
+import ca.bc.gov.educ.api.pen.replication.struct.StudentMerge;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentUpdate;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -16,8 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
-import static ca.bc.gov.educ.api.pen.replication.struct.EventType.CREATE_STUDENT;
-import static ca.bc.gov.educ.api.pen.replication.struct.EventType.UPDATE_STUDENT;
+import static ca.bc.gov.educ.api.pen.replication.struct.EventType.*;
 
 
 /**
@@ -26,13 +27,13 @@ import static ca.bc.gov.educ.api.pen.replication.struct.EventType.UPDATE_STUDENT
 
 @Component
 @Slf4j
-public class StudentChoreographer {
+public class ChoreographEventHandler {
   private final Executor singleTaskExecutor = new EnhancedQueueExecutor.Builder()
       .setThreadFactory(new ThreadFactoryBuilder().setNameFormat("task-executor-%d").build())
       .setCorePoolSize(1).setMaximumPoolSize(1).build();
   private final Map<String, EventService> eventServiceMap;
 
-  public StudentChoreographer(List<EventService> eventServices) {
+  public ChoreographEventHandler(List<EventService> eventServices) {
     eventServiceMap = new HashMap<>();
     eventServices.forEach(eventService -> eventServiceMap.put(eventService.getEventType(), eventService));
   }
@@ -49,6 +50,22 @@ public class StudentChoreographer {
           case "UPDATE_STUDENT":
             final StudentUpdate studentUpdate = JsonUtil.getJsonObjectFromString(StudentUpdate.class, event.getEventPayload());
             eventServiceMap.get(UPDATE_STUDENT.toString()).processEvent(studentUpdate, event);
+            break;
+          case "ADD_POSSIBLE_MATCH":
+            final PossibleMatch possibleMatch = JsonUtil.getJsonObjectFromString(PossibleMatch.class, event.getEventPayload());
+            eventServiceMap.get(ADD_POSSIBLE_MATCH.toString()).processEvent(possibleMatch, event);
+            break;
+          case "DELETE_POSSIBLE_MATCH":
+            final PossibleMatch deletePossibleMatch = JsonUtil.getJsonObjectFromString(PossibleMatch.class, event.getEventPayload());
+            eventServiceMap.get(DELETE_POSSIBLE_MATCH.toString()).processEvent(deletePossibleMatch, event);
+            break;
+          case "CREATE_MERGE":
+            final StudentMerge createStudentMerge = JsonUtil.getJsonObjectFromString(StudentMerge.class, event.getEventPayload());
+            eventServiceMap.get(CREATE_MERGE.toString()).processEvent(createStudentMerge, event);
+            break;
+          case "DELETE_MERGE":
+            final StudentMerge deleteStudentMerge = JsonUtil.getJsonObjectFromString(StudentMerge.class, event.getEventPayload());
+            eventServiceMap.get(DELETE_MERGE.toString()).processEvent(deleteStudentMerge, event);
             break;
           default:
             break;

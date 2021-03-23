@@ -25,7 +25,7 @@ import static ca.bc.gov.educ.api.pen.replication.struct.EventType.CREATE_STUDENT
  */
 @Service
 @Slf4j
-public class StudentCreateService extends BaseStudentService {
+public class StudentCreateService extends BaseService {
   private final EntityManagerFactory emf;
   private final PenDemogRepository penDemogRepository;
   private final EventRepository eventRepository;
