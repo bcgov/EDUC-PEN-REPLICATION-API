@@ -68,11 +68,11 @@ public class PossibleMatchDeleteService extends BaseService {
   /**
    * Gets student true pen number.
    *
-   * @param trueStudentID the true student id
+   * @param studentID the true student id
    * @return the student true number
    */
-  private String getStudentPen(String trueStudentID) {
-    return restUtils.getStudentPen(trueStudentID).orElseThrow();
+  private String getStudentPen(String studentID) {
+    return restUtils.getStudentPen(studentID).orElseThrow();
   }
 
 
