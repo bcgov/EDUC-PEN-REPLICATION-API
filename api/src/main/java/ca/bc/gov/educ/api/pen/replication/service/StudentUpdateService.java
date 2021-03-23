@@ -70,15 +70,20 @@ public class StudentUpdateService extends BaseService {
     EntityManager em = this.emf.createEntityManager();
     StudentUpdate studentUpdate = (StudentUpdate) request;
     PenDemographicsEntity penDemographicsEntity = getPenDemographicsEntity(studentUpdate);
-    if (StringUtils.isNotBlank(studentUpdate.getTrueStudentID())) {
-      penDemographicsEntity.setStudentTrueNo(getStudentPen(studentUpdate.getTrueStudentID()));
-    }
     var existingPenDemogRecord = penDemogRepository.findById(StringUtils.rightPad(penDemographicsEntity.getStudNo(), 10));
+
     EntityTransaction tx = em.getTransaction();
 
     try {
       // below timeout is in milli seconds, so it is 10 seconds.
       if (existingPenDemogRecord.isPresent()) {
+        if (StringUtils.isNotBlank(studentUpdate.getTrueStudentID()) && StringUtils.isBlank(existingPenDemogRecord.get().getStudentTrueNo())) {
+          penDemographicsEntity.setStudentTrueNo(getStudentPen(studentUpdate.getTrueStudentID()));
+          penDemographicsEntity.setMergeToDate(studentUpdate.getUpdateDate());
+        }else if(StringUtils.isBlank(studentUpdate.getTrueStudentID()) && StringUtils.isNotBlank(existingPenDemogRecord.get().getStudentTrueNo())){
+          penDemographicsEntity.setStudentTrueNo(null);
+          penDemographicsEntity.setMergeToDate(null);
+        }
         tx.begin();
         em.createNativeQuery(buildUpdate(penDemographicsEntity)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
         tx.commit();
@@ -143,6 +148,7 @@ public class StudentUpdateService extends BaseService {
         + "STUD_SEX=" + "'" + penDemographicsEntity.getStudSex() + "'" + ","
         + "STUD_STATUS=" + "'" + (penDemographicsEntity.getStudStatus() == null ? "" : penDemographicsEntity.getStudStatus()) + "'" + ","
         + "STUD_SURNAME=" + "'" + penDemographicsEntity.getStudSurname() + "'" + ","
+        + "MERGE_TO_DATE=" + penDemographicsEntity.getMergeToDate() == null ? "''" : "TO_DATE('" + penDemographicsEntity.getMergeToDate() + "'" + ", 'YYYY-MM-DD HH24:MI:SS')" + ","
         + "STUD_TRUE_NO=" + "'" + (penDemographicsEntity.getStudentTrueNo() == null ? "" : penDemographicsEntity.getStudentTrueNo()) + "'" + ","
         + "UPDATE_DATE=" + "TO_DATE('" + penDemographicsEntity.getUpdateDate() + "'" + ", 'YYYY-MM-DD HH24:MI:SS'),"
         + "UPDATE_USER_NAME=" + "'" + penDemographicsEntity.getUpdateUser() + "'" + ","
