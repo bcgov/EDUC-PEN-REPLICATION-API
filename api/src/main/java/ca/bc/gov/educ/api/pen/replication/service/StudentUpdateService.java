@@ -25,7 +25,7 @@ import static ca.bc.gov.educ.api.pen.replication.struct.EventType.UPDATE_STUDENT
  */
 @Service
 @Slf4j
-public class StudentUpdateService extends BaseStudentService {
+public class StudentUpdateService extends BaseService {
   /**
    * The Emf.
    */
@@ -71,7 +71,7 @@ public class StudentUpdateService extends BaseStudentService {
     StudentUpdate studentUpdate = (StudentUpdate) request;
     PenDemographicsEntity penDemographicsEntity = getPenDemographicsEntity(studentUpdate);
     if (StringUtils.isNotBlank(studentUpdate.getTrueStudentID())) {
-      penDemographicsEntity.setStudentTrueNo(getStudentTruePen(studentUpdate.getStudentID()));
+      penDemographicsEntity.setStudentTrueNo(getStudentPen(studentUpdate.getTrueStudentID()));
     }
     var existingPenDemogRecord = penDemogRepository.findById(StringUtils.rightPad(penDemographicsEntity.getStudNo(), 10));
     EntityTransaction tx = em.getTransaction();
@@ -105,8 +105,8 @@ public class StudentUpdateService extends BaseStudentService {
    * @param trueStudentID the true student id
    * @return the student true number
    */
-  private String getStudentTruePen(String trueStudentID) {
-    return restUtils.getStudentTruePen(trueStudentID).orElseThrow();
+  private String getStudentPen(String trueStudentID) {
+    return restUtils.getStudentPen(trueStudentID).orElseThrow();
   }
 
   /**

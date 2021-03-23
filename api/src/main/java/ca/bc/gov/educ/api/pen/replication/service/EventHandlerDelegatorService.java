@@ -1,6 +1,6 @@
 package ca.bc.gov.educ.api.pen.replication.service;
 
-import ca.bc.gov.educ.api.pen.replication.choreographer.StudentChoreographer;
+import ca.bc.gov.educ.api.pen.replication.choreographer.ChoreographEventHandler;
 import ca.bc.gov.educ.api.pen.replication.exception.BusinessException;
 import ca.bc.gov.educ.api.pen.replication.struct.ChoreographedEvent;
 import io.nats.streaming.Message;
@@ -20,18 +20,18 @@ import java.io.IOException;
 public class EventHandlerDelegatorService {
 
   private final ChoreographedEventPersistenceService choreographedEventPersistenceService;
-  private final StudentChoreographer studentChoreographer;
+  private final ChoreographEventHandler choreographer;
 
   /**
    * Instantiates a new Event handler delegator service.
    *
    * @param choreographedEventPersistenceService the choreographed event persistence service
-   * @param studentChoreographer
+   * @param choreographer the choreographer
    */
   @Autowired
-  public EventHandlerDelegatorService(ChoreographedEventPersistenceService choreographedEventPersistenceService, StudentChoreographer studentChoreographer) {
+  public EventHandlerDelegatorService(ChoreographedEventPersistenceService choreographedEventPersistenceService, ChoreographEventHandler choreographer) {
     this.choreographedEventPersistenceService = choreographedEventPersistenceService;
-    this.studentChoreographer = studentChoreographer;
+    this.choreographer = choreographer;
   }
 
   /**
@@ -49,7 +49,7 @@ public class EventHandlerDelegatorService {
       var persistedEvent = choreographedEventPersistenceService.persistEventToDB(choreographedEvent);
       message.ack(); // acknowledge to STAN that api got the message and it is now in DB.
       log.info("acknowledged to STAN...");
-      studentChoreographer.handleEvent(persistedEvent);
+      choreographer.handleEvent(persistedEvent);
     } catch (final BusinessException businessException) {
       message.ack(); // acknowledge to STAN that api got the message already...
       log.info("acknowledged to STAN...");

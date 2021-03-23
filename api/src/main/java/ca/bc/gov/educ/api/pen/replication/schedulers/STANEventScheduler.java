@@ -1,6 +1,6 @@
 package ca.bc.gov.educ.api.pen.replication.schedulers;
 
-import ca.bc.gov.educ.api.pen.replication.choreographer.StudentChoreographer;
+import ca.bc.gov.educ.api.pen.replication.choreographer.ChoreographEventHandler;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.LockAssert;
@@ -27,17 +27,17 @@ public class STANEventScheduler {
    */
   private final EventRepository eventRepository;
 
-  private final StudentChoreographer studentChoreographer;
+  private final ChoreographEventHandler choreographer;
 
   /**
    * Instantiates a new Stan event scheduler.
    *
    * @param eventRepository      the event repository
-   * @param studentChoreographer
+   * @param choreographer the choreographer
    */
-  public STANEventScheduler(EventRepository eventRepository, StudentChoreographer studentChoreographer) {
+  public STANEventScheduler(EventRepository eventRepository, ChoreographEventHandler choreographer) {
     this.eventRepository = eventRepository;
-    this.studentChoreographer = studentChoreographer;
+    this.choreographer = choreographer;
   }
 
   /**
@@ -45,14 +45,15 @@ public class STANEventScheduler {
    */
   @Scheduled(cron = "${cron.scheduled.process.events.stan}") // every 5 minutes
   @SchedulerLock(name = "PROCESS_CHOREOGRAPHED_EVENTS_FROM_STAN", lockAtLeastFor = "${cron.scheduled.process.events.stan.lockAtLeastFor}", lockAtMostFor = "${cron.scheduled.process.events.stan.lockAtMostFor}")
-  public void findAndPublishStudentEventsToSTAN() {
+  public void findAndPublishEventsToSTAN() {
     LockAssert.assertLocked();
     var results = eventRepository.findAllByEventStatus(DB_COMMITTED.toString());
     if (!results.isEmpty()) {
       results.stream()
           .filter(el -> el.getUpdateDate().isBefore(LocalDateTime.now().minusMinutes(5)))
           .collect(Collectors.toList())
-          .forEach(studentChoreographer::handleEvent);
+          .forEach(choreographer::handleEvent);
     }
   }
+
 }

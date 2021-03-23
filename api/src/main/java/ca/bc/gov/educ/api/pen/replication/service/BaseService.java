@@ -2,7 +2,7 @@ package ca.bc.gov.educ.api.pen.replication.service;
 
 import org.apache.commons.lang3.StringUtils;
 
-public abstract class BaseStudentService implements EventService {
+public abstract class BaseService implements EventService {
 
   protected String formatDateTime(String activityDate) {
     if (StringUtils.isBlank(activityDate)) {
