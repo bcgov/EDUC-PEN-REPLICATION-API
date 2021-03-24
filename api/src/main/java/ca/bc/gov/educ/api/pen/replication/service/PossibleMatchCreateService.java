@@ -4,7 +4,6 @@ import ca.bc.gov.educ.api.pen.replication.constants.MatchReasonCodes;
 import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
-import ca.bc.gov.educ.api.pen.replication.struct.BaseRequest;
 import ca.bc.gov.educ.api.pen.replication.struct.PossibleMatch;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,40 +22,34 @@ import static ca.bc.gov.educ.api.pen.replication.struct.EventType.ADD_POSSIBLE_M
  */
 @Service
 @Slf4j
-public class PossibleMatchCreateService extends BaseService {
+public class PossibleMatchCreateService extends BaseService<PossibleMatch> {
   private final EntityManagerFactory emf;
   private final EventRepository eventRepository;
-  /**
-   * The Rest utils.
-   */
-  private final RestUtils restUtils;
 
   @Autowired
-  public PossibleMatchCreateService(EntityManagerFactory emf, EventRepository eventRepository, RestUtils restUtils) {
+  public PossibleMatchCreateService(final EntityManagerFactory emf, final EventRepository eventRepository, final RestUtils restUtils) {
+    super(restUtils);
     this.emf = emf;
     this.eventRepository = eventRepository;
-    this.restUtils = restUtils;
   }
 
   @Override
-  public <T extends BaseRequest> void processEvent(T request, Event event) {
-    PossibleMatch possibleMatch = (PossibleMatch) request;
-
-    EntityManager em = this.emf.createEntityManager();
-    EntityTransaction tx = em.getTransaction();
+  public void processEvent(final PossibleMatch request, final Event event) {
+    final EntityManager em = this.emf.createEntityManager();
+    final EntityTransaction tx = em.getTransaction();
 
     try {
       // below timeout is in milli seconds, so it is 10 seconds.
       tx.begin();
-      em.createNativeQuery(buildInsert(possibleMatch)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
+      em.createNativeQuery(this.buildInsert(request)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
       tx.commit();
-      var existingEvent = eventRepository.findByEventId(event.getEventId());
+      final var existingEvent = this.eventRepository.findByEventId(event.getEventId());
       existingEvent.ifPresent(record -> {
         record.setEventStatus(PROCESSED.toString());
         record.setUpdateDate(LocalDateTime.now());
-        eventRepository.save(record);
+        this.eventRepository.save(record);
       });
-    } catch (Exception e) {
+    } catch (final Exception e) {
       log.error("Error occurred saving entity " + e.getMessage());
       tx.rollback();
     } finally {
@@ -66,26 +59,16 @@ public class PossibleMatchCreateService extends BaseService {
     }
   }
 
-  /**
-   * Gets student true pen number.
-   *
-   * @param studentID the true student id
-   * @return the student true number
-   */
-  private String getStudentPen(String studentID) {
-    return restUtils.getStudentPen(studentID).orElseThrow();
-  }
-
 
   @Override
   public String getEventType() {
     return ADD_POSSIBLE_MATCH.toString();
   }
 
-  private String buildInsert(PossibleMatch possibleMatch) {
+  private String buildInsert(final PossibleMatch possibleMatch) {
     return "insert into pen_twins (PEN_TWIN1, PEN_TWIN2, TWIN_REASON, RUN_DATE, TWIN_DATE, TWIN_USER_ID) values (" +
-        "'" + getStudentPen(possibleMatch.getStudentID()) + "'" + "," +
-        "'" + getStudentPen(possibleMatch.getMatchedStudentID()) + "'" + "," +
+        "'" + this.getStudentPen(possibleMatch.getStudentID()) + "'" + "," +
+        "'" + this.getStudentPen(possibleMatch.getMatchedStudentID()) + "'" + "," +
         "'" + MatchReasonCodes.AU.toString() + "'" + "," +
         "TO_DATE('" + possibleMatch.getCreateDate() + "'" + ", 'YYYY-MM-DD HH24:MI:SS')," +
         "TO_DATE('" + possibleMatch.getCreateDate() + "'" + ", 'YYYY-MM-DD HH24:MI:SS')," +

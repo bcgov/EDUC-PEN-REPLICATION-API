@@ -5,7 +5,7 @@ import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.model.PenDemographicsEntity;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.PenDemogRepository;
-import ca.bc.gov.educ.api.pen.replication.struct.BaseRequest;
+import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentCreate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -25,43 +25,44 @@ import static ca.bc.gov.educ.api.pen.replication.struct.EventType.CREATE_STUDENT
  */
 @Service
 @Slf4j
-public class StudentCreateService extends BaseService {
+public class StudentCreateService extends BaseService<StudentCreate> {
   private final EntityManagerFactory emf;
   private final PenDemogRepository penDemogRepository;
   private final EventRepository eventRepository;
 
   @Autowired
-  public StudentCreateService(EntityManagerFactory emf, PenDemogRepository penDemogRepository, EventRepository eventRepository) {
+  public StudentCreateService(final EntityManagerFactory emf, final PenDemogRepository penDemogRepository,
+                              final EventRepository eventRepository, final RestUtils restUtils) {
+    super(restUtils);
     this.emf = emf;
     this.penDemogRepository = penDemogRepository;
     this.eventRepository = eventRepository;
   }
 
   @Override
-  public <T extends BaseRequest> void processEvent(T request, Event event) {
-    StudentCreate studentCreate = (StudentCreate) request;
-    PenDemographicsEntity penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(studentCreate);
-    penDemographicsEntity.setCreateDate(formatDateTime(penDemographicsEntity.getCreateDate()));
-    penDemographicsEntity.setUpdateDate(formatDateTime(penDemographicsEntity.getUpdateDate()));
+  public void processEvent(final StudentCreate request, final Event event) {
+    final PenDemographicsEntity penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(request);
+    penDemographicsEntity.setCreateDate(this.formatDateTime(penDemographicsEntity.getCreateDate()));
+    penDemographicsEntity.setUpdateDate(this.formatDateTime(penDemographicsEntity.getUpdateDate()));
     penDemographicsEntity.setStudBirth(StringUtils.replace(penDemographicsEntity.getStudBirth(), "-", ""));
-    var existingPenDemogRecord = penDemogRepository.findById(StringUtils.rightPad(penDemographicsEntity.getStudNo(), 10));
-    EntityManager em = this.emf.createEntityManager();
-    EntityTransaction tx = em.getTransaction();
+    final var existingPenDemogRecord = this.penDemogRepository.findById(StringUtils.rightPad(penDemographicsEntity.getStudNo(), 10));
+    final EntityManager em = this.emf.createEntityManager();
+    final EntityTransaction tx = em.getTransaction();
 
     try {
       // below timeout is in milli seconds, so it is 10 seconds.
       if (existingPenDemogRecord.isEmpty()) {
         tx.begin();
-        em.createNativeQuery(buildInsert(penDemographicsEntity)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
+        em.createNativeQuery(this.buildInsert(penDemographicsEntity)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
         tx.commit();
       }
-      var existingEvent = eventRepository.findByEventId(event.getEventId());
+      final var existingEvent = this.eventRepository.findByEventId(event.getEventId());
       existingEvent.ifPresent(record -> {
         record.setEventStatus(PROCESSED.toString());
         record.setUpdateDate(LocalDateTime.now());
-        eventRepository.save(record);
+        this.eventRepository.save(record);
       });
-    } catch (Exception e) {
+    } catch (final Exception e) {
       log.error("Error occurred saving entity " + e.getMessage());
       tx.rollback();
     } finally {
@@ -77,7 +78,7 @@ public class StudentCreateService extends BaseService {
     return CREATE_STUDENT.toString();
   }
 
-  private String buildInsert(PenDemographicsEntity penDemographicsEntity) {
+  private String buildInsert(final PenDemographicsEntity penDemographicsEntity) {
     return "insert into pen_demog (create_date, create_user_name, stud_demog_code, stud_grade, stud_grade_year, pen_local_id, merge_to_code, merge_to_date, merge_to_user_name, pen_mincode, postal, stud_birth, stud_given, stud_middle, stud_sex, stud_status, stud_surname, stud_true_no, update_date, update_user_name, usual_given, usual_middle, usual_surname, stud_no) values (" +
         "TO_DATE('" + penDemographicsEntity.getCreateDate() + "'" + ", 'YYYY-MM-DD HH24:MI:SS')," +
         "'" + penDemographicsEntity.getCreateUser() + "'" + "," +
