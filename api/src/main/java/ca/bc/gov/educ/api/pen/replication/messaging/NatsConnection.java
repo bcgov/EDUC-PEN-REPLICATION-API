@@ -37,7 +37,7 @@ public class NatsConnection implements Closeable {
    */
   @Autowired
   public NatsConnection(final ApplicationProperties applicationProperties) throws IOException, InterruptedException {
-    this.natsCon = connectToNats(applicationProperties.getStanUrl(), applicationProperties.getNatsMaxReconnect());
+    this.natsCon = this.connectToNats(applicationProperties.getStanUrl(), applicationProperties.getNatsMaxReconnect());
   }
 
   /**
@@ -49,10 +49,11 @@ public class NatsConnection implements Closeable {
    * @throws IOException          the io exception
    * @throws InterruptedException the interrupted exception
    */
-  private Connection connectToNats(String stanUrl, int maxReconnects) throws IOException, InterruptedException {
-    io.nats.client.Options natsOptions = new io.nats.client.Options.Builder()
+  private Connection connectToNats(final String stanUrl, final int maxReconnects) throws IOException, InterruptedException {
+    final io.nats.client.Options natsOptions = new io.nats.client.Options.Builder()
         .connectionListener(this::connectionListener)
         .maxPingsOut(5)
+        .oldRequestStyle()
         .pingInterval(Duration.ofSeconds(2))
         .connectionName("PEN-REPLICATION-API")
         .connectionTimeout(Duration.ofSeconds(5))
@@ -72,7 +73,7 @@ public class NatsConnection implements Closeable {
    * @param connection the connection
    * @param events     the events
    */
-  private void connectionListener(Connection connection, ConnectionListener.Events events) {
+  private void connectionListener(final Connection connection, final ConnectionListener.Events events) {
     connection.getServers().forEach(log::info);
     log.info("NATS -> {}", events.toString());
   }
@@ -80,11 +81,11 @@ public class NatsConnection implements Closeable {
 
   @Override
   public void close() {
-    if (natsCon != null) {
+    if (this.natsCon != null) {
       log.info("closing nats connection...");
       try {
-        natsCon.close();
-      } catch (InterruptedException e) {
+        this.natsCon.close();
+      } catch (final InterruptedException e) {
         log.error("error while closing nats connection...", e);
         Thread.currentThread().interrupt();
       }

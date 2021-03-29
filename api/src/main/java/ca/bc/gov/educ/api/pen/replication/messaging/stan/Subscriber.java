@@ -76,25 +76,14 @@ public class Subscriber implements Closeable {
   /**
    * This subscription will makes sure the messages are required to acknowledge manually to STAN.
    * Subscribe.
-   *
-   * @throws InterruptedException the interrupted exception
-   * @throws TimeoutException     the timeout exception
-   * @throws IOException          the io exception
    */
   @PostConstruct
   public void subscribe() throws InterruptedException, TimeoutException, IOException {
     final SubscriptionOptions options = new SubscriptionOptions.Builder().manualAcks().ackWait(Duration.ofMinutes(5))
         .durableName("pen-replication-api-choreography-events-consumer").build();
-    this.topicsToSubscribe.forEach(topic -> {
-      try {
-        this.connection.subscribe(topic.toString(), "pen-replication-api-choreography-events", this::onMessage, options);
-      } catch (final IOException | TimeoutException e) {
-        log.error("IOException | TimeoutException ", e);
-      } catch (final InterruptedException e) {
-        log.error("InterruptedException ", e);
-        Thread.currentThread().interrupt();
-      }
-    });
+    for (final var topic : this.topicsToSubscribe) {
+      this.connection.subscribe(topic.toString(), "pen-replication-api-choreography-events", this::onMessage, options);
+    }
 
   }
 
@@ -138,6 +127,7 @@ public class Subscriber implements Closeable {
   private void connectionLostHandler(final StreamingConnection streamingConnection, final Exception e) {
     if (e != null) {
       this.reconnect();
+      this.retrySubscription();
     }
   }
 
@@ -157,6 +147,21 @@ public class Subscriber implements Closeable {
       } catch (final InterruptedException interruptedException) {
         Thread.currentThread().interrupt();
         this.backOff(numOfRetries, interruptedException);
+      }
+    }
+  }
+
+  private void retrySubscription() {
+    int numOfRetries = 0;
+    while (true) {
+      try {
+        log.trace("retrying subscription as connection was lost :: retrying ::" + numOfRetries++);
+        this.subscribe();
+        log.info("successfully resubscribed after {} attempts", numOfRetries);
+        break;
+      } catch (final InterruptedException | TimeoutException | IOException exception) {
+        log.error("exception occurred while retrying subscription", exception);
+        Thread.currentThread().interrupt();
       }
     }
   }
