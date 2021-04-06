@@ -38,7 +38,7 @@ public class StudentCreateService extends BaseService {
   }
 
   @Override
-  public <T extends BaseRequest> void processEvent(T request, Event event) {
+  public <T extends Object> void processEvent(T request, Event event) {
     StudentCreate studentCreate = (StudentCreate) request;
     PenDemographicsEntity penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(studentCreate);
     penDemographicsEntity.setCreateDate(formatDateTime(penDemographicsEntity.getCreateDate()));

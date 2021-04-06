@@ -66,7 +66,7 @@ public class StudentUpdateService extends BaseService {
    * @param event   the event
    */
   @Override
-  public <T extends BaseRequest> void processEvent(T request, Event event) {
+  public <T extends Object> void processEvent(T request, Event event) {
     EntityManager em = this.emf.createEntityManager();
     StudentUpdate studentUpdate = (StudentUpdate) request;
     PenDemographicsEntity penDemographicsEntity = getPenDemographicsEntity(studentUpdate);

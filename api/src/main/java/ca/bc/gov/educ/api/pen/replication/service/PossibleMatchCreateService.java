@@ -14,6 +14,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventStatus.PROCESSED;
 import static ca.bc.gov.educ.api.pen.replication.struct.EventType.ADD_POSSIBLE_MATCH;
@@ -39,8 +40,8 @@ public class PossibleMatchCreateService extends BaseService {
   }
 
   @Override
-  public <T extends BaseRequest> void processEvent(T request, Event event) {
-    PossibleMatch possibleMatch = (PossibleMatch) request;
+  public <T extends Object> void processEvent(T request, Event event) {
+    List<PossibleMatch> possibleMatchList = (List<PossibleMatch>) request;
 
     EntityManager em = this.emf.createEntityManager();
     EntityTransaction tx = em.getTransaction();
@@ -48,7 +49,9 @@ public class PossibleMatchCreateService extends BaseService {
     try {
       // below timeout is in milli seconds, so it is 10 seconds.
       tx.begin();
-      em.createNativeQuery(buildInsert(possibleMatch)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
+      for(PossibleMatch possibleMatch: possibleMatchList) {
+        em.createNativeQuery(buildInsert(possibleMatch)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
+      }
       tx.commit();
       var existingEvent = eventRepository.findByEventId(event.getEventId());
       existingEvent.ifPresent(record -> {

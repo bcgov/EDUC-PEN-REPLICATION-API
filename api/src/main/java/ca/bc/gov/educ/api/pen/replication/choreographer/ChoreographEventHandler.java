@@ -48,24 +48,25 @@ public class ChoreographEventHandler {
             eventServiceMap.get(CREATE_STUDENT.toString()).processEvent(studentCreate, event);
             break;
           case "UPDATE_STUDENT":
+            log.info("Processing UPDATE_STUDENT event record :: {} ", event);
             final StudentUpdate studentUpdate = JsonUtil.getJsonObjectFromString(StudentUpdate.class, event.getEventPayload());
             eventServiceMap.get(UPDATE_STUDENT.toString()).processEvent(studentUpdate, event);
             break;
           case "ADD_POSSIBLE_MATCH":
-            final PossibleMatch possibleMatch = JsonUtil.getJsonObjectFromString(PossibleMatch.class, event.getEventPayload());
-            eventServiceMap.get(ADD_POSSIBLE_MATCH.toString()).processEvent(possibleMatch, event);
+            final List<PossibleMatch> possibleMatchList = JsonUtil.getJsonObjectFromString(List.class, event.getEventPayload());
+            eventServiceMap.get(ADD_POSSIBLE_MATCH.toString()).processEvent(possibleMatchList, event);
             break;
           case "DELETE_POSSIBLE_MATCH":
-            final PossibleMatch deletePossibleMatch = JsonUtil.getJsonObjectFromString(PossibleMatch.class, event.getEventPayload());
-            eventServiceMap.get(DELETE_POSSIBLE_MATCH.toString()).processEvent(deletePossibleMatch, event);
+            final List<PossibleMatch> deletePossibleMatchList = JsonUtil.getJsonObjectFromString(List.class, event.getEventPayload());
+            eventServiceMap.get(DELETE_POSSIBLE_MATCH.toString()).processEvent(deletePossibleMatchList, event);
             break;
           case "CREATE_MERGE":
-            final StudentMerge createStudentMerge = JsonUtil.getJsonObjectFromString(StudentMerge.class, event.getEventPayload());
-            eventServiceMap.get(CREATE_MERGE.toString()).processEvent(createStudentMerge, event);
+            final List<StudentMerge> createStudentMergeList = JsonUtil.getJsonObjectFromString(List.class, event.getEventPayload());
+            eventServiceMap.get(CREATE_MERGE.toString()).processEvent(createStudentMergeList, event);
             break;
           case "DELETE_MERGE":
-            final StudentMerge deleteStudentMerge = JsonUtil.getJsonObjectFromString(StudentMerge.class, event.getEventPayload());
-            eventServiceMap.get(DELETE_MERGE.toString()).processEvent(deleteStudentMerge, event);
+            final List<StudentMerge> deleteStudentMergeList = JsonUtil.getJsonObjectFromString(List.class, event.getEventPayload());
+            eventServiceMap.get(DELETE_MERGE.toString()).processEvent(deleteStudentMergeList, event);
             break;
           default:
             break;
