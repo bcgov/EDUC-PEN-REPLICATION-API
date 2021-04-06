@@ -1,9 +1,6 @@
 package ca.bc.gov.educ.api.pen.replication.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -64,6 +61,7 @@ public class Event {
   @NotNull(message = "eventPayload cannot be null")
   @Lob
   @Column(name = "EVENT_PAYLOAD")
+  @ToString.Exclude
   private byte[] eventPayloadBytes;
   /**
    * The Event status.
@@ -90,7 +88,7 @@ public class Event {
    * @return the event payload
    */
   public String getEventPayload() {
-    return new String(getEventPayloadBytes(), StandardCharsets.UTF_8);
+    return new String(this.getEventPayloadBytes(), StandardCharsets.UTF_8);
   }
 
   /**
@@ -98,8 +96,8 @@ public class Event {
    *
    * @param eventPayload the event payload
    */
-  public void setEventPayload(String eventPayload) {
-    setEventPayloadBytes(eventPayload.getBytes(StandardCharsets.UTF_8));
+  public void setEventPayload(final String eventPayload) {
+    this.setEventPayloadBytes(eventPayload.getBytes(StandardCharsets.UTF_8));
   }
 
   /**
@@ -117,7 +115,7 @@ public class Event {
      * @param eventPayload the event payload
      * @return the student event . student event builder
      */
-    public Event.EventBuilder eventPayload(String eventPayload) {
+    public Event.EventBuilder eventPayload(final String eventPayload) {
       this.eventPayloadBytes = eventPayload.getBytes(StandardCharsets.UTF_8);
       return this;
     }
