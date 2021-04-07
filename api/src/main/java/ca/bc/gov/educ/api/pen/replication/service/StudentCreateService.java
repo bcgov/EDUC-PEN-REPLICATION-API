@@ -104,7 +104,7 @@ public class StudentCreateService extends BaseService {
         "'" + (penDemographicsEntity.getUsualSurname() == null ? "" : penDemographicsEntity.getUsualSurname()) + "'" + "," +
         "'" + penDemographicsEntity.getStudNo() + "'" +
         ")";
-    log.info("Create Student: " + insert);
+    log.debug("Create Student: " + insert);
     return insert;
   }
 
