@@ -86,15 +86,13 @@ public class PossibleMatchCreateService extends BaseService {
   }
 
   private String buildInsert(PossibleMatch possibleMatch) {
-    String insert = "insert into pen_twins (PEN_TWIN1, PEN_TWIN2, TWIN_REASON, RUN_DATE, TWIN_DATE, TWIN_USER_ID) values (" +
+    return "insert into pen_twins (PEN_TWIN1, PEN_TWIN2, TWIN_REASON, RUN_DATE, TWIN_DATE, TWIN_USER_ID) values (" +
         "'" + getStudentPen(possibleMatch.getStudentID()) + "'" + "," +
         "'" + getStudentPen(possibleMatch.getMatchedStudentID()) + "'" + "," +
         "'" + MatchReasonCodes.AU.toString() + "'" + "," +
-        "'" + possibleMatch.getCreateDate().substring(0,8) + "'" + "," +
-        "'" + possibleMatch.getCreateDate().substring(0,8) + "'" + "," +
+        "'" + possibleMatch.getCreateDate().substring(0,10).replaceAll("-", "") + "'" + "," +
+        "'" + possibleMatch.getCreateDate().substring(0,10).replaceAll("-", "") + "'" + "," +
         "'" + possibleMatch.getCreateUser() + "'" +
         ")";
-    log.info("TWINS insert: " + insert);
-    return insert;
   }
 }
