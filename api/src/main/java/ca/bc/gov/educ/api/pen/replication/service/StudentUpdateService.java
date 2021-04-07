@@ -135,7 +135,7 @@ public class StudentUpdateService extends BaseService {
    * @return the string
    */
   private String buildUpdate(PenDemographicsEntity penDemographicsEntity) {
-    return "UPDATE PEN_DEMOG SET "
+    String insert =  "UPDATE PEN_DEMOG SET "
         + "STUD_DEMOG_CODE=" + "'" + (penDemographicsEntity.getDemogCode() == null ? "" : penDemographicsEntity.getDemogCode()) + "'" + ","
         + "STUD_GRADE=" + "'" + (penDemographicsEntity.getGrade() == null ? "" : penDemographicsEntity.getGrade()) + "'" + ","
         + "STUD_GRADE_YEAR=" + "'" + (penDemographicsEntity.getGradeYear() == null ? "" : penDemographicsEntity.getGradeYear()) + "'" + ","
@@ -156,6 +156,8 @@ public class StudentUpdateService extends BaseService {
         + "USUAL_MIDDLE=" + "'" + (penDemographicsEntity.getUsualMiddle() == null ? "" : penDemographicsEntity.getUsualMiddle()) + "'" + ","
         + "USUAL_SURNAME=" + "'" + (penDemographicsEntity.getUsualSurname() == null ? "" : penDemographicsEntity.getUsualSurname()) + "'"
         + " WHERE STUD_NO=" + "'" + penDemographicsEntity.getStudNo() + " '"; // a space is appended CAREFUL not to remove.
+    log.info("Update Student: " + insert);
+    return insert;
   }
 
   /**
