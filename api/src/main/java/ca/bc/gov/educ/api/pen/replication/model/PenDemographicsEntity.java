@@ -96,4 +96,5 @@ public class PenDemographicsEntity {
 
   @Column(name = "MERGE_TO_DATE")
   private String mergeToDate;
+
 }

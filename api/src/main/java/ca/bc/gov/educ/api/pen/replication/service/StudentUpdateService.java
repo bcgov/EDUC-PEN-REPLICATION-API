@@ -148,7 +148,7 @@ public class StudentUpdateService extends BaseService {
         + "STUD_SEX=" + "'" + penDemographicsEntity.getStudSex() + "'" + ","
         + "STUD_STATUS=" + "'" + (penDemographicsEntity.getStudStatus() == null ? "" : penDemographicsEntity.getStudStatus()) + "'" + ","
         + "STUD_SURNAME=" + "'" + penDemographicsEntity.getStudSurname() + "'" + ","
-        + "MERGE_TO_DATE=" + penDemographicsEntity.getMergeToDate() == null ? "''" : "TO_DATE('" + penDemographicsEntity.getMergeToDate() + "'" + ", 'YYYY-MM-DD HH24:MI:SS')" + ","
+        + "MERGE_TO_DATE="  + getMergeToDate(penDemographicsEntity.getMergeToDate())  + ","
         + "STUD_TRUE_NO=" + "'" + (penDemographicsEntity.getStudentTrueNo() == null ? "" : penDemographicsEntity.getStudentTrueNo()) + "'" + ","
         + "UPDATE_DATE=" + "TO_DATE('" + penDemographicsEntity.getUpdateDate() + "'" + ", 'YYYY-MM-DD HH24:MI:SS'),"
         + "UPDATE_USER_NAME=" + "'" + penDemographicsEntity.getUpdateUser() + "'" + ","
@@ -158,6 +158,13 @@ public class StudentUpdateService extends BaseService {
         + " WHERE STUD_NO=" + "'" + penDemographicsEntity.getStudNo() + " '"; // a space is appended CAREFUL not to remove.
     log.info("Update Student: " + insert);
     return insert;
+  }
+
+  private String getMergeToDate(String mergeToDate){
+    if(mergeToDate == null){
+      return "''";
+    }
+    return "TO_DATE('" + mergeToDate + "'" + ", 'YYYY-MM-DD HH24:MI:SS')";
   }
 
   /**
