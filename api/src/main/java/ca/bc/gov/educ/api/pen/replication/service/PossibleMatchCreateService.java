@@ -90,8 +90,8 @@ public class PossibleMatchCreateService extends BaseService {
         "'" + getStudentPen(possibleMatch.getStudentID()) + "'" + "," +
         "'" + getStudentPen(possibleMatch.getMatchedStudentID()) + "'" + "," +
         "'" + MatchReasonCodes.AU.toString() + "'" + "," +
-        "TO_DATE('" + possibleMatch.getCreateDate() + "'" + ", 'YYYY-MM-DD HH24:MI:SS')," +
-        "TO_DATE('" + possibleMatch.getCreateDate() + "'" + ", 'YYYY-MM-DD HH24:MI:SS')," +
+        "'" + possibleMatch.getCreateDate().substring(0,8) + "'" + "," +
+        "'" + possibleMatch.getCreateDate().substring(0,8) + "'" + "," +
         "'" + possibleMatch.getCreateUser() + "'" +
         ")";
   }
