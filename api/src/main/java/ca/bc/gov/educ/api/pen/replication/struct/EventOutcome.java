@@ -19,5 +19,13 @@ public enum EventOutcome {
   /**
    * Student updated event outcome.
    */
-  STUDENT_UPDATED
+  STUDENT_UPDATED,
+  /**
+   * Merge created event outcome.
+   */
+  MERGE_CREATED,
+  /**
+   * Merge deleted event outcome.
+   */
+  MERGE_DELETED
 }
