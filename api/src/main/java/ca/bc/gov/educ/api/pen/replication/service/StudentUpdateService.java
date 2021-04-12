@@ -164,7 +164,7 @@ public class StudentUpdateService extends BaseService {
     if(mergeToDate == null){
       return "''";
     }
-    return "TO_DATE('" + mergeToDate + "'" + ", 'YYYY-MM-DD HH24:MI:SS')";
+    return "TO_DATE('" + mergeToDate.substring(0,19).replace("T"," ") + "'" + ", 'YYYY-MM-DD HH24:MI:SS')";
   }
 
   /**
