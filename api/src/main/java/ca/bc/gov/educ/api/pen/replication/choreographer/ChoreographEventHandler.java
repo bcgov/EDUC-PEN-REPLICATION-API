@@ -47,8 +47,6 @@ public class ChoreographEventHandler {
 
       try {
         switch (event.getEventType()) {
-
-
           case "CREATE_STUDENT":
             final StudentCreate studentCreate = JsonUtil.getJsonObjectFromString(StudentCreate.class, event.getEventPayload());
             this.eventServiceMap.get(CREATE_STUDENT.toString()).processEvent(studentCreate, event);
@@ -68,12 +66,12 @@ public class ChoreographEventHandler {
             });
             this.eventServiceMap.get(DELETE_POSSIBLE_MATCH.toString()).processEvent(deletePossibleMatchList, event);
             break;
-          case "CREATE_MERGE":
+          case "MERGE_CREATED":
             final List<StudentMerge> createStudentMergeList = this.mapper.readValue(event.getEventPayload(), new TypeReference<>() {
             });
             this.eventServiceMap.get(CREATE_MERGE.toString()).processEvent(createStudentMergeList, event);
             break;
-          case "DELETE_MERGE":
+          case "MERGE_DELETED":
             final List<StudentMerge> deleteStudentMergeList = this.mapper.readValue(event.getEventPayload(), new TypeReference<>() {
             });
             this.eventServiceMap.get(DELETE_MERGE.toString()).processEvent(deleteStudentMergeList, event);
