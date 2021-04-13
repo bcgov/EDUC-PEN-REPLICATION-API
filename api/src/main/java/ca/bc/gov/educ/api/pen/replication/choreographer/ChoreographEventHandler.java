@@ -78,6 +78,7 @@ public class ChoreographEventHandler {
             this.eventServiceMap.get(DELETE_MERGE.toString()).processEvent(deleteStudentMergeList, event);
             break;
           default:
+            log.warn("Silently ignoring event: {}", event);
             break;
 
         }
