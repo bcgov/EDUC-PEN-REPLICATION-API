@@ -7,6 +7,7 @@ import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.PenDemogRepository;
 import ca.bc.gov.educ.api.pen.replication.struct.BaseRequest;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentCreate;
+import ca.bc.gov.educ.api.pen.replication.util.ReplicationUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,7 +85,7 @@ public class StudentCreateService extends BaseService {
         "'" + (penDemographicsEntity.getDemogCode() == null ? "" : penDemographicsEntity.getDemogCode()) + "'" + "," +
         "'" + (penDemographicsEntity.getGrade() == null ? "" : penDemographicsEntity.getGrade()) + "'" + "," +
         "'" + (penDemographicsEntity.getGradeYear() == null ? "" : penDemographicsEntity.getGradeYear()) + "'" + "," +
-        "'" + (penDemographicsEntity.getLocalID() == null ? "" : penDemographicsEntity.getLocalID()) + "'" + "," +
+        "'" + ReplicationUtils.getLocalIDValue(penDemographicsEntity.getLocalID()) + "'" + "," +
         "'" + "'" + "," +
         "'" + "'" + "," +
         "'" + "'" + "," +
@@ -107,5 +108,6 @@ public class StudentCreateService extends BaseService {
     log.debug("Create Student: " + insert);
     return insert;
   }
+
 
 }

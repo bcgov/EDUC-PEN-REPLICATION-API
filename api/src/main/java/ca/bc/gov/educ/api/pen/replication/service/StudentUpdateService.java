@@ -8,6 +8,7 @@ import ca.bc.gov.educ.api.pen.replication.repository.PenDemogRepository;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.BaseRequest;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentUpdate;
+import ca.bc.gov.educ.api.pen.replication.util.ReplicationUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -139,7 +140,7 @@ public class StudentUpdateService extends BaseService {
         + "STUD_DEMOG_CODE=" + "'" + (penDemographicsEntity.getDemogCode() == null ? "" : penDemographicsEntity.getDemogCode()) + "'" + ","
         + "STUD_GRADE=" + "'" + (penDemographicsEntity.getGrade() == null ? "" : penDemographicsEntity.getGrade()) + "'" + ","
         + "STUD_GRADE_YEAR=" + "'" + (penDemographicsEntity.getGradeYear() == null ? "" : penDemographicsEntity.getGradeYear()) + "'" + ","
-        + "PEN_LOCAL_ID=" + "'" + (penDemographicsEntity.getLocalID() == null ? "" : penDemographicsEntity.getLocalID()) + "'" + ","
+        + "PEN_LOCAL_ID=" + "'" + ReplicationUtils.getLocalIDValue(penDemographicsEntity.getLocalID()) + "'" + ","
         + "PEN_MINCODE=" + "'" + (penDemographicsEntity.getMincode() == null ? "" : penDemographicsEntity.getMincode()) + "'" + ","
         + "POSTAL=" + "'" + (penDemographicsEntity.getPostalCode() == null ? "" : penDemographicsEntity.getPostalCode()) + "'" + ","
         + "STUD_BIRTH=" + "'" + penDemographicsEntity.getStudBirth() + "'" + ","
