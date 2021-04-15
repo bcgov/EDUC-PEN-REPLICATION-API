@@ -140,7 +140,7 @@ public class StudentUpdateService extends BaseService {
         + "STUD_DEMOG_CODE=" + "'" + (penDemographicsEntity.getDemogCode() == null ? "" : penDemographicsEntity.getDemogCode()) + "'" + ","
         + "STUD_GRADE=" + "'" + (penDemographicsEntity.getGrade() == null ? "" : penDemographicsEntity.getGrade()) + "'" + ","
         + "STUD_GRADE_YEAR=" + "'" + (penDemographicsEntity.getGradeYear() == null ? "" : penDemographicsEntity.getGradeYear()) + "'" + ","
-        + "PEN_LOCAL_ID=" + "'" + ReplicationUtils.getLocalIDValue(penDemographicsEntity.getLocalID()) + "'" + ","
+        + "PEN_LOCAL_ID=" + "'" + ReplicationUtils.getBlankWhenNull(penDemographicsEntity.getLocalID()) + "'" + ","
         + "PEN_MINCODE=" + "'" + (penDemographicsEntity.getMincode() == null ? "" : penDemographicsEntity.getMincode()) + "'" + ","
         + "POSTAL=" + "'" + (penDemographicsEntity.getPostalCode() == null ? "" : penDemographicsEntity.getPostalCode()) + "'" + ","
         + "STUD_BIRTH=" + "'" + penDemographicsEntity.getStudBirth() + "'" + ","

@@ -85,7 +85,7 @@ public class StudentCreateService extends BaseService {
         "'" + (penDemographicsEntity.getDemogCode() == null ? "" : penDemographicsEntity.getDemogCode()) + "'" + "," +
         "'" + (penDemographicsEntity.getGrade() == null ? "" : penDemographicsEntity.getGrade()) + "'" + "," +
         "'" + (penDemographicsEntity.getGradeYear() == null ? "" : penDemographicsEntity.getGradeYear()) + "'" + "," +
-        "'" + ReplicationUtils.getLocalIDValue(penDemographicsEntity.getLocalID()) + "'" + "," +
+        "'" + ReplicationUtils.getBlankWhenNull(penDemographicsEntity.getLocalID()) + "'" + "," +
         "'" + "'" + "," +
         "'" + "'" + "," +
         "'" + "'" + "," +
