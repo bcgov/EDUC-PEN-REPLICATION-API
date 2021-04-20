@@ -15,12 +15,12 @@ import static ca.bc.gov.educ.api.pen.replication.constants.EventStatus.DB_COMMIT
 
 
 /**
- * This class is responsible to check the PEN_MATCH_EVENT table periodically and publish messages to STAN, if some them are not yet published
+ * This class is responsible to check the PEN_MATCH_EVENT table periodically and publish messages to Jet Stream, if some them are not yet published
  * this is a very edge case scenario which will occur.
  */
 @Component
 @Slf4j
-public class STANEventScheduler {
+public class JetStreamEventScheduler {
 
   /**
    * The Event repository.
@@ -32,27 +32,24 @@ public class STANEventScheduler {
   /**
    * Instantiates a new Stan event scheduler.
    *
-   * @param eventRepository      the event repository
-   * @param choreographer the choreographer
+   * @param eventRepository the event repository
+   * @param choreographer   the choreographer
    */
-  public STANEventScheduler(EventRepository eventRepository, ChoreographEventHandler choreographer) {
+  public JetStreamEventScheduler(final EventRepository eventRepository, final ChoreographEventHandler choreographer) {
     this.eventRepository = eventRepository;
     this.choreographer = choreographer;
   }
 
-  /**
-   * Find and publish student events to stan.
-   */
   @Scheduled(cron = "${cron.scheduled.process.events.stan}") // every 5 minutes
   @SchedulerLock(name = "PROCESS_CHOREOGRAPHED_EVENTS_FROM_STAN", lockAtLeastFor = "${cron.scheduled.process.events.stan.lockAtLeastFor}", lockAtMostFor = "${cron.scheduled.process.events.stan.lockAtMostFor}")
-  public void findAndPublishEventsToSTAN() {
+  public void findAndProcessEvents() {
     LockAssert.assertLocked();
-    var results = eventRepository.findAllByEventStatus(DB_COMMITTED.toString());
+    final var results = this.eventRepository.findAllByEventStatus(DB_COMMITTED.toString());
     if (!results.isEmpty()) {
       results.stream()
           .filter(el -> el.getUpdateDate().isBefore(LocalDateTime.now().minusMinutes(5)))
           .collect(Collectors.toList())
-          .forEach(choreographer::handleEvent);
+          .forEach(this.choreographer::handleEvent);
     }
   }
 

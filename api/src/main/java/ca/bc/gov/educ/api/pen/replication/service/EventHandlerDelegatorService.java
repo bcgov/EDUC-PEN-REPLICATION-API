@@ -3,7 +3,7 @@ package ca.bc.gov.educ.api.pen.replication.service;
 import ca.bc.gov.educ.api.pen.replication.choreographer.ChoreographEventHandler;
 import ca.bc.gov.educ.api.pen.replication.exception.BusinessException;
 import ca.bc.gov.educ.api.pen.replication.struct.ChoreographedEvent;
-import io.nats.streaming.Message;
+import io.nats.client.Message;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
@@ -13,7 +13,7 @@ import java.io.IOException;
 
 
 /**
- * This class is responsible to process events from STAN.
+ * This class is responsible to process events from Jet Stream..
  */
 @Service
 @Slf4j
@@ -26,10 +26,10 @@ public class EventHandlerDelegatorService {
    * Instantiates a new Event handler delegator service.
    *
    * @param choreographedEventPersistenceService the choreographed event persistence service
-   * @param choreographer the choreographer
+   * @param choreographer                        the choreographer
    */
   @Autowired
-  public EventHandlerDelegatorService(ChoreographedEventPersistenceService choreographedEventPersistenceService, ChoreographEventHandler choreographer) {
+  public EventHandlerDelegatorService(final ChoreographedEventPersistenceService choreographedEventPersistenceService, final ChoreographEventHandler choreographer) {
     this.choreographedEventPersistenceService = choreographedEventPersistenceService;
     this.choreographer = choreographer;
   }
@@ -46,13 +46,13 @@ public class EventHandlerDelegatorService {
    */
   public void handleChoreographyEvent(@NonNull final ChoreographedEvent choreographedEvent, final Message message) throws IOException {
     try {
-      var persistedEvent = choreographedEventPersistenceService.persistEventToDB(choreographedEvent);
-      message.ack(); // acknowledge to STAN that api got the message and it is now in DB.
-      log.info("acknowledged to STAN...");
-      choreographer.handleEvent(persistedEvent);
+      final var persistedEvent = this.choreographedEventPersistenceService.persistEventToDB(choreographedEvent);
+      message.ack(); // acknowledge to Jet Stream that api got the message and it is now in DB.
+      log.info("acknowledged to Jet Stream...");
+      this.choreographer.handleEvent(persistedEvent);
     } catch (final BusinessException businessException) {
-      message.ack(); // acknowledge to STAN that api got the message already...
-      log.info("acknowledged to STAN...");
+      message.ack(); // acknowledge to Jet Stream that api got the message already...
+      log.info("acknowledged to Jet Stream...");
     }
   }
 }
