@@ -83,9 +83,9 @@ public class StudentCreateService extends BaseService {
         "TO_DATE('" + penDemographicsEntity.getCreateDate() + "'" + ", 'YYYY-MM-DD HH24:MI:SS')," +
         "'" + penDemographicsEntity.getCreateUser() + "'" + "," +
         "'" + (penDemographicsEntity.getDemogCode() == null ? "" : penDemographicsEntity.getDemogCode()) + "'" + "," +
-        "'" + (penDemographicsEntity.getGrade() == null ? "" : penDemographicsEntity.getGrade()) + "'" + "," +
+        "'" + ReplicationUtils.getBlankWhenNull(penDemographicsEntity.getGrade()) + "'" + "," +
         "'" + (penDemographicsEntity.getGradeYear() == null ? "" : penDemographicsEntity.getGradeYear()) + "'" + "," +
-        "'" + ReplicationUtils.getBlankWhenNull(penDemographicsEntity.getLocalID()) + "'" + "," +
+        "'" + (penDemographicsEntity.getLocalID() == null ? "" : penDemographicsEntity.getLocalID()) + "'" + "," +
         "'" + "'" + "," +
         "'" + "'" + "," +
         "'" + "'" + "," +
