@@ -38,14 +38,9 @@ public class ApplicationProperties {
   /**
    * The Stan url.
    */
-  @Value("${stan.url}")
-  String stanUrl;
+  @Value("${nats.url}")
+  String natsUrl;
 
-  /**
-   * The Stan cluster.
-   */
-  @Value("${stan.cluster}")
-  String stanCluster;
 
   /**
    * The Nats max reconnect.
