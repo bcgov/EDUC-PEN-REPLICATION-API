@@ -1,5 +1,6 @@
 package ca.bc.gov.educ.api.pen.replication.service;
 
+import ca.bc.gov.educ.api.pen.replication.constants.MatchReasonCodes;
 import ca.bc.gov.educ.api.pen.replication.mappers.PenDemogStudentMapper;
 import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.model.PenDemographicsEntity;
@@ -81,9 +82,11 @@ public class StudentUpdateService extends BaseService {
         if (StringUtils.isNotBlank(studentUpdate.getTrueStudentID()) && StringUtils.isBlank(existingPenDemogRecord.get().getStudentTrueNo())) {
           penDemographicsEntity.setStudentTrueNo(getStudentPen(studentUpdate.getTrueStudentID()));
           penDemographicsEntity.setMergeToDate(studentUpdate.getUpdateDate());
+          penDemographicsEntity.setMergeToCode("MINISTRY");
         }else if(StringUtils.isBlank(studentUpdate.getTrueStudentID()) && StringUtils.isNotBlank(existingPenDemogRecord.get().getStudentTrueNo())){
           penDemographicsEntity.setStudentTrueNo(null);
           penDemographicsEntity.setMergeToDate(null);
+          penDemographicsEntity.setMergeToCode(null);
         }
         tx.begin();
         em.createNativeQuery(buildUpdate(penDemographicsEntity)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
@@ -150,6 +153,7 @@ public class StudentUpdateService extends BaseService {
         + "STUD_STATUS=" + "'" + (penDemographicsEntity.getStudStatus() == null ? "" : penDemographicsEntity.getStudStatus()) + "'" + ","
         + "STUD_SURNAME=" + "'" + penDemographicsEntity.getStudSurname() + "'" + ","
         + "MERGE_TO_DATE="  + getMergeToDate(penDemographicsEntity.getMergeToDate())  + ","
+        + "MERGE_TO_CODE=" + "'" + (penDemographicsEntity.getMergeToCode() == null ? "" : penDemographicsEntity.getMergeToCode()) + "'" + ","
         + "STUD_TRUE_NO=" + "'" + (penDemographicsEntity.getStudentTrueNo() == null ? "" : penDemographicsEntity.getStudentTrueNo()) + "'" + ","
         + "UPDATE_DATE=" + "TO_DATE('" + penDemographicsEntity.getUpdateDate() + "'" + ", 'YYYY-MM-DD HH24:MI:SS'),"
         + "UPDATE_USER_NAME=" + "'" + penDemographicsEntity.getUpdateUser() + "'" + ","
