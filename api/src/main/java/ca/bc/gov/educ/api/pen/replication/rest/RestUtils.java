@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 import java.util.Map;
