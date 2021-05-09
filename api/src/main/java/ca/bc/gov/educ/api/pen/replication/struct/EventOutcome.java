@@ -28,5 +28,6 @@ public enum EventOutcome {
    * Merge deleted event outcome.
    */
   MERGE_DELETED,
-  STUDENT_NOT_FOUND
+  STUDENT_NOT_FOUND,
+  STUDENTS_FOUND
 }

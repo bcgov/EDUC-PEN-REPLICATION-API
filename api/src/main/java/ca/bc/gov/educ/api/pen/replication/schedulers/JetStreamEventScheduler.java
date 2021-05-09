@@ -40,7 +40,7 @@ public class JetStreamEventScheduler {
   }
 
   @Scheduled(cron = "${cron.scheduled.process.events.stan}") // every 5 minutes
-  @SchedulerLock(name = "PROCESS_CHOREOGRAPHED_EVENTS_FROM_STAN", lockAtLeastFor = "${cron.scheduled.process.events.stan.lockAtLeastFor}", lockAtMostFor = "${cron.scheduled.process.events.stan.lockAtMostFor}")
+  @SchedulerLock(name = "PROCESS_CHOREOGRAPHED_EVENTS_FROM_JET_STREAM", lockAtLeastFor = "${cron.scheduled.process.events.stan.lockAtLeastFor}", lockAtMostFor = "${cron.scheduled.process.events.stan.lockAtMostFor}")
   public void findAndProcessEvents() {
     LockAssert.assertLocked();
     final var results = this.eventRepository.findAllByEventStatusOrderByCreateDate(DB_COMMITTED.toString());

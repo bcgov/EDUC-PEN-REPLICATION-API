@@ -57,9 +57,10 @@ public class RestUtils {
       }
       final List<Student> students = this.objectMapper.readValue(responseEvent.getEventPayload(), new TypeReference<>() {
       });
+      log.info("got response from STUDENT_API found :: {} students", students.size());
       return students.stream().collect(Collectors.toConcurrentMap(Student::getStudentID, Function.identity()));
     } catch (final Exception e) {
-      throw new PenReplicationAPIRuntimeException("Student not found for , " + studentIDs);
+      throw new PenReplicationAPIRuntimeException("Student not found for , " + studentIDs +" :: "+ e.getMessage());
     }
   }
 }
