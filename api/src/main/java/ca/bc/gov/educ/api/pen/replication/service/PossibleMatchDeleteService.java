@@ -5,6 +5,7 @@ import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.PossibleMatch;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +13,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventStatus.PROCESSED;
@@ -67,15 +69,6 @@ public class PossibleMatchDeleteService extends BaseService {
     }
   }
 
-  /**
-   * Gets student true pen number.
-   *
-   * @param studentID the true student id
-   * @return the student true number
-   */
-  private String getStudentPen(String studentID) {
-    return restUtils.getStudentPen(studentID).orElseThrow();
-  }
 
 
   @Override
@@ -84,8 +77,12 @@ public class PossibleMatchDeleteService extends BaseService {
   }
 
   private String buildDelete(PossibleMatch possibleMatch) {
+    final List<String> studentIDs = new ArrayList<>();
+    studentIDs.add(possibleMatch.getStudentID());
+    studentIDs.add(possibleMatch.getMatchedStudentID());
+    val studentMap = restUtils.getStudentsByID(studentIDs);
     return "delete from pen_twins where PEN_TWIN1 = '"
-        + getStudentPen(possibleMatch.getStudentID()) + "'" +
-        " AND PEN_TWIN2 = '" + getStudentPen(possibleMatch.getMatchedStudentID()) + "'";
+        + studentMap.get(possibleMatch.getStudentID()).getPen() + "'" +
+        " AND PEN_TWIN2 = '" + studentMap.get(possibleMatch.getMatchedStudentID()).getPen() + "'";
   }
 }

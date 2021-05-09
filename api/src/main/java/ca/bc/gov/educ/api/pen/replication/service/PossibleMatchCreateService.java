@@ -7,6 +7,7 @@ import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.BaseRequest;
 import ca.bc.gov.educ.api.pen.replication.struct.PossibleMatch;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventStatus.PROCESSED;
@@ -69,15 +71,6 @@ public class PossibleMatchCreateService extends BaseService {
     }
   }
 
-  /**
-   * Gets student true pen number.
-   *
-   * @param studentID the true student id
-   * @return the student true number
-   */
-  private String getStudentPen(String studentID) {
-    return restUtils.getStudentPen(studentID).orElseThrow();
-  }
 
 
   @Override
@@ -86,9 +79,13 @@ public class PossibleMatchCreateService extends BaseService {
   }
 
   private String buildInsert(PossibleMatch possibleMatch) {
+    final List<String> studentIDs = new ArrayList<>();
+    studentIDs.add(possibleMatch.getStudentID());
+    studentIDs.add(possibleMatch.getMatchedStudentID());
+    val studentMap = restUtils.getStudentsByID(studentIDs);
     return "insert into pen_twins (PEN_TWIN1, PEN_TWIN2, TWIN_REASON, RUN_DATE, TWIN_DATE, TWIN_USER_ID) values (" +
-        "'" + getStudentPen(possibleMatch.getStudentID()) + "'" + "," +
-        "'" + getStudentPen(possibleMatch.getMatchedStudentID()) + "'" + "," +
+        "'" + studentMap.get(possibleMatch.getStudentID()).getPen() + "'" + "," +
+        "'" + studentMap.get(possibleMatch.getMatchedStudentID()).getPen() + "'" + "," +
         "'" + MatchReasonCodes.AU.toString() + "'" + "," +
         "'" + possibleMatch.getCreateDate().substring(0,10).replaceAll("-", "") + "'" + "," +
         "'" + possibleMatch.getCreateDate().substring(0,10).replaceAll("-", "") + "'" + "," +

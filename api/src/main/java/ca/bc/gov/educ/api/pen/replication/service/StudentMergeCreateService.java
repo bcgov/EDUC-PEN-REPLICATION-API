@@ -6,6 +6,7 @@ import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.BaseRequest;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentMerge;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventStatus.PROCESSED;
@@ -68,15 +70,6 @@ public class StudentMergeCreateService extends BaseService {
     }
   }
 
-  /**
-   * Gets student true pen number.
-   *
-   * @param trueStudentID the true student id
-   * @return the student true number
-   */
-  private String getStudentPen(String trueStudentID) {
-    return restUtils.getStudentPen(trueStudentID).orElseThrow();
-  }
 
 
   @Override
@@ -85,9 +78,13 @@ public class StudentMergeCreateService extends BaseService {
   }
 
   private String buildInsert(StudentMerge studentMerge) {
+    final List<String> studentIDs = new ArrayList<>();
+    studentIDs.add(studentMerge.getStudentID());
+    studentIDs.add(studentMerge.getMergeStudentID());
+    val studentMap = restUtils.getStudentsByID(studentIDs);
     return "insert into pen_merges (STUD_NO, STUD_TRUE_NO) values (" +
-        "'" + getStudentPen(studentMerge.getStudentID()) + "'" + "," +
-        "'" + getStudentPen(studentMerge.getMergeStudentID()) + "'" +
+        "'" + studentMap.get(studentMerge.getStudentID()).getPen() + "'" + "," +
+        "'" + studentMap.get(studentMerge.getMergeStudentID()).getPen() + "'" +
         ")";
   }
 }

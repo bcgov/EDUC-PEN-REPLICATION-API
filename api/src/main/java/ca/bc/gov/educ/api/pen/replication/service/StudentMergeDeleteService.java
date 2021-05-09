@@ -6,6 +6,7 @@ import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.BaseRequest;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentMerge;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventStatus.PROCESSED;
@@ -68,15 +70,6 @@ public class StudentMergeDeleteService extends BaseService {
     }
   }
 
-  /**
-   * Gets student true pen number.
-   *
-   * @param studentID the true student id
-   * @return the student PEN
-   */
-  private String getStudentPen(String studentID) {
-    return restUtils.getStudentPen(studentID).orElseThrow();
-  }
 
 
   @Override
@@ -85,8 +78,12 @@ public class StudentMergeDeleteService extends BaseService {
   }
 
   private String buildInsert(StudentMerge studentMerge) {
+    final List<String> studentIDs = new ArrayList<>();
+    studentIDs.add(studentMerge.getStudentID());
+    studentIDs.add(studentMerge.getMergeStudentID());
+    val studentMap = restUtils.getStudentsByID(studentIDs);
     return "delete from pen_merges where STUD_NO = '"
-            + getStudentPen(studentMerge.getStudentID()) + "'" +
-            " AND STUD_TRUE_NO = '" + getStudentPen(studentMerge.getMergeStudentID()) + "'";
+            + studentMap.get(studentMerge.getStudentID()).getPen() + "'" +
+            " AND STUD_TRUE_NO = '" + studentMap.get(studentMerge.getMergeStudentID()).getPen() + "'";
   }
 }
