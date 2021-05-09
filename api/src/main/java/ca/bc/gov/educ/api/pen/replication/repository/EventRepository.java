@@ -12,5 +12,5 @@ import java.util.UUID;
 public interface EventRepository extends JpaRepository<Event, UUID> {
   Optional<Event> findByEventId(UUID eventId);
 
-  List<Event> findAllByEventStatus(String eventStatus);
+  List<Event> findAllByEventStatusOrderByCreateDate(String eventStatus);
 }
