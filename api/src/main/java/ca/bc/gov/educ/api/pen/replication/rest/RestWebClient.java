@@ -2,6 +2,7 @@ package ca.bc.gov.educ.api.pen.replication.rest;
 
 import ca.bc.gov.educ.api.pen.replication.properties.ApplicationProperties;
 import lombok.val;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -41,7 +42,8 @@ public class RestWebClient {
    * @return the web client
    */
   @Bean
-  WebClient webClient() {
+  @Autowired
+  WebClient webClient(final WebClient.Builder builder) {
     val clientRegistryRepo = new InMemoryReactiveClientRegistrationRepository(ClientRegistration
         .withRegistrationId(props.getClientID())
         .tokenUri(props.getTokenURL())
@@ -54,9 +56,9 @@ public class RestWebClient {
         new AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager(clientRegistryRepo, clientService);
     val oauthFilter = new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
     oauthFilter.setDefaultClientRegistrationId(props.getClientID());
-    DefaultUriBuilderFactory factory = new DefaultUriBuilderFactory();
+    val factory = new DefaultUriBuilderFactory();
     factory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.NONE);
-    return WebClient.builder()
+    return builder
         .uriBuilderFactory(factory)
         .filter(oauthFilter)
         .build();

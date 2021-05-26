@@ -9,10 +9,10 @@ import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentUpdate;
 import ca.bc.gov.educ.api.pen.replication.util.ReplicationUtils;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import java.time.LocalDateTime;
@@ -69,10 +69,10 @@ public class StudentUpdateService extends BaseService {
    */
   @Override
   public <T extends Object> void processEvent(final T request, final Event event) {
-    final EntityManager em = this.emf.createEntityManager();
-    final StudentUpdate studentUpdate = (StudentUpdate) request;
-    final PenDemographicsEntity penDemographicsEntity = getPenDemographicsEntity(studentUpdate);
-    final var existingPenDemogRecord = penDemogRepository.findById(StringUtils.rightPad(penDemographicsEntity.getStudNo(), 10));
+    val em = this.emf.createEntityManager();
+    val studentUpdate = (StudentUpdate) request;
+    val penDemographicsEntity = this.getPenDemographicsEntity(studentUpdate);
+    val existingPenDemogRecord = this.penDemogRepository.findById(StringUtils.rightPad(penDemographicsEntity.getStudNo(), 10));
 
     final EntityTransaction tx = em.getTransaction();
 
@@ -80,23 +80,23 @@ public class StudentUpdateService extends BaseService {
       // below timeout is in milli seconds, so it is 10 seconds.
       if (existingPenDemogRecord.isPresent()) {
         if (StringUtils.isNotBlank(studentUpdate.getTrueStudentID()) && StringUtils.isBlank(existingPenDemogRecord.get().getStudentTrueNo())) {
-          penDemographicsEntity.setStudentTrueNo(getStudentPen(studentUpdate.getTrueStudentID()));
+          penDemographicsEntity.setStudentTrueNo(this.getStudentPen(studentUpdate.getTrueStudentID()));
           penDemographicsEntity.setMergeToDate(studentUpdate.getUpdateDate());
-          penDemographicsEntity.setMergeToCode("MINISTRY");
+          penDemographicsEntity.setMergeToCode("MI");
         } else if (StringUtils.isBlank(studentUpdate.getTrueStudentID()) && StringUtils.isNotBlank(existingPenDemogRecord.get().getStudentTrueNo())) {
           penDemographicsEntity.setStudentTrueNo(null);
           penDemographicsEntity.setMergeToDate(null);
           penDemographicsEntity.setMergeToCode(null);
         }
         tx.begin();
-        em.createNativeQuery(buildUpdate(penDemographicsEntity)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
+        em.createNativeQuery(this.buildUpdate(penDemographicsEntity)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
         tx.commit();
       }
-      final var existingEvent = eventRepository.findByEventId(event.getEventId());
-      existingEvent.ifPresent(record -> {
-        record.setEventStatus(PROCESSED.toString());
-        record.setUpdateDate(LocalDateTime.now());
-        eventRepository.save(record);
+      final var existingEvent = this.eventRepository.findByEventId(event.getEventId());
+      existingEvent.ifPresent(eventRecord -> {
+        eventRecord.setEventStatus(PROCESSED.toString());
+        eventRecord.setUpdateDate(LocalDateTime.now());
+        this.eventRepository.save(eventRecord);
       });
     } catch (final Exception e) {
       log.error("Error occurred saving entity " + e.getMessage());
@@ -117,7 +117,7 @@ public class StudentUpdateService extends BaseService {
   private String getStudentPen(final String trueStudentID) {
     final List<String> studentIDs = new ArrayList<>();
     studentIDs.add(trueStudentID);
-    return restUtils.getStudentsByID(studentIDs).get(trueStudentID).getPen();
+    return this.restUtils.getStudentsByID(studentIDs).get(trueStudentID).getPen();
   }
 
   /**
@@ -128,8 +128,8 @@ public class StudentUpdateService extends BaseService {
    */
   private PenDemographicsEntity getPenDemographicsEntity(final StudentUpdate studentUpdate) {
     final PenDemographicsEntity penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(studentUpdate);
-    penDemographicsEntity.setCreateDate(formatDateTime(penDemographicsEntity.getCreateDate()));
-    penDemographicsEntity.setUpdateDate(formatDateTime(penDemographicsEntity.getUpdateDate()));
+    penDemographicsEntity.setCreateDate(this.formatDateTime(penDemographicsEntity.getCreateDate()));
+    penDemographicsEntity.setUpdateDate(this.formatDateTime(penDemographicsEntity.getUpdateDate()));
     penDemographicsEntity.setStudBirth(StringUtils.replace(penDemographicsEntity.getStudBirth(), "-", ""));
     return penDemographicsEntity;
   }
@@ -154,7 +154,7 @@ public class StudentUpdateService extends BaseService {
       + "STUD_SEX=" + "'" + penDemographicsEntity.getStudSex() + "'" + ","
       + "STUD_STATUS=" + "'" + (penDemographicsEntity.getStudStatus() == null ? "" : penDemographicsEntity.getStudStatus()) + "'" + ","
       + "STUD_SURNAME=" + "'" + penDemographicsEntity.getStudSurname() + "'" + ","
-      + "MERGE_TO_DATE=" + getMergeToDate(penDemographicsEntity.getMergeToDate()) + ","
+      + "MERGE_TO_DATE=" + this.getMergeToDate(penDemographicsEntity.getMergeToDate()) + ","
       + "MERGE_TO_CODE=" + "'" + (penDemographicsEntity.getMergeToCode() == null ? "" : penDemographicsEntity.getMergeToCode()) + "'" + ","
       + "STUD_TRUE_NO=" + "'" + (penDemographicsEntity.getStudentTrueNo() == null ? "" : penDemographicsEntity.getStudentTrueNo()) + "'" + ","
       + "UPDATE_DATE=" + "TO_DATE('" + penDemographicsEntity.getUpdateDate() + "'" + ", 'YYYY-MM-DD HH24:MI:SS'),"
