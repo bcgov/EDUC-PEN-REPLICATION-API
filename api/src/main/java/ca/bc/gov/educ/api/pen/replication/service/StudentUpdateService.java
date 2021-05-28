@@ -89,7 +89,7 @@ public class StudentUpdateService extends BaseService {
           penDemographicsEntity.setMergeToCode(null);
         }
         tx.begin();
-        var result = em.createNativeQuery(this.buildUpdate(penDemographicsEntity)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
+        em.createNativeQuery(this.buildUpdate(penDemographicsEntity)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
         tx.commit();
       }
       final var existingEvent = this.eventRepository.findByEventId(event.getEventId());
