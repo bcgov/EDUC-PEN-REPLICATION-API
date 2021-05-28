@@ -24,3 +24,5 @@ hs_err_pid*
 /api/target
 /api/.idea
 /api/*.iml
+
+.idea/
