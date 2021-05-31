@@ -1,6 +1,6 @@
 package ca.bc.gov.educ.api.pen.replication.struct;
 
-import ca.bc.gov.educ.api.pen.replication.constants.MatchReasonCodes;
+import ca.bc.gov.educ.api.pen.replication.constants.MatchReasonCode;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,7 +37,7 @@ public class PossibleMatch extends BaseRequest {
    * The Match reason code.
    */
   @NotNull
-  MatchReasonCodes matchReasonCode;
+  MatchReasonCode matchReasonCode;
   /**
    * The Create user.
    */
