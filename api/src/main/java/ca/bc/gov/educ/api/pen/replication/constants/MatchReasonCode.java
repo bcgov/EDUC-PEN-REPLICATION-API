@@ -7,13 +7,13 @@ import lombok.Getter;
  */
 public enum MatchReasonCode {
 
-  PENMATCH("PENMATCH", "PENMATCH"),
+  PENMATCH("AU", "PENMATCH"),
 
-  PENCREATE("PENCREATE", "PENCREATE"),
+  PENCREATE("AU", "PENCREATE"),
 
   DEMERGE("DM", "DEMERGE"),
 
-  SPLIT("SPLIT", "SPLIT"),
+  SPLIT("AU", "SPLIT"),
 
   AU("AU", "AU"),
 
