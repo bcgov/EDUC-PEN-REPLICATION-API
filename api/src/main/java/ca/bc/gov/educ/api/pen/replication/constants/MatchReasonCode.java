@@ -7,13 +7,13 @@ import lombok.Getter;
  */
 public enum MatchReasonCode {
 
-  PENMATCH("AU", "PENMATCH"),
+  PENMATCH("PENMATCH", "AU"),
 
-  PENCREATE("AU", "PENCREATE"),
+  PENCREATE("PENCREATE", "AU" ),
 
-  DEMERGE("DM", "DEMERGE"),
+  DEMERGE("DEMERGE", "DM"),
 
-  SPLIT("AU", "SPLIT"),
+  SPLIT("SPLIT", "AU" ),
 
   AU("AU", "AU"),
 
@@ -23,7 +23,7 @@ public enum MatchReasonCode {
 
   IF("IF", "IF"),
 
-  MI("MI", "MINISTRY"),
+  MI("MINISTRY", "MI"),
 
   SC("SC", "SC"),
 
@@ -38,7 +38,7 @@ public enum MatchReasonCode {
   @Getter
   private final String prrCode;
 
-  MatchReasonCode(String oldCode, String prrCode) {
+  MatchReasonCode(String prrCode, String oldCode) {
     this.oldCode = oldCode;
     this.prrCode = prrCode;
   }
