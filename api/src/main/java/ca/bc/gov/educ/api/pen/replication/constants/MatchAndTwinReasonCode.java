@@ -5,7 +5,7 @@ import lombok.Getter;
 /**
  * The enum Match reason codes.
  */
-public enum MatchReasonCode {
+public enum MatchAndTwinReasonCode {
 
   PENMATCH("PENMATCH", "AU"),
 
@@ -38,7 +38,7 @@ public enum MatchReasonCode {
   @Getter
   private final String prrCode;
 
-  MatchReasonCode(String prrCode, String oldCode) {
+  MatchAndTwinReasonCode(String prrCode, String oldCode) {
     this.oldCode = oldCode;
     this.prrCode = prrCode;
   }

@@ -1,10 +1,10 @@
 package ca.bc.gov.educ.api.pen.replication.service;
 
-import ca.bc.gov.educ.api.pen.replication.constants.MatchReasonCode;
+import ca.bc.gov.educ.api.pen.replication.constants.MatchAndTwinReasonCode;
+import ca.bc.gov.educ.api.pen.replication.constants.MatchReasonCodes;
 import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
-import ca.bc.gov.educ.api.pen.replication.struct.BaseRequest;
 import ca.bc.gov.educ.api.pen.replication.struct.PossibleMatch;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -94,10 +94,10 @@ public class PossibleMatchCreateService extends BaseService {
         ")";
   }
 
-  private MatchReasonCode findByPrrMatchCode(final MatchReasonCode matchCode) {
+  private MatchAndTwinReasonCode findByPrrMatchCode(final MatchReasonCodes matchCode) {
     if(matchCode == null){
-      return MatchReasonCode.AU;
+      return MatchAndTwinReasonCode.AU;
     }
-    return Arrays.stream(MatchReasonCode.values()).filter(value -> value.getPrrCode().equals(matchCode.getPrrCode())).findFirst().orElse(MatchReasonCode.AU);
+    return Arrays.stream(MatchAndTwinReasonCode.values()).filter(value -> value.getPrrCode().equals(matchCode.toString())).findFirst().orElse(MatchAndTwinReasonCode.AU);
   }
 }
