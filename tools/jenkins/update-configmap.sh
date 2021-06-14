@@ -53,10 +53,11 @@ FLB_CONFIG="[SERVICE]
    Log_Level    debug
    HTTP_Server   On
    HTTP_Listen   0.0.0.0
-   HTTP_Port     2020
+   Parsers_File parsers.conf
 [INPUT]
    Name   tail
    Path   /mnt/log/*
+   Parser docker
    Mem_Buf_Limit 20MB
 [FILTER]
    Name record_modifier
@@ -75,6 +76,11 @@ FLB_CONFIG="[SERVICE]
    Message_Key $APP_NAME
    Splunk_Token $SPLUNK_TOKEN
 "
+PARSER_CONFIG="
+[PARSER]
+    Name        docker
+    Format      json
+"
 
 echo Creating config map "$APP_NAME"-config-map
 oc create -n "$PEN_NAMESPACE"-"$envValue" configmap "$APP_NAME"-config-map --from-literal=TZ=$TZVALUE --from-literal=STUDENT_API_URL="http://student-api-master.$COMMON_NAMESPACE-$envValue.svc.cluster.local:8080/api/v1/student" --from-literal=TOKEN_URL=https://$SOAM_KC/auth/realms/$SOAM_KC_REALM_ID/protocol/openid-connect/token --from-literal=JDBC_URL=$DB_JDBC_CONNECT_STRING --from-literal=ORACLE_USERNAME="$DB_USER" --from-literal=ORACLE_PASSWORD="$DB_PWD" --from-literal=SPRING_SECURITY_LOG_LEVEL=INFO --from-literal=SPRING_WEB_LOG_LEVEL=INFO --from-literal=APP_LOG_LEVEL=INFO --from-literal=SPRING_BOOT_AUTOCONFIG_LOG_LEVEL=INFO --from-literal=SPRING_SHOW_REQUEST_DETAILS=false --from-literal=NATS_URL="$NATS_URL" --from-literal=NATS_CLUSTER="$NATS_CLUSTER" --from-literal=CRON_SCHEDULED_PROCESS_EVENTS_STAN="0 0/5 * * * *" --from-literal=CRON_SCHEDULED_PROCESS_EVENTS_STAN_LOCK_AT_LEAST_FOR="PT4M" --from-literal=CRON_SCHEDULED_PROCESS_EVENTS_STAN_LOCK_AT_MOST_FOR="PT4M" --from-literal=TOKEN_ISSUER_URL="https://$SOAM_KC/auth/realms/$SOAM_KC_REALM_ID" --from-literal=CLIENT_ID="pen-replication-api-service" --from-literal=CLIENT_SECRET="$PR_APIServiceClientSecret" --from-literal=NATS_MAX_RECONNECT=60 --from-literal=HIBERNATE_SQL_LOG_LEVEL=INFO --from-literal=HIBERNATE_PARAM_LOG_LEVEL=INFO --from-literal=DB_CONNECTION_MAX_POOL_SIZE=4 --from-literal=DB_CONNECTION_MIN_IDLE=4 --dry-run -o yaml | oc apply -f -
@@ -85,4 +91,4 @@ oc project $PEN_NAMESPACE-$envValue
 oc set env --from=configmap/$APP_NAME-config-map dc/$APP_NAME-main
 
 echo Creating config map "$APP_NAME"-flb-sc-config-map
-oc create -n "$PEN_NAMESPACE"-"$envValue" configmap "$APP_NAME"-flb-sc-config-map --from-literal=fluent-bit.conf="$FLB_CONFIG" --dry-run -o yaml | oc apply -f -
+oc create -n "$PEN_NAMESPACE"-"$envValue" configmap "$APP_NAME"-flb-sc-config-map --from-literal=fluent-bit.conf="$FLB_CONFIG" --from-literal=parsers.conf="$PARSER_CONFIG" --dry-run -o yaml | oc apply -f -
