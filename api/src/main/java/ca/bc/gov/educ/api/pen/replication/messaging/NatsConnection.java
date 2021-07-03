@@ -7,6 +7,7 @@ import io.nats.client.ConnectionListener;
 import io.nats.client.Nats;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.jboss.threads.EnhancedQueueExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -43,27 +44,27 @@ public class NatsConnection implements Closeable {
   /**
    * Connect to nats connection.
    *
-   * @param stanUrl       the stan url
+   * @param natsUrl       the stan url
    * @param maxReconnects the max reconnects
    * @return the connection
    * @throws IOException          the io exception
    * @throws InterruptedException the interrupted exception
    */
-  private Connection connectToNats(final String stanUrl, final int maxReconnects) throws IOException, InterruptedException {
-    final io.nats.client.Options natsOptions = new io.nats.client.Options.Builder()
-        .connectionListener(this::connectionListener)
-        .maxPingsOut(5)
-        .oldRequestStyle()
-        .pingInterval(Duration.ofSeconds(2))
-        .connectionName("PEN-REPLICATION-API")
-        .connectionTimeout(Duration.ofSeconds(5))
-        .executor(new EnhancedQueueExecutor.Builder()
-            .setThreadFactory(new ThreadFactoryBuilder().setNameFormat("core-nats-%d").build())
-            .setCorePoolSize(10).setMaximumPoolSize(50).setKeepAliveTime(Duration.ofMillis(500)).build())
-        .maxReconnects(maxReconnects)
-        .reconnectWait(Duration.ofSeconds(2))
-        .servers(new String[]{stanUrl})
-        .build();
+  private Connection connectToNats(final String natsUrl, final int maxReconnects) throws IOException, InterruptedException {
+    val natsOptions = new io.nats.client.Options.Builder()
+      .connectionListener(this::connectionListener)
+      .maxPingsOut(5)
+      .oldRequestStyle()
+      .pingInterval(Duration.ofSeconds(2))
+      .connectionName("PEN-REPLICATION-API")
+      .connectionTimeout(Duration.ofSeconds(5))
+      .executor(new EnhancedQueueExecutor.Builder()
+        .setThreadFactory(new ThreadFactoryBuilder().setNameFormat("core-nats-%d").build())
+        .setCorePoolSize(10).setMaximumPoolSize(50).setKeepAliveTime(Duration.ofMillis(500)).build())
+      .maxReconnects(maxReconnects)
+      .reconnectWait(Duration.ofSeconds(2))
+      .servers(new String[]{natsUrl})
+      .build();
     return Nats.connect(natsOptions);
   }
 
@@ -74,7 +75,6 @@ public class NatsConnection implements Closeable {
    * @param events     the events
    */
   private void connectionListener(final Connection connection, final ConnectionListener.Events events) {
-    connection.getServers().forEach(log::info);
     log.info("NATS -> {}", events.toString());
   }
 
@@ -93,6 +93,11 @@ public class NatsConnection implements Closeable {
     }
   }
 
+  /**
+   * Connection connection.
+   *
+   * @return the connection
+   */
   @Bean
   public Connection connection() {
     return this.natsCon;

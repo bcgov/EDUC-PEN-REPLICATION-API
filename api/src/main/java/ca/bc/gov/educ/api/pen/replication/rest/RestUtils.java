@@ -36,6 +36,7 @@ public class RestUtils {
   /**
    * Instantiates a new Rest utils.
    *
+   * @param messagePublisher the message publisher
    */
   @Autowired
   public RestUtils(final MessagePublisher messagePublisher) {
@@ -43,6 +44,12 @@ public class RestUtils {
   }
 
 
+  /**
+   * Gets students by id.
+   *
+   * @param studentIDs the student i ds
+   * @return the students by id
+   */
   @SneakyThrows(JsonProcessingException.class)
   @Retryable(value = {Exception.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
   public Map<String, Student> getStudentsByID(final List<String> studentIDs) {

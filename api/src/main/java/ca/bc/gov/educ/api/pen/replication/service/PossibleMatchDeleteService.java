@@ -2,6 +2,7 @@ package ca.bc.gov.educ.api.pen.replication.service;
 
 import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
+import ca.bc.gov.educ.api.pen.replication.repository.PenTwinTransactionRepository;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.PossibleMatch;
 import lombok.extern.slf4j.Slf4j;
@@ -11,12 +12,8 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
-import static ca.bc.gov.educ.api.pen.replication.constants.EventStatus.PROCESSED;
 import static ca.bc.gov.educ.api.pen.replication.struct.EventType.DELETE_POSSIBLE_MATCH;
 
 /**
@@ -24,51 +21,26 @@ import static ca.bc.gov.educ.api.pen.replication.struct.EventType.DELETE_POSSIBL
  */
 @Service
 @Slf4j
-public class PossibleMatchDeleteService extends BaseService {
-  private final EntityManagerFactory emf;
-  private final EventRepository eventRepository;
-  /**
-   * The Rest utils.
-   */
-  private final RestUtils restUtils;
+public class PossibleMatchDeleteService extends BasePossibleMatchService {
 
+
+  /**
+   * Instantiates a new Possible match delete service.
+   *
+   * @param emf                          the emf
+   * @param eventRepository              the event repository
+   * @param restUtils                    the rest utils
+   * @param penTwinTransactionRepository the pen twin transaction repository
+   */
   @Autowired
-  public PossibleMatchDeleteService(EntityManagerFactory emf, EventRepository eventRepository, RestUtils restUtils) {
-    this.emf = emf;
-    this.eventRepository = eventRepository;
-    this.restUtils = restUtils;
+  public PossibleMatchDeleteService(final EntityManagerFactory emf, final EventRepository eventRepository, final RestUtils restUtils, final PenTwinTransactionRepository penTwinTransactionRepository) {
+    super(eventRepository, emf, restUtils, penTwinTransactionRepository);
   }
 
   @Override
-  public <T extends Object> void processEvent(T request, Event event) {
-    List<PossibleMatch> possibleMatchList = (List<PossibleMatch>) request;
-
-    EntityManager em = this.emf.createEntityManager();
-    EntityTransaction tx = em.getTransaction();
-
-    try {
-      // below timeout is in milli seconds, so it is 10 seconds.
-      tx.begin();
-      for(PossibleMatch possibleMatch: possibleMatchList) {
-        em.createNativeQuery(buildDelete(possibleMatch)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
-      }
-      tx.commit();
-      var existingEvent = eventRepository.findByEventId(event.getEventId());
-      existingEvent.ifPresent(record -> {
-        record.setEventStatus(PROCESSED.toString());
-        record.setUpdateDate(LocalDateTime.now());
-        eventRepository.save(record);
-      });
-    } catch (Exception e) {
-      log.error("Error occurred saving entity " + e.getMessage());
-      tx.rollback();
-    } finally {
-      if (em.isOpen()) {
-        em.close();
-      }
-    }
+  public void processEvent(final List<PossibleMatch> request, final Event event) {
+    this.checkAndProcessEvent(request, event);
   }
-
 
 
   @Override
@@ -76,13 +48,18 @@ public class PossibleMatchDeleteService extends BaseService {
     return DELETE_POSSIBLE_MATCH.toString();
   }
 
-  private String buildDelete(PossibleMatch possibleMatch) {
-    final List<String> studentIDs = new ArrayList<>();
-    studentIDs.add(possibleMatch.getStudentID());
-    studentIDs.add(possibleMatch.getMatchedStudentID());
-    val studentMap = restUtils.getStudentsByID(studentIDs);
+  private String buildDelete(final PossibleMatch possibleMatch) {
+    val studentMap = this.createStudentMap(possibleMatch);
     return "delete from pen_twins where PEN_TWIN1 = '"
-        + studentMap.get(possibleMatch.getStudentID()).getPen() + "'" +
-        " AND PEN_TWIN2 = '" + studentMap.get(possibleMatch.getMatchedStudentID()).getPen() + "'";
+      + studentMap.get(possibleMatch.getStudentID()).getPen() + "'" +
+      " AND PEN_TWIN2 = '" + studentMap.get(possibleMatch.getMatchedStudentID()).getPen() + "'";
+  }
+
+
+  @Override
+  protected void buildAndExecutePreparedStatements(final EntityManager em, final List<PossibleMatch> possibleMatches) {
+    for (final PossibleMatch possibleMatch : possibleMatches) {
+      em.createNativeQuery(this.buildDelete(possibleMatch)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
+    }
   }
 }

@@ -19,6 +19,9 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.PlatformTransactionManager;
 
+/**
+ * The type Pen replication api resource application.
+ */
 @SpringBootApplication
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableCaching
@@ -65,16 +68,16 @@ public class PenReplicationApiResourceApplication {
     @Override
     public void configure(WebSecurity web) {
       web.ignoring().antMatchers("/v3/api-docs/**",
-          "/actuator/health", "/actuator/prometheus",
-          "/swagger-ui/**", "/health");
+        "/actuator/health", "/actuator/prometheus",
+        "/swagger-ui/**", "/health");
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
       http
-          .authorizeRequests()
-          .anyRequest().authenticated().and()
-          .oauth2ResourceServer().jwt();
+        .authorizeRequests()
+        .anyRequest().authenticated().and()
+        .oauth2ResourceServer().jwt();
     }
   }
 }

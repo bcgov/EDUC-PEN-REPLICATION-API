@@ -5,6 +5,14 @@ package ca.bc.gov.educ.api.pen.replication.struct;
  */
 public enum EventType {
   /**
+   * Mark saga complete event type.
+   */
+  MARK_SAGA_COMPLETE,
+  /**
+   * Initiated event type.
+   */
+  INITIATED,
+  /**
    * Create student event type.
    */
   CREATE_STUDENT,
@@ -29,5 +37,8 @@ public enum EventType {
    * Delete Merge Data.
    */
   DELETE_MERGE,
+  /**
+   * Get students event type.
+   */
   GET_STUDENTS
 }

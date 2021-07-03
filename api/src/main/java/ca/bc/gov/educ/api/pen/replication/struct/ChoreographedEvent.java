@@ -8,12 +8,18 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * The type Choreographed event.
+ */
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ChoreographedEvent {
+  /**
+   * The Event id.
+   */
   UUID eventID;
   /**
    * The Event type.

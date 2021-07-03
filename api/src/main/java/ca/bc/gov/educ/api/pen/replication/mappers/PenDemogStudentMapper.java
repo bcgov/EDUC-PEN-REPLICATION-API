@@ -8,10 +8,22 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+/**
+ * The interface Pen demog student mapper.
+ */
 @Mapper(uses = {LocalDateTimeMapper.class})
 public interface PenDemogStudentMapper {
+  /**
+   * The constant mapper.
+   */
   PenDemogStudentMapper mapper = Mappers.getMapper(PenDemogStudentMapper.class);
 
+  /**
+   * To pen demog pen demographics entity.
+   *
+   * @param studentCreate the student create
+   * @return the pen demographics entity
+   */
   @Mapping(target = "studentTrueNo", ignore = true)
   @Mapping(target = "mergeToUserName", ignore = true)
   @Mapping(target = "mergeToDate", ignore = true)
@@ -32,6 +44,12 @@ public interface PenDemogStudentMapper {
   @Mapping(source = "updateUser", target = "updateUser", defaultValue = ApplicationProperties.API_NAME)
   PenDemographicsEntity toPenDemog(StudentCreate studentCreate);
 
+  /**
+   * To pen demog pen demographics entity.
+   *
+   * @param studentUpdate the student update
+   * @return the pen demographics entity
+   */
   @Mapping(target = "studentTrueNo", ignore = true)
   @Mapping(target = "mergeToUserName", ignore = true)
   @Mapping(target = "mergeToDate", ignore = true)

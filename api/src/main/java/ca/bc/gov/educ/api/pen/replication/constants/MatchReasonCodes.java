@@ -68,5 +68,8 @@ public enum MatchReasonCodes {
    * De match reason codes.
    */
   DE,
+  /**
+   * Ministry match reason codes.
+   */
   MINISTRY
 }

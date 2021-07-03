@@ -1,18 +1,18 @@
 package ca.bc.gov.educ.api.pen.replication.helpers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 
+/**
+ * The type Log helper.
+ */
 @Slf4j
 public final class LogHelper {
-  private static final ObjectMapper mapper = new ObjectMapper();
   private static final String EXCEPTION = "Exception ";
 
   private LogHelper() {
 
   }
-
 
 
   /**
