@@ -2,10 +2,10 @@ package ca.bc.gov.educ.api.pen.replication.support;
 
 import ca.bc.gov.educ.api.pen.replication.health.PenReplicationAPICustomHealthCheck;
 import ca.bc.gov.educ.api.pen.replication.messaging.MessagePublisher;
+import ca.bc.gov.educ.api.pen.replication.messaging.MessageSubscriber;
 import ca.bc.gov.educ.api.pen.replication.messaging.NatsConnection;
 import ca.bc.gov.educ.api.pen.replication.messaging.jetstream.Subscriber;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
-import io.nats.client.Connection;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -59,5 +59,11 @@ public class MockConfiguration {
   @Primary
   public NatsConnection natsConnection() {
     return Mockito.mock(NatsConnection.class);
+  }
+
+  @Bean
+  @Primary
+  public MessageSubscriber messageSubscriber() {
+    return Mockito.mock(MessageSubscriber.class);
   }
 }
