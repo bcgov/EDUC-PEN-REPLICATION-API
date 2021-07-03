@@ -137,20 +137,16 @@ public class SagaService {
   /**
    * Create saga record in db saga.
    *
-   * @param sagaName                 the saga name
-   * @param userName                 the user name
-   * @param payload                  the payload
-   * @param penRequestBatchStudentID the pen request batch student id
-   * @param penRequestBatchID        the pen request batch id
+   * @param sagaName the saga name
+   * @param userName the user name
+   * @param payload  the payload
    * @return the saga
    */
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public Saga createSagaRecordInDB(final String sagaName, final String userName, final String payload, final UUID penRequestBatchStudentID, final UUID penRequestBatchID) {
+  public Saga createSagaRecordInDB(final String sagaName, final String userName, final String payload) {
     final var saga = Saga
       .builder()
       .payload(payload)
-      .penRequestBatchStudentID(penRequestBatchStudentID)
-      .penRequestBatchID(penRequestBatchID)
       .sagaName(sagaName)
       .status(SagaStatusEnum.STARTED.toString())
       .sagaState(EventType.INITIATED.toString())
