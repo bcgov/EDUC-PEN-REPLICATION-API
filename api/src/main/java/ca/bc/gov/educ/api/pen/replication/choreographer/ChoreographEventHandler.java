@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
-import static ca.bc.gov.educ.api.pen.replication.struct.EventType.*;
+import static ca.bc.gov.educ.api.pen.replication.constants.EventType.*;
 
 
 /**

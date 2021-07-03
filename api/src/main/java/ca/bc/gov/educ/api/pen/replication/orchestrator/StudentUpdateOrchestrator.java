@@ -1,5 +1,7 @@
 package ca.bc.gov.educ.api.pen.replication.orchestrator;
 
+import ca.bc.gov.educ.api.pen.replication.constants.SagaEnum;
+import ca.bc.gov.educ.api.pen.replication.constants.SagaTopicsEnum;
 import ca.bc.gov.educ.api.pen.replication.messaging.MessagePublisher;
 import ca.bc.gov.educ.api.pen.replication.orchestrator.base.BaseOrchestrator;
 import ca.bc.gov.educ.api.pen.replication.service.SagaService;
@@ -20,7 +22,7 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentCreateSag
    * @param messagePublisher the message publisher
    */
   protected StudentUpdateOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher) {
-    super(sagaService, messagePublisher, StudentCreateSagaData.class, "REPLICATION_STUDENT_UPDATE_SAGA", "REPLICATION_STUDENT_UPDATE_SAGA_TOPIC");
+    super(sagaService, messagePublisher, StudentCreateSagaData.class, SagaEnum.PEN_REPLICATION_STUDENT_UPDATE_SAGA.getCode(), SagaTopicsEnum.PEN_REPLICATION_STUDENT_UPDATE_SAGA_TOPIC.getCode());
   }
 
   @Override

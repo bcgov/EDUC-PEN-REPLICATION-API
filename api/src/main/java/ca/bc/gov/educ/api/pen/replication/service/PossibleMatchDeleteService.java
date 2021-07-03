@@ -14,7 +14,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import java.util.List;
 
-import static ca.bc.gov.educ.api.pen.replication.struct.EventType.DELETE_POSSIBLE_MATCH;
+import static ca.bc.gov.educ.api.pen.replication.constants.EventType.DELETE_POSSIBLE_MATCH;
 
 /**
  * This class is responsible to delete possible matches

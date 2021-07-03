@@ -1,11 +1,11 @@
 package ca.bc.gov.educ.api.pen.replication.service;
 
+import ca.bc.gov.educ.api.pen.replication.constants.EventType;
 import ca.bc.gov.educ.api.pen.replication.constants.SagaStatusEnum;
 import ca.bc.gov.educ.api.pen.replication.model.Saga;
 import ca.bc.gov.educ.api.pen.replication.model.SagaEvent;
 import ca.bc.gov.educ.api.pen.replication.repository.SagaEventRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.SagaRepository;
-import ca.bc.gov.educ.api.pen.replication.struct.EventType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;

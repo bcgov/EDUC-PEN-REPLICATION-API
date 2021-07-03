@@ -1,12 +1,12 @@
 package ca.bc.gov.educ.api.pen.replication.orchestrator.base;
 
+import ca.bc.gov.educ.api.pen.replication.constants.EventOutcome;
+import ca.bc.gov.educ.api.pen.replication.constants.EventType;
 import ca.bc.gov.educ.api.pen.replication.messaging.MessagePublisher;
 import ca.bc.gov.educ.api.pen.replication.model.Saga;
 import ca.bc.gov.educ.api.pen.replication.model.SagaEvent;
 import ca.bc.gov.educ.api.pen.replication.service.SagaService;
 import ca.bc.gov.educ.api.pen.replication.struct.Event;
-import ca.bc.gov.educ.api.pen.replication.struct.EventOutcome;
-import ca.bc.gov.educ.api.pen.replication.struct.EventType;
 import ca.bc.gov.educ.api.pen.replication.struct.NotificationEvent;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import lombok.Getter;
@@ -25,11 +25,11 @@ import java.util.*;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 
+import static ca.bc.gov.educ.api.pen.replication.constants.EventOutcome.INITIATE_SUCCESS;
+import static ca.bc.gov.educ.api.pen.replication.constants.EventOutcome.SAGA_COMPLETED;
+import static ca.bc.gov.educ.api.pen.replication.constants.EventType.INITIATED;
+import static ca.bc.gov.educ.api.pen.replication.constants.EventType.MARK_SAGA_COMPLETE;
 import static ca.bc.gov.educ.api.pen.replication.constants.SagaStatusEnum.COMPLETED;
-import static ca.bc.gov.educ.api.pen.replication.struct.EventOutcome.INITIATE_SUCCESS;
-import static ca.bc.gov.educ.api.pen.replication.struct.EventOutcome.SAGA_COMPLETED;
-import static ca.bc.gov.educ.api.pen.replication.struct.EventType.INITIATED;
-import static ca.bc.gov.educ.api.pen.replication.struct.EventType.MARK_SAGA_COMPLETE;
 import static lombok.AccessLevel.PROTECTED;
 import static lombok.AccessLevel.PUBLIC;
 

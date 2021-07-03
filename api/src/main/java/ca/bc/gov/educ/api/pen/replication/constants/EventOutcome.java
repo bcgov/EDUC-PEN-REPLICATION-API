@@ -1,4 +1,4 @@
-package ca.bc.gov.educ.api.pen.replication.struct;
+package ca.bc.gov.educ.api.pen.replication.constants;
 
 /**
  * The enum Event outcome.

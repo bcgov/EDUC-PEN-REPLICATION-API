@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static ca.bc.gov.educ.api.pen.replication.struct.EventType.ADD_POSSIBLE_MATCH;
+import static ca.bc.gov.educ.api.pen.replication.constants.EventType.ADD_POSSIBLE_MATCH;
 
 /**
  * This class is responsible to add possible matches

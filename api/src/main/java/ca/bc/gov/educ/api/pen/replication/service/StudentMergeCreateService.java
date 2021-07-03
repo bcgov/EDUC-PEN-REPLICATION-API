@@ -14,7 +14,7 @@ import javax.persistence.EntityManagerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ca.bc.gov.educ.api.pen.replication.struct.EventType.CREATE_MERGE;
+import static ca.bc.gov.educ.api.pen.replication.constants.EventType.CREATE_MERGE;
 
 /**
  * This class is responsible to add possible matches

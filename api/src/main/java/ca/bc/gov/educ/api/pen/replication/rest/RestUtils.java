@@ -1,9 +1,9 @@
 package ca.bc.gov.educ.api.pen.replication.rest;
 
+import ca.bc.gov.educ.api.pen.replication.constants.EventOutcome;
+import ca.bc.gov.educ.api.pen.replication.constants.EventType;
 import ca.bc.gov.educ.api.pen.replication.exception.PenReplicationAPIRuntimeException;
 import ca.bc.gov.educ.api.pen.replication.messaging.MessagePublisher;
-import ca.bc.gov.educ.api.pen.replication.struct.EventOutcome;
-import ca.bc.gov.educ.api.pen.replication.struct.EventType;
 import ca.bc.gov.educ.api.pen.replication.struct.Student;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;

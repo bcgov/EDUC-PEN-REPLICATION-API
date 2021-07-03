@@ -1,7 +1,7 @@
 package ca.bc.gov.educ.api.pen.replication.orchestrator.base;
 
-import ca.bc.gov.educ.api.pen.replication.struct.EventOutcome;
-import ca.bc.gov.educ.api.pen.replication.struct.EventType;
+import ca.bc.gov.educ.api.pen.replication.constants.EventOutcome;
+import ca.bc.gov.educ.api.pen.replication.constants.EventType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

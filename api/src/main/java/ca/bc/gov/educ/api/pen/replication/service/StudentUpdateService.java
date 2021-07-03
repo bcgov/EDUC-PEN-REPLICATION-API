@@ -19,7 +19,7 @@ import javax.persistence.EntityManagerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ca.bc.gov.educ.api.pen.replication.struct.EventType.UPDATE_STUDENT;
+import static ca.bc.gov.educ.api.pen.replication.constants.EventType.UPDATE_STUDENT;
 
 /**
  * The type Student update service.

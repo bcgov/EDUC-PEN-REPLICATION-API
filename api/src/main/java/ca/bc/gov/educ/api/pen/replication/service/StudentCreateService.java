@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
-import static ca.bc.gov.educ.api.pen.replication.struct.EventType.CREATE_STUDENT;
+import static ca.bc.gov.educ.api.pen.replication.constants.EventType.CREATE_STUDENT;
 
 /**
  * This class is responsible to get core student data
