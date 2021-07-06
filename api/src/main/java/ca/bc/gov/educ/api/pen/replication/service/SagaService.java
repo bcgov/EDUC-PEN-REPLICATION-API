@@ -13,7 +13,6 @@ import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.retry.annotation.Backoff;
@@ -26,8 +25,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 
 import static lombok.AccessLevel.PRIVATE;
 
@@ -142,7 +139,6 @@ public class SagaService {
    * @param payload  the payload
    * @return the saga
    */
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public Saga createSagaRecordInDB(final String sagaName, final String userName, final String payload) {
     final var saga = Saga
       .builder()
@@ -169,14 +165,7 @@ public class SagaService {
    * @return the completable future
    */
   @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-  public CompletableFuture<Page<Saga>> findAll(final Specification<Saga> specs, final Integer pageNumber, final Integer pageSize, final List<Sort.Order> sorts) {
-    return CompletableFuture.supplyAsync(() -> {
-      final Pageable paging = PageRequest.of(pageNumber, pageSize, Sort.by(sorts));
-      try {
-        return this.sagaRepository.findAll(specs, paging);
-      } catch (final Exception ex) {
-        throw new CompletionException(ex);
-      }
-    });
+  public Page<Saga> findAll(final Specification<Saga> specs, final Integer pageNumber, final Integer pageSize, final List<Sort.Order> sorts) {
+    return this.sagaRepository.findAll(specs, PageRequest.of(pageNumber, pageSize, Sort.by(sorts)));
   }
 }

@@ -1,9 +1,11 @@
 package ca.bc.gov.educ.api.pen.replication.constants;
 
+import java.io.Serializable;
+
 /**
  * The enum Match reason codes.
  */
-public enum MatchReasonCodes {
+public enum MatchReasonCodes implements Serializable {
   /**
    * Penmatch match reason codes.
    */

@@ -1,14 +1,18 @@
 package ca.bc.gov.educ.api.pen.replication.orchestrator.base;
 
-import ca.bc.gov.educ.api.pen.replication.constants.EventOutcome;
-import ca.bc.gov.educ.api.pen.replication.constants.EventType;
+import ca.bc.gov.educ.api.pen.replication.constants.*;
 import ca.bc.gov.educ.api.pen.replication.messaging.MessagePublisher;
+import ca.bc.gov.educ.api.pen.replication.model.PenDemogTransaction;
+import ca.bc.gov.educ.api.pen.replication.model.PenTwinTransaction;
 import ca.bc.gov.educ.api.pen.replication.model.Saga;
 import ca.bc.gov.educ.api.pen.replication.model.SagaEvent;
+import ca.bc.gov.educ.api.pen.replication.repository.PenDemogTransactionRepository;
+import ca.bc.gov.educ.api.pen.replication.repository.PenTwinTransactionRepository;
 import ca.bc.gov.educ.api.pen.replication.service.SagaService;
 import ca.bc.gov.educ.api.pen.replication.struct.Event;
 import ca.bc.gov.educ.api.pen.replication.struct.NotificationEvent;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +22,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceException;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -25,10 +31,8 @@ import java.util.*;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 
-import static ca.bc.gov.educ.api.pen.replication.constants.EventOutcome.INITIATE_SUCCESS;
-import static ca.bc.gov.educ.api.pen.replication.constants.EventOutcome.SAGA_COMPLETED;
-import static ca.bc.gov.educ.api.pen.replication.constants.EventType.INITIATED;
-import static ca.bc.gov.educ.api.pen.replication.constants.EventType.MARK_SAGA_COMPLETE;
+import static ca.bc.gov.educ.api.pen.replication.constants.EventOutcome.*;
+import static ca.bc.gov.educ.api.pen.replication.constants.EventType.*;
 import static ca.bc.gov.educ.api.pen.replication.constants.SagaStatusEnum.COMPLETED;
 import static lombok.AccessLevel.PROTECTED;
 import static lombok.AccessLevel.PUBLIC;
@@ -57,6 +61,7 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
    * The Next steps to execute.
    */
   protected final Map<EventType, List<SagaEventState<T>>> nextStepsToExecute = new LinkedHashMap<>();
+  private final EntityManagerFactory emf;
   /**
    * The Saga service.
    */
@@ -71,12 +76,12 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
    * The Saga name.
    */
   @Getter(PUBLIC)
-  private final String sagaName;
+  private final SagaEnum sagaName;
   /**
    * The Topic to subscribe.
    */
   @Getter(PUBLIC)
-  private final String topicToSubscribe;
+  private final SagaTopicsEnum topicToSubscribe;
   /**
    * The flag to indicate whether t
    */
@@ -86,15 +91,17 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
   /**
    * Instantiates a new Base orchestrator.
    *
+   * @param emf              the entity manager factory
    * @param sagaService      the saga service
    * @param messagePublisher the message publisher
    * @param clazz            the clazz
    * @param sagaName         the saga name
    * @param topicToSubscribe the topic to subscribe
    */
-  protected BaseOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher,
-                             final Class<T> clazz, final String sagaName,
-                             final String topicToSubscribe) {
+  protected BaseOrchestrator(final EntityManagerFactory emf, final SagaService sagaService, final MessagePublisher messagePublisher,
+                             final Class<T> clazz, final SagaEnum sagaName,
+                             final SagaTopicsEnum topicToSubscribe) {
+    this.emf = emf;
     this.sagaService = sagaService;
     this.messagePublisher = messagePublisher;
     this.clazz = clazz;
@@ -208,10 +215,9 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
    *
    * @param currentEvent the event that has occurred.
    * @param outcome      outcome of the event.
-   * @return {@link BaseOrchestrator}
    */
-  public BaseOrchestrator<T> end(final EventType currentEvent, final EventOutcome outcome) {
-    return this.registerStepToExecute(currentEvent, outcome, (T sagaData) -> true, MARK_SAGA_COMPLETE, this::markSagaComplete);
+  public void end(final EventType currentEvent, final EventOutcome outcome) {
+    this.registerStepToExecute(currentEvent, outcome, (T sagaData) -> true, MARK_SAGA_COMPLETE, this::markSagaComplete);
   }
 
   /**
@@ -274,7 +280,7 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
    * @return {@link SagaEvent}
    */
   protected SagaEvent createEventState(@NotNull final Saga saga, @NotNull final EventType eventType, @NotNull final EventOutcome eventOutcome, final String eventPayload) {
-    final var user = this.sagaName.length() > 32 ? this.sagaName.substring(0, 32) : this.sagaName;
+    final var user = this.sagaName.getCode().length() > 32 ? this.sagaName.getCode().substring(0, 32) : this.sagaName.getCode();
     return SagaEvent.builder()
       .createDate(LocalDateTime.now())
       .createUser(user)
@@ -303,8 +309,8 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
       finalEvent.setEventType(MARK_SAGA_COMPLETE);
       finalEvent.setEventOutcome(SAGA_COMPLETED);
       finalEvent.setSagaStatus(COMPLETED.toString());
-      finalEvent.setSagaName(this.getSagaName());
-      this.postMessageToTopic(this.getTopicToSubscribe(), finalEvent);
+      finalEvent.setSagaName(this.getSagaName().getCode());
+      this.postMessageToTopic(this.getTopicToSubscribe().getCode(), finalEvent);
     }
 
     val sagaEvent = this.createEventState(saga, event.getEventType(), event.getEventOutcome(), event.getEventPayload());
@@ -480,10 +486,10 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
         .sagaId(saga.getSagaId())
         .eventPayload(saga.getPayload())
         .build());
-    } catch (InterruptedException e) {
+    } catch (final InterruptedException e) {
       log.error("InterruptedException while startSaga", e);
       Thread.currentThread().interrupt();
-    } catch (TimeoutException | IOException e) {
+    } catch (final TimeoutException | IOException e) {
       log.error("Exception while startSaga", e);
     }
   }
@@ -513,8 +519,8 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
       BeanUtils.copyProperties(event, notificationEvent);
       notificationEvent.setSagaStatus(INITIATED.toString());
       notificationEvent.setReplyTo(SELF);
-      notificationEvent.setSagaName(this.getSagaName());
-      this.postMessageToTopic(this.getTopicToSubscribe(), notificationEvent);
+      notificationEvent.setSagaName(this.getSagaName().getCode());
+      this.postMessageToTopic(this.getTopicToSubscribe().getCode(), notificationEvent);
     }
   }
 
@@ -576,4 +582,89 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
    */
   public abstract void populateStepsToExecuteMap();
 
+  /**
+   * Persist data natively.
+   *
+   * @param query the query
+   * @return the int
+   */
+  protected int persistData(final String query) {
+    val em = this.emf.createEntityManager();
+    val tx = em.getTransaction();
+    var rowsAffected = 0;
+    try {
+      tx.begin();
+      rowsAffected = em.createNativeQuery(query).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
+      tx.commit();
+    } catch (final Exception e) {
+      log.error("Error occurred saving entity " + e.getMessage());
+      if (tx.isActive()) {
+        try {
+          tx.rollback();
+        } catch (final IllegalStateException | PersistenceException ex) {
+          log.error("IllegalStateException | PersistenceException", ex);
+        }
+      }
+      throw e;
+    } finally {
+      if (em.isOpen()) {
+        em.close();
+      }
+    }
+    return rowsAffected;
+  }
+
+  /**
+   * Update pen demog transaction.
+   *
+   * @param event                         the event
+   * @param saga                          the saga
+   * @param penDemogTx                    the pen demog tx
+   * @param penDemogTransactionRepository the pen demog transaction repository
+   * @throws JsonProcessingException the json processing exception
+   */
+  protected void updatePenDemogTransaction(final Event event, final Saga saga, final PenDemogTransaction penDemogTx, final PenDemogTransactionRepository penDemogTransactionRepository) throws JsonProcessingException {
+    saga.setSagaState(UPDATE_PEN_DEMOG_TRANSACTION.toString());
+    final SagaEvent eventStates = this.createEventState(saga, event.getEventType(), event.getEventOutcome(), event.getEventPayload());
+    this.getSagaService().updateAttachedSagaWithEvents(saga, eventStates);
+    val pendDemogTxOptional = penDemogTransactionRepository.findById(penDemogTx.getTransactionID());
+    if (pendDemogTxOptional.isPresent()) {
+      val penDemogTxUpdated = pendDemogTxOptional.get();
+      penDemogTxUpdated.setTransactionStatus(TransactionStatus.COMPLETE.getCode());
+      penDemogTxUpdated.setTransactionProcessedDateTime(LocalDateTime.now());
+      penDemogTransactionRepository.save(penDemogTxUpdated);
+      val nextEvent = Event.builder().sagaId(saga.getSagaId())
+        .eventType(UPDATE_PEN_DEMOG_TRANSACTION)
+        .eventOutcome(PEN_DEMOG_TRANSACTION_UPDATED)
+        .eventPayload(JsonUtil.getJsonStringFromObject(penDemogTxUpdated))
+        .build();
+      this.postMessageToTopic(this.getTopicToSubscribe().getCode(), nextEvent); // this will make it async and use pub/sub flow even though it is sending message to itself
+      log.info("responded via NATS to {} for {} Event. :: {}", this.getTopicToSubscribe(), ADD_PEN_DEMOG, saga.getSagaId());
+    } else {
+      log.error("This should not have happened as it is not expected to have a saga running without a transaction in Pen Demog Transaction. Transaction ID :: {}", penDemogTx.getTransactionID());
+    }
+  }
+
+
+  protected void updatePenTwinTransaction(final Event event, final Saga saga, final PenTwinTransaction penTwinTransaction, final PenTwinTransactionRepository penTwinTransactionRepository) throws JsonProcessingException {
+    saga.setSagaState(UPDATE_PEN_TWIN_TRANSACTION.toString());
+    final SagaEvent eventStates = this.createEventState(saga, event.getEventType(), event.getEventOutcome(), event.getEventPayload());
+    this.getSagaService().updateAttachedSagaWithEvents(saga, eventStates);
+    val penTwinTransactionOptional = penTwinTransactionRepository.findById(penTwinTransaction.getTransactionID());
+    if (penTwinTransactionOptional.isPresent()) {
+      val twinTransaction = penTwinTransactionOptional.get();
+      twinTransaction.setTransactionStatus(TransactionStatus.COMPLETE.getCode());
+      twinTransaction.setTransactionProcessedDateTime(LocalDateTime.now());
+      penTwinTransactionRepository.save(twinTransaction);
+      val nextEvent = Event.builder().sagaId(saga.getSagaId())
+        .eventType(UPDATE_PEN_TWIN_TRANSACTION)
+        .eventOutcome(PEN_TWIN_TRANSACTION_UPDATED)
+        .eventPayload(JsonUtil.getJsonStringFromObject(twinTransaction))
+        .build();
+      this.postMessageToTopic(this.getTopicToSubscribe().getCode(), nextEvent); // this will make it async and use pub/sub flow even though it is sending message to itself
+      log.info("responded via NATS to {} for {} Event. :: {}", this.getTopicToSubscribe(), ADD_PEN_DEMOG, saga.getSagaId());
+    } else {
+      log.error("This should not have happened as it is not expected to have a saga running without a transaction in Pen Demog Transaction. Transaction ID :: {}", penTwinTransaction.getTransactionID());
+    }
+  }
 }

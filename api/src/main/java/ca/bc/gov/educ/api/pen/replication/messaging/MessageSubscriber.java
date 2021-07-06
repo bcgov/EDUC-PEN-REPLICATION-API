@@ -43,8 +43,8 @@ public class MessageSubscriber {
   public MessageSubscriber(final Connection con, final List<EventHandler> eventHandlers) {
     this.connection = con;
     eventHandlers.forEach(handler -> {
-      this.handlerMap.put(handler.getTopicToSubscribe(), handler);
-      this.subscribe(handler.getTopicToSubscribe(), handler);
+      this.handlerMap.put(handler.getTopicToSubscribe().getCode(), handler);
+      this.subscribe(handler.getTopicToSubscribe().getCode(), handler);
     });
   }
 
@@ -70,7 +70,6 @@ public class MessageSubscriber {
   public MessageHandler onMessage(final EventHandler eventHandler) {
     return (Message message) -> {
       if (message != null) {
-        log.info("Message received subject :: {},  replyTo :: {}, subscriptionID :: {}", message.getSubject(), message.getReplyTo(), message.getSID());
         try {
           final var eventString = new String(message.getData());
           LogHelper.logMessagingEventDetails(eventString);

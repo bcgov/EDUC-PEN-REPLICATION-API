@@ -1,5 +1,6 @@
 package ca.bc.gov.educ.api.pen.replication.orchestrator.base;
 
+import ca.bc.gov.educ.api.pen.replication.constants.SagaEnum;
 import ca.bc.gov.educ.api.pen.replication.model.Saga;
 
 import java.io.IOException;
@@ -22,7 +23,7 @@ public interface Orchestrator {
    *
    * @return the saga name
    */
-  String getSagaName();
+  SagaEnum getSagaName();
 
   /**
    * Replay saga.

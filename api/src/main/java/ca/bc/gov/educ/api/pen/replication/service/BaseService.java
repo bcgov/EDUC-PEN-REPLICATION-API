@@ -119,7 +119,7 @@ public abstract class BaseService<T> implements EventService<T> {
    * @return true if there is a running orchestrator saga for this one.
    */
   protected boolean isEventPartOfOrchestratorSaga(final PenTwinTransactionRepository penTwinTransactionRepository, final String penTwin1, final String penTwin2) {
-    return penTwinTransactionRepository.countPenTwinTransactionByPenTwin1AndAndPenTwin2AndAndTransactionStatus(penTwin1, penTwin2, TransactionStatus.IN_PROGRESS.getCode()) > 0;
+    return penTwinTransactionRepository.countPenTwinTransactionByPenTwin1AndPenTwin2AndTransactionStatus(penTwin1, penTwin2, TransactionStatus.IN_PROGRESS.getCode()) > 0;
   }
 
   /**

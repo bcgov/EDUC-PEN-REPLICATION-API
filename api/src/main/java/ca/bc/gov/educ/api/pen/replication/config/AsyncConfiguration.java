@@ -55,4 +55,16 @@ public class AsyncConfiguration {
     threadPoolTaskScheduler.setPoolSize(5);
     return threadPoolTaskScheduler;
   }
+
+  /**
+   * Controller task executor executor.
+   *
+   * @return the executor
+   */
+  @Bean(name = "transactionTableRecordProcessor")
+  public Executor transactionTableRecordProcessor() {
+    return new EnhancedQueueExecutor.Builder()
+      .setThreadFactory(new ThreadFactoryBuilder().setNameFormat("transaction-record-processor-%d").build())
+      .setCorePoolSize(1).setMaximumPoolSize(1).build();
+  }
 }

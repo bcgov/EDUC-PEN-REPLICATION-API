@@ -4,6 +4,8 @@ import ca.bc.gov.educ.api.pen.replication.model.PenDemogTransaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * The interface Pen demog transaction repository.
  */
@@ -18,4 +20,6 @@ public interface PenDemogTransactionRepository extends JpaRepository<PenDemogTra
    * @return the long
    */
   long countPenDemogTransactionByPenAndTransactionStatus(String pen, String transactionStatus);
+
+  List<PenDemogTransaction> findAllByTransactionStatusOrderByTransactionInsertDateTime(String transactionStatus);
 }

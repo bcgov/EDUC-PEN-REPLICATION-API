@@ -1,5 +1,6 @@
 package ca.bc.gov.educ.api.pen.replication.struct.saga;
 
+import ca.bc.gov.educ.api.pen.replication.model.PenDemogTransaction;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentCreate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,4 +23,8 @@ public class StudentCreateSagaData implements Serializable {
    * The Student create.
    */
   StudentCreate studentCreate;
+  /**
+   * The Pen demog transaction.
+   */
+  PenDemogTransaction penDemogTransaction;
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 /**
  * The type Possible match.
@@ -16,7 +17,8 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PossibleMatch extends BaseRequest {
+public class PossibleMatch extends BaseRequest implements Serializable {
+  private static final long serialVersionUID = 4270771037046576398L;
   /**
    * The Possible match id.
    */

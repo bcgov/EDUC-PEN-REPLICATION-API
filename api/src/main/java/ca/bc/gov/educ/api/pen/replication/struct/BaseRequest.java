@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Null;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 
 /**
  * The type Base request.
@@ -13,7 +14,8 @@ import javax.validation.constraints.Size;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public abstract class BaseRequest {
+public abstract class BaseRequest implements Serializable {
+  private static final long serialVersionUID = 3132570181228559697L;
   /**
    * The Create user.
    */

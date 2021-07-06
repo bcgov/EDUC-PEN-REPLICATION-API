@@ -8,6 +8,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PastOrPresent;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
@@ -22,9 +23,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @Data
 @Entity
-@Table(name = "SAGA")
+@Table(name = "PEN_REPLICATION_SAGA")
 @DynamicUpdate
-public class Saga {
+public class Saga implements Serializable {
+  private static final long serialVersionUID = 317095598538964181L;
   /**
    * The Saga id.
    */

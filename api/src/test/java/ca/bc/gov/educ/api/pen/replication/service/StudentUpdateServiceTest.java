@@ -1,10 +1,10 @@
 package ca.bc.gov.educ.api.pen.replication.service;
 
 import ca.bc.gov.educ.api.pen.replication.PenReplicationApiResourceApplication;
-import ca.bc.gov.educ.api.pen.replication.model.PenDemographicsEntity;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.PenDemogRepository;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentUpdate;
+import ca.bc.gov.educ.api.pen.replication.support.TestRedisConfiguration;
 import ca.bc.gov.educ.api.pen.replication.support.TestUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.After;
@@ -16,14 +16,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Query;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {PenReplicationApiResourceApplication.class})
+@SpringBootTest(classes = {PenReplicationApiResourceApplication.class, TestRedisConfiguration.class,})
 @ActiveProfiles("test")
 public class StudentUpdateServiceTest {
 

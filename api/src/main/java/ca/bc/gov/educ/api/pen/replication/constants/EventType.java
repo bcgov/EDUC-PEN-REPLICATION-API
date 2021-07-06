@@ -40,5 +40,32 @@ public enum EventType {
   /**
    * Get students event type.
    */
-  GET_STUDENTS
+  GET_STUDENTS,
+  /**
+   * Get next pen number event type.
+   */
+  GET_NEXT_PEN_NUMBER,
+  /**
+   * Add pen demog event type.
+   */
+  ADD_PEN_DEMOG,
+  /**
+   * Update pen demog transaction event type.
+   */
+  UPDATE_PEN_DEMOG_TRANSACTION,
+  /**
+   * Update pen demog event type.
+   */
+  UPDATE_PEN_DEMOG,
+  /**
+   * Get student event type.
+   */
+  GET_STUDENT,
+  /**
+   * Add student event type.
+   */
+  ADD_STUDENT,
+  CREATE_PEN_TWINS,
+  UPDATE_PEN_TWIN_TRANSACTION,
+  DELETE_PEN_TWINS
 }

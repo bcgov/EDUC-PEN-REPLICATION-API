@@ -1,12 +1,12 @@
 package ca.bc.gov.educ.api.pen.replication.service;
 
+import ca.bc.gov.educ.api.pen.replication.helpers.PenReplicationHelper;
 import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.PenTwinTransactionRepository;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.PossibleMatch;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -48,18 +48,11 @@ public class PossibleMatchDeleteService extends BasePossibleMatchService {
     return DELETE_POSSIBLE_MATCH.toString();
   }
 
-  private String buildDelete(final PossibleMatch possibleMatch) {
-    val studentMap = this.createStudentMap(possibleMatch);
-    return "delete from pen_twins where PEN_TWIN1 = '"
-      + studentMap.get(possibleMatch.getStudentID()).getPen() + "'" +
-      " AND PEN_TWIN2 = '" + studentMap.get(possibleMatch.getMatchedStudentID()).getPen() + "'";
-  }
-
 
   @Override
   protected void buildAndExecutePreparedStatements(final EntityManager em, final List<PossibleMatch> possibleMatches) {
     for (final PossibleMatch possibleMatch : possibleMatches) {
-      em.createNativeQuery(this.buildDelete(possibleMatch)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
+      em.createNativeQuery(PenReplicationHelper.buildPenTwinDelete(possibleMatch, this.restUtils)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
     }
   }
 }

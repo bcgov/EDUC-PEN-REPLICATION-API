@@ -1,6 +1,7 @@
 package ca.bc.gov.educ.api.pen.replication.orchestrator.base;
 
 
+import ca.bc.gov.educ.api.pen.replication.constants.SagaTopicsEnum;
 import ca.bc.gov.educ.api.pen.replication.struct.Event;
 
 import java.io.IOException;
@@ -26,5 +27,5 @@ public interface EventHandler {
    *
    * @return the topic to subscribe
    */
-  String getTopicToSubscribe();
+  SagaTopicsEnum getTopicToSubscribe();
 }

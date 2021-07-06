@@ -8,6 +8,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PastOrPresent;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -20,10 +21,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @Data
 @Entity
-@Table(name = "SAGA_EVENT_STATES")
+@Table(name = "PEN_REPLICATION_SAGA_EVENT_STATES")
 @DynamicUpdate
-public class SagaEvent {
+public class SagaEvent implements Serializable {
 
+  private static final long serialVersionUID = -3204925065047239143L;
   /**
    * The Saga event id.
    */

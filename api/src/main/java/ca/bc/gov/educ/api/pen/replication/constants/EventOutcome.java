@@ -43,5 +43,38 @@ public enum EventOutcome {
   /**
    * Students found event outcome.
    */
-  STUDENTS_FOUND
+  STUDENTS_FOUND,
+  /**
+   * Next pen number retrieved event outcome.
+   */
+  NEXT_PEN_NUMBER_RETRIEVED,
+  /**
+   * Student already exist event outcome.
+   */
+  STUDENT_ALREADY_EXIST,
+  /**
+   * Pen demog added event outcome.
+   */
+  PEN_DEMOG_ADDED,
+  /**
+   * Pen demog transaction updated event outcome.
+   */
+  PEN_DEMOG_TRANSACTION_UPDATED,
+  /**
+   * Pen demog updated event outcome.
+   */
+  PEN_DEMOG_UPDATED,
+  /**
+   * Student found event outcome.
+   */
+  STUDENT_FOUND,
+  /**
+   * Student not found event outcome.
+   */
+  STUDENT_NOT_FOUND,
+
+  PEN_TWINS_CREATED,
+  PEN_TWIN_TRANSACTION_UPDATED,
+  PEN_TWINS_DELETED
+
 }
