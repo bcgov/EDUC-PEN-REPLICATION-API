@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManagerFactory;
@@ -77,7 +78,7 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
     val nextEvent = Event.builder().sagaId(saga.getSagaId())
       .eventType(CREATE_STUDENT)
       .replyTo(this.getTopicToSubscribe().getCode())
-      .eventPayload(JsonUtil.getJsonStringFromObject(studentUpdateSagaData.getStudentUpdate()))
+      .eventPayload(JsonUtil.getJsonStringFromObject(StudentMapper.mapper.toStudent(studentUpdateSagaData.getPenDemogTransaction())))
       .build();
     this.postMessageToTopic(STUDENT_API_TOPIC.getCode(), nextEvent);
     log.info("message sent to STUDENT_API_TOPIC for CREATE_STUDENT Event. :: {}", saga.getSagaId());
@@ -134,11 +135,8 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
     final SagaEvent eventStates = this.createEventState(saga, event.getEventType(), event.getEventOutcome(), event.getEventPayload());
     saga.setSagaState(UPDATE_STUDENT.toString()); // set current event as saga state.
     val studentDataFromEventResponse = JsonUtil.getJsonObjectFromString(Student.class, event.getEventPayload());
-    /*studentDataFromEventResponse.setUpdateUser(penRequestBatchUserActionsSagaData.getUpdateUser());
-    studentDataFromEventResponse.setMincode(penRequestBatchUserActionsSagaData.getMincode());
-    studentDataFromEventResponse.setLocalID(penRequestBatchUserActionsSagaData.getLocalID());
-    studentDataFromEventResponse.setGradeCode(penRequestBatchUserActionsSagaData.getGradeCode());
-    studentDataFromEventResponse.setPostalCode(penRequestBatchUserActionsSagaData.getPostalCode());*/
+    val studentUpdate = StudentMapper.mapper.toStudent(studentUpdateSagaData.getPenDemogTransaction());
+    BeanUtils.copyProperties(studentUpdate, studentDataFromEventResponse, "createDate", "createUser", "studentID", "email", "emailVerified", "trueStudentID");
     studentUpdateSagaData.getStudentUpdate().setStudentID(studentDataFromEventResponse.getStudentID());
     this.getSagaService().updateAttachedSagaWithEvents(saga, eventStates);
 
