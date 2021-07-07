@@ -73,8 +73,17 @@ public enum EventOutcome {
    */
   STUDENT_NOT_FOUND,
 
+  /**
+   * Pen twins created event outcome.
+   */
   PEN_TWINS_CREATED,
+  /**
+   * Pen twin transaction updated event outcome.
+   */
   PEN_TWIN_TRANSACTION_UPDATED,
+  /**
+   * Pen twins deleted event outcome.
+   */
   PEN_TWINS_DELETED
 
 }

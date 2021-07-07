@@ -8,6 +8,9 @@ import java.time.chrono.ChronoLocalDate;
 import java.time.chrono.ChronoLocalDateTime;
 import java.util.UUID;
 
+/**
+ * The type Saga filter specs.
+ */
 @Service
 @Slf4j
 public class SagaFilterSpecs extends BaseFilterSpecs<Saga> {

@@ -646,6 +646,15 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
   }
 
 
+  /**
+   * Update pen twin transaction.
+   *
+   * @param event                        the event
+   * @param saga                         the saga
+   * @param penTwinTransaction           the pen twin transaction
+   * @param penTwinTransactionRepository the pen twin transaction repository
+   * @throws JsonProcessingException the json processing exception
+   */
   protected void updatePenTwinTransaction(final Event event, final Saga saga, final PenTwinTransaction penTwinTransaction, final PenTwinTransactionRepository penTwinTransactionRepository) throws JsonProcessingException {
     saga.setSagaState(UPDATE_PEN_TWIN_TRANSACTION.toString());
     final SagaEvent eventStates = this.createEventState(saga, event.getEventType(), event.getEventOutcome(), event.getEventPayload());

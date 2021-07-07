@@ -65,7 +65,16 @@ public enum EventType {
    * Add student event type.
    */
   ADD_STUDENT,
+  /**
+   * Create pen twins event type.
+   */
   CREATE_PEN_TWINS,
+  /**
+   * Update pen twin transaction event type.
+   */
   UPDATE_PEN_TWIN_TRANSACTION,
+  /**
+   * Delete pen twins event type.
+   */
   DELETE_PEN_TWINS
 }

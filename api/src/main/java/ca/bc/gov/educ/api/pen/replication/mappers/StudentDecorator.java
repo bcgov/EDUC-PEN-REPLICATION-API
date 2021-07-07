@@ -4,9 +4,17 @@ import ca.bc.gov.educ.api.pen.replication.model.PenDemogTransaction;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentCreate;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentUpdate;
 
+/**
+ * The type Student decorator.
+ */
 public abstract class StudentDecorator implements StudentMapper {
   private final StudentMapper delegate;
 
+  /**
+   * Instantiates a new Student decorator.
+   *
+   * @param delegate the delegate
+   */
   protected StudentDecorator(final StudentMapper delegate) {
     this.delegate = delegate;
   }

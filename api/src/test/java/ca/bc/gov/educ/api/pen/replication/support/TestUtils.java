@@ -12,7 +12,15 @@ import java.util.UUID;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventStatus.DB_COMMITTED;
 
+/**
+ * The type Test utils.
+ */
 public class TestUtils {
+  /**
+   * Initialize base student request.
+   *
+   * @param student the student
+   */
   public static void initializeBaseStudentRequest(BaseStudent student) {
     student.setStudentID(UUID.randomUUID().toString());
     student.setPen("987654321 ");
@@ -31,6 +39,12 @@ public class TestUtils {
     student.setUpdateDate("2021-04-23 15:13:45");
   }
 
+  /**
+   * Create student create request student create.
+   *
+   * @param postalCode the postal code
+   * @return the student create
+   */
   public static StudentCreate createStudentCreateRequest(String postalCode) {
     StudentCreate student = new StudentCreate();
     TestUtils.initializeBaseStudentRequest(student);
@@ -39,6 +53,15 @@ public class TestUtils {
     return student;
   }
 
+  /**
+   * Create event event.
+   *
+   * @param eventType       the event type
+   * @param payload         the payload
+   * @param eventRepository the event repository
+   * @return the event
+   * @throws JsonProcessingException the json processing exception
+   */
   public static Event createEvent(String eventType, Object payload, EventRepository eventRepository) throws JsonProcessingException {
     var event = Event.builder()
       .eventType(eventType)

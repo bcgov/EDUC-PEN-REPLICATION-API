@@ -42,10 +42,11 @@ public class AddPossibleMatchOrchestrator extends BaseOrchestrator<PossibleMatch
   /**
    * Instantiates a new Base orchestrator.
    *
-   * @param sagaService          the saga service
-   * @param messagePublisher     the message publisher
-   * @param entityManagerFactory the entity manager factory
-   * @param restUtils            the rest utils
+   * @param sagaService                  the saga service
+   * @param messagePublisher             the message publisher
+   * @param entityManagerFactory         the entity manager factory
+   * @param restUtils                    the rest utils
+   * @param penTwinTransactionRepository the pen twin transaction repository
    */
   protected AddPossibleMatchOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher, final EntityManagerFactory entityManagerFactory, final RestUtils restUtils, final PenTwinTransactionRepository penTwinTransactionRepository) {
     super(entityManagerFactory, sagaService, messagePublisher, PossibleMatchSagaData.class, SagaEnum.PEN_REPLICATION_POSSIBLE_MATCH_CREATE_SAGA, SagaTopicsEnum.PEN_REPLICATION_POSSIBLE_MATCH_CREATE_SAGA_TOPIC);

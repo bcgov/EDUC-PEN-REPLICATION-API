@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * The type Pen demog transaction service.
+ */
 @Service
 @Slf4j
 public class PenDemogTransactionService {
@@ -16,11 +19,26 @@ public class PenDemogTransactionService {
   private final SagaService sagaService;
   private final PenDemogTransactionRepository penDemogTransactionRepository;
 
+  /**
+   * Instantiates a new Pen demog transaction service.
+   *
+   * @param sagaService                   the saga service
+   * @param penDemogTransactionRepository the pen demog transaction repository
+   */
   public PenDemogTransactionService(final SagaService sagaService, final PenDemogTransactionRepository penDemogTransactionRepository) {
     this.sagaService = sagaService;
     this.penDemogTransactionRepository = penDemogTransactionRepository;
   }
 
+  /**
+   * Create saga and update pen demog transaction saga.
+   *
+   * @param sagaName            the saga name
+   * @param userName            the user name
+   * @param payload             the payload
+   * @param penDemogTransaction the pen demog transaction
+   * @return the saga
+   */
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public Saga createSagaAndUpdatePenDemogTransaction(final String sagaName, final String userName, final String payload, final PenDemogTransaction penDemogTransaction) {
     this.penDemogTransactionRepository.findById(penDemogTransaction.getTransactionID()).ifPresent(demogTransaction -> {

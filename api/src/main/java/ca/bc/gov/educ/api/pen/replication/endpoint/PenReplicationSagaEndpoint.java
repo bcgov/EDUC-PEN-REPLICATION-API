@@ -17,9 +17,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.UUID;
 
+/**
+ * The interface Pen replication saga endpoint.
+ */
 @RequestMapping("/api/v1/pen-replication/saga")
 public interface PenReplicationSagaEndpoint {
 
+  /**
+   * Read saga response entity.
+   *
+   * @param sagaID the saga id
+   * @return the response entity
+   */
   @GetMapping("/{sagaID}")
   @PreAuthorize("hasAuthority('SCOPE_PEN_REPLICATION_READ_SAGA')")
   @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK."), @ApiResponse(responseCode = "404", description = "Not Found.")})

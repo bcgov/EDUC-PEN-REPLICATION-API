@@ -30,6 +30,9 @@ public enum SagaTopicsEnum {
    * Pen replication possible match delete saga topic saga topics enum.
    */
   PEN_REPLICATION_POSSIBLE_MATCH_DELETE_SAGA_TOPIC("PEN_REPLICATION_POSSIBLE_MATCH_DELETE_SAGA_TOPIC"),
+  /**
+   * Pen match api topic saga topics enum.
+   */
   PEN_MATCH_API_TOPIC("PEN_MATCH_API_TOPIC");
 
   @Getter

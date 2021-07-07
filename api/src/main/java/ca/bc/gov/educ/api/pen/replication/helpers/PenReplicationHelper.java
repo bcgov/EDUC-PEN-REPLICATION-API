@@ -156,6 +156,13 @@ public final class PenReplicationHelper {
     return TO_DATE + mergeToDate.substring(0, 19).replace("T", " ") + "'" + ", 'YYYY-MM-DD HH24:MI:SS')";
   }
 
+  /**
+   * Build pen twin delete string.
+   *
+   * @param possibleMatch the possible match
+   * @param restUtils     the rest utils
+   * @return the string
+   */
   public static String buildPenTwinDelete(final PossibleMatch possibleMatch, final RestUtils restUtils) {
     val studentMap = restUtils.createStudentMapFromPossibleMatch(possibleMatch);
     return "delete from pen_twins where PEN_TWIN1 = '"
@@ -163,6 +170,13 @@ public final class PenReplicationHelper {
       " AND PEN_TWIN2 = '" + studentMap.get(possibleMatch.getMatchedStudentID()).getPen() + "'";
   }
 
+  /**
+   * Build pen twin insert string.
+   *
+   * @param possibleMatch the possible match
+   * @param restUtils     the rest utils
+   * @return the string
+   */
   public static String buildPenTwinInsert(final PossibleMatch possibleMatch, final RestUtils restUtils) {
     final Map<String, Student> studentMap = restUtils.createStudentMapFromPossibleMatch(possibleMatch);
     return "insert into pen_twins (PEN_TWIN1, PEN_TWIN2, TWIN_REASON, RUN_DATE, TWIN_DATE, TWIN_USER_ID) values (" +
@@ -175,6 +189,12 @@ public final class PenReplicationHelper {
       ")";
   }
 
+  /**
+   * Build pen twin insert string.
+   *
+   * @param penTwinTransaction the pen twin transaction
+   * @return the string
+   */
   public static String buildPenTwinInsert(final PenTwinTransaction penTwinTransaction) {
     return "insert into pen_twins (PEN_TWIN1, PEN_TWIN2, TWIN_REASON, RUN_DATE, TWIN_DATE, TWIN_USER_ID) values (" +
       "'" + penTwinTransaction.getPenTwin1() + "'" + "," +
@@ -186,6 +206,12 @@ public final class PenReplicationHelper {
       ")";
   }
 
+  /**
+   * Build pen twin delete string.
+   *
+   * @param penTwinTransaction the pen twin transaction
+   * @return the string
+   */
   public static String buildPenTwinDelete(final PenTwinTransaction penTwinTransaction) {
     return "delete from pen_twins where PEN_TWIN1 = '"
       + penTwinTransaction.getPenTwin1() + "'" +
@@ -193,6 +219,12 @@ public final class PenReplicationHelper {
   }
 
 
+  /**
+   * Find by prr match code match and twin reason code.
+   *
+   * @param matchCode the match code
+   * @return the match and twin reason code
+   */
   public static MatchAndTwinReasonCode findByPrrMatchCode(final MatchReasonCodes matchCode) {
     if (matchCode == null) {
       return MatchAndTwinReasonCode.AU;
@@ -200,6 +232,12 @@ public final class PenReplicationHelper {
     return Arrays.stream(MatchAndTwinReasonCode.values()).filter(value -> value.getPrrCode().equals(matchCode.toString())).findFirst().orElse(MatchAndTwinReasonCode.AU);
   }
 
+  /**
+   * Find match reason by old match code match reason codes.
+   *
+   * @param oldMatchCode the old match code
+   * @return the match reason codes
+   */
   public static MatchReasonCodes findMatchReasonByOldMatchCode(final String oldMatchCode) {
     if (oldMatchCode == null) {
       return MatchReasonCodes.MINISTRY;

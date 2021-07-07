@@ -30,6 +30,9 @@ import java.util.concurrent.TimeUnit;
 import static ca.bc.gov.educ.api.pen.replication.constants.SagaEnum.*;
 import static ca.bc.gov.educ.api.pen.replication.constants.TransactionType.*;
 
+/**
+ * The type Transaction table records processor.
+ */
 @Service
 @Slf4j
 public class TransactionTableRecordsProcessor {
@@ -42,6 +45,16 @@ public class TransactionTableRecordsProcessor {
   private final PenDemogTransactionService penDemogTransactionService;
   private final PenTwinTransactionService penTwinTransactionService;
 
+  /**
+   * Instantiates a new Transaction table records processor.
+   *
+   * @param penTwinTransactionRepository  the pen twin transaction repository
+   * @param penDemogTransactionRepository the pen demog transaction repository
+   * @param orchestrators                 the orchestrators
+   * @param stringRedisTemplate           the string redis template
+   * @param penDemogTransactionService    the pen demog transaction service
+   * @param penTwinTransactionService     the pen twin transaction service
+   */
   public TransactionTableRecordsProcessor(final PenTwinTransactionRepository penTwinTransactionRepository, final PenDemogTransactionRepository penDemogTransactionRepository, final List<Orchestrator> orchestrators, final StringRedisTemplate stringRedisTemplate, final PenDemogTransactionService penDemogTransactionService, final PenTwinTransactionService penTwinTransactionService) {
     this.penTwinTransactionRepository = penTwinTransactionRepository;
     this.penDemogTransactionRepository = penDemogTransactionRepository;

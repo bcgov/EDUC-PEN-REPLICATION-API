@@ -21,5 +21,11 @@ public interface PenDemogTransactionRepository extends JpaRepository<PenDemogTra
    */
   long countPenDemogTransactionByPenAndTransactionStatus(String pen, String transactionStatus);
 
+  /**
+   * Find all by transaction status order by transaction insert date time list.
+   *
+   * @param transactionStatus the transaction status
+   * @return the list
+   */
   List<PenDemogTransaction> findAllByTransactionStatusOrderByTransactionInsertDateTime(String transactionStatus);
 }

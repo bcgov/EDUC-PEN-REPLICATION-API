@@ -91,6 +91,12 @@ public class RestUtils {
     return this.getStudentsByID(studentIDs).get(trueStudentID).getPen();
   }
 
+  /**
+   * Create student map from possible match map.
+   *
+   * @param possibleMatch the possible match
+   * @return the map
+   */
   public Map<String, Student> createStudentMapFromPossibleMatch(final PossibleMatch possibleMatch) {
     final List<String> studentIDs = new ArrayList<>();
     studentIDs.add(possibleMatch.getStudentID());
@@ -99,6 +105,13 @@ public class RestUtils {
   }
 
 
+  /**
+   * Create student map from pen numbers map.
+   *
+   * @param pens   the pens
+   * @param sagaId the saga id
+   * @return the map
+   */
   @SneakyThrows
   @Retryable(value = {Exception.class}, maxAttempts = 10, backoff = @Backoff(multiplier = 2, delay = 2000))
   public Map<String, Student> createStudentMapFromPenNumbers(@NonNull final List<String> pens, final UUID sagaId) {

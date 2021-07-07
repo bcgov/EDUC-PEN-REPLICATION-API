@@ -34,6 +34,9 @@ import java.util.UUID;
 
 import static lombok.AccessLevel.PRIVATE;
 
+/**
+ * The type Pen replication saga controller.
+ */
 @RestController
 @Slf4j
 public class PenReplicationSagaController implements PenReplicationSagaEndpoint {
@@ -47,6 +50,12 @@ public class PenReplicationSagaController implements PenReplicationSagaEndpoint 
   @Getter(PRIVATE)
   private final SagaFilterSpecs sagaFilterSpecs;
 
+  /**
+   * Instantiates a new Pen replication saga controller.
+   *
+   * @param sagaService     the saga service
+   * @param sagaFilterSpecs the saga filter specs
+   */
   public PenReplicationSagaController(final SagaService sagaService, final SagaFilterSpecs sagaFilterSpecs) {
     this.sagaService = sagaService;
     this.sagaFilterSpecs = sagaFilterSpecs;
@@ -83,6 +92,15 @@ public class PenReplicationSagaController implements PenReplicationSagaEndpoint 
     return null;
   }
 
+  /**
+   * Gets sort criteria.
+   *
+   * @param sortCriteriaJson the sort criteria json
+   * @param objectMapper     the object mapper
+   * @param sorts            the sorts
+   * @return the sort criteria
+   * @throws JsonProcessingException the json processing exception
+   */
   public Associations getSortCriteria(final String sortCriteriaJson, final ObjectMapper objectMapper, final List<Sort.Order> sorts) throws JsonProcessingException {
     final Associations associationNames = new Associations();
     if (StringUtils.isNotBlank(sortCriteriaJson)) {
@@ -123,9 +141,12 @@ public class PenReplicationSagaController implements PenReplicationSagaEndpoint 
   /**
    * Gets specifications.
    *
-   * @param specs           specs
-   * @param specIndexNumber the index of which spec this is in a list of search criteria
-   * @param search          the search
+   * @param <T>              the type parameter
+   * @param specs            specs
+   * @param specIndexNumber  the index of which spec this is in a list of search criteria
+   * @param search           the search
+   * @param associationNames the association names
+   * @param filterSpecs      the filter specs
    * @return the specifications
    */
   public <T> Specification<T> getSpecifications(Specification<T> specs, final int specIndexNumber, final Search search, final Associations associationNames, final BaseFilterSpecs<T> filterSpecs) {

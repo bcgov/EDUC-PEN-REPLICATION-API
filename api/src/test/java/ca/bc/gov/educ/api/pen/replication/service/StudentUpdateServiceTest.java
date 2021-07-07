@@ -1,28 +1,23 @@
 package ca.bc.gov.educ.api.pen.replication.service;
 
-import ca.bc.gov.educ.api.pen.replication.PenReplicationApiResourceApplication;
+import ca.bc.gov.educ.api.pen.replication.BasePenReplicationAPITest;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.PenDemogRepository;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentUpdate;
-import ca.bc.gov.educ.api.pen.replication.support.TestRedisConfiguration;
 import ca.bc.gov.educ.api.pen.replication.support.TestUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {PenReplicationApiResourceApplication.class, TestRedisConfiguration.class,})
-@ActiveProfiles("test")
-public class StudentUpdateServiceTest {
+/**
+ * The type Student update service test.
+ */
+public class StudentUpdateServiceTest extends BasePenReplicationAPITest {
 
   @Autowired
   private PenDemogRepository penDemogRepository;
@@ -33,12 +28,20 @@ public class StudentUpdateServiceTest {
   @Autowired
   private StudentUpdateService studentUpdateService;
 
+  /**
+   * Clean db.
+   */
   @After
   public void cleanDB() {
     this.penDemogRepository.deleteAll();
     this.eventRepository.deleteAll();
   }
 
+  /**
+   * Sets up.
+   *
+   * @throws JsonProcessingException the json processing exception
+   */
   @Before
   public void setUp() throws JsonProcessingException {
     var request = TestUtils.createStudentCreateRequest("V8V2P8");
@@ -47,6 +50,11 @@ public class StudentUpdateServiceTest {
     studentCreateService.processEvent(request, event);
   }
 
+  /**
+   * Test process event given update student event with null postal code should save blank postal code in db.
+   *
+   * @throws JsonProcessingException the json processing exception
+   */
   @Test
   public void testProcessEvent_givenUPDATE_STUDENT_EventWithNullPostalCode_shouldSaveBlankPostalCodeInDB() throws JsonProcessingException {
     var request = createStudentUpdateRequest();

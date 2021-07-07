@@ -65,6 +65,12 @@ public interface StudentMapper {
    */
   StudentUpdate toStudentUpdate(StudentCreate studentCreate);
 
+  /**
+   * To student student update.
+   *
+   * @param penDemogTransaction the pen demog transaction
+   * @return the student update
+   */
   @Mapping(target = "usualMiddleNames", source = "usualMiddleName")
   @Mapping(target = "usualLastName", source = "usualSurname")
   @Mapping(target = "usualFirstName", source = "usualGivenName")
