@@ -114,7 +114,7 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
       .eventPayload(rowsUpdated + "")
       .build();
     this.postMessageToTopic(this.getTopicToSubscribe().getCode(), nextEvent); // this will make it async and use pub/sub flow even though it is sending message to itself
-    log.info("responded via NATS to {} for {} Event. :: {}", this.getTopicToSubscribe(), ADD_PEN_DEMOG, saga.getSagaId());
+    log.info("responded via NATS to {} for {} Event. :: {}", this.getTopicToSubscribe(), UPDATE_PEN_DEMOG, saga.getSagaId());
   }
 
   private int createOrUpdatePenDemog(final StudentUpdateSagaData studentUpdateSagaData, final PenDemogRepository penDemogRepository) {

@@ -1,5 +1,10 @@
 package ca.bc.gov.educ.api.pen.replication.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -50,12 +55,18 @@ public class PenDemogTransaction implements Serializable {
    * The Transaction insert date time.
    */
   @Column(name = "TX_INSERT_DATE_TIME")
+  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+  @JsonSerialize(using = LocalDateTimeSerializer.class)
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   LocalDateTime transactionInsertDateTime;
 
   /**
    * The Transaction processed date time.
    */
   @Column(name = "TX_PROCESSED_DATE_TIME")
+  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+  @JsonSerialize(using = LocalDateTimeSerializer.class)
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   LocalDateTime transactionProcessedDateTime;
 
   /**
@@ -165,6 +176,9 @@ public class PenDemogTransaction implements Serializable {
    * The Create date.
    */
   @Column(name = "CREATE_DATE", updatable = false)
+  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+  @JsonSerialize(using = LocalDateTimeSerializer.class)
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   LocalDateTime createDate;
   /**
    * The Update user.
@@ -175,6 +189,9 @@ public class PenDemogTransaction implements Serializable {
    * The Update date.
    */
   @Column(name = "UPDATE_DATE")
+  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+  @JsonSerialize(using = LocalDateTimeSerializer.class)
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   LocalDateTime updateDate;
 
   /**
@@ -193,11 +210,17 @@ public class PenDemogTransaction implements Serializable {
    * The Merge to date.
    */
   @Column(name = "MERGE_TO_DATE")
+  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+  @JsonSerialize(using = LocalDateTimeSerializer.class)
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   LocalDateTime mergeToDate;
 
   /**
    * The Update demog date.
    */
   @Column(name = "UPDATE_DEMOG_DATE")
+  @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+  @JsonSerialize(using = LocalDateTimeSerializer.class)
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   LocalDateTime updateDemogDate;
 }

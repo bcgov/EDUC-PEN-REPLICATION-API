@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -70,7 +71,7 @@ public class PenReplicationSagaController implements PenReplicationSagaEndpoint 
   }
 
   @Override
-  public Page<Saga> findAllSagas(final Integer pageNumber, final Integer pageSize, final String sortCriteriaJson, final String searchCriteriaListJson) {
+  public ResponseEntity<Page<Saga>> findAllSagas(final Integer pageNumber, final Integer pageSize, final String sortCriteriaJson, final String searchCriteriaListJson) {
     final List<Sort.Order> sorts = new ArrayList<>();
     Specification<ca.bc.gov.educ.api.pen.replication.model.Saga> sagaEntitySpecification = null;
     try {
@@ -89,7 +90,7 @@ public class PenReplicationSagaController implements PenReplicationSagaEndpoint 
     } catch (final JsonProcessingException e) {
       throw new InvalidParameterException(e.getMessage());
     }
-    return null;
+    return ResponseEntity.ok(this.getSagaService().findAll(sagaEntitySpecification, pageNumber, pageSize, sorts).map(SagaMapper.mapper::toStruct));
   }
 
   /**
@@ -102,7 +103,7 @@ public class PenReplicationSagaController implements PenReplicationSagaEndpoint 
    * @throws JsonProcessingException the json processing exception
    */
   public Associations getSortCriteria(final String sortCriteriaJson, final ObjectMapper objectMapper, final List<Sort.Order> sorts) throws JsonProcessingException {
-    final Associations associationNames = new Associations();
+    val associationNames = new Associations();
     if (StringUtils.isNotBlank(sortCriteriaJson)) {
       final Map<String, String> sortMap = objectMapper.readValue(sortCriteriaJson, new TypeReference<>() {
       });

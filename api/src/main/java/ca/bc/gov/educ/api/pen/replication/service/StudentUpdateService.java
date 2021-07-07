@@ -56,7 +56,7 @@ public class StudentUpdateService extends BaseService<StudentUpdate> {
    */
   @Override
   public void processEvent(final StudentUpdate studentUpdate, final Event event) {
-    if (this.isEventPartOfOrchestratorSaga(this.penDemogTransactionRepository, studentUpdate.getPen())) {
+    if (this.isEventPartOfOrchestratorSaga(this.penDemogTransactionRepository, StringUtils.trim(studentUpdate.getPen()))) {
       this.updateEvent(event);
       log.info("This event is part of orchestrator flow, marking it processed.");
       return;

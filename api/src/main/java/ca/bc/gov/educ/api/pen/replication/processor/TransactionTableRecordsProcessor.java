@@ -131,7 +131,7 @@ public class TransactionTableRecordsProcessor {
           val saga = this.penDemogTransactionService.createSagaAndUpdatePenDemogTransaction(orchestrator.getSagaName().getCode(), penDemogTransaction.getCreateUser(), JsonUtil.getJsonStringFromObject(studentCreateSagaData), penDemogTransaction);
           orchestrator.startSaga(saga);
         } else if (UPDATE_STUDENT.getCode().equals(txType)) {
-          val studentUpdateSagaData = StudentUpdateSagaData.builder().penDemogTransaction(penDemogTransaction).build();
+          val studentUpdateSagaData = StudentUpdateSagaData.builder().penDemogTransaction(penDemogTransaction).studentUpdate(StudentMapper.mapper.toStudent(penDemogTransaction)).build();
           val orchestrator = this.sagaEnumOrchestratorMap.get(PEN_REPLICATION_STUDENT_UPDATE_SAGA);
           val saga = this.penDemogTransactionService.createSagaAndUpdatePenDemogTransaction(orchestrator.getSagaName().getCode(), penDemogTransaction.getCreateUser(), JsonUtil.getJsonStringFromObject(studentUpdateSagaData), penDemogTransaction);
           orchestrator.startSaga(saga);

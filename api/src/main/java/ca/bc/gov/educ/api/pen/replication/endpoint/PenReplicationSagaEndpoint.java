@@ -51,11 +51,11 @@ public interface PenReplicationSagaEndpoint {
   @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK"), @ApiResponse(responseCode = "500", description = "INTERNAL SERVER ERROR.")})
   @Transactional(readOnly = true)
   @Tag(name = "Endpoint to support data table view in frontend, with sort, filter and pagination, for Sagas.", description = "This API endpoint exposes flexible way to query the entity by leveraging JPA specifications.")
-  Page<Saga> findAllSagas(@RequestParam(name = "pageNumber", defaultValue = "0") Integer pageNumber,
-                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                          @RequestParam(name = "sort", defaultValue = "") String sortCriteriaJson,
-                          @ArraySchema(schema = @Schema(name = "searchCriteriaList",
-                            description = "searchCriteriaList if provided should be a JSON string of Search Array",
-                            implementation = ca.bc.gov.educ.api.pen.replication.struct.Search.class))
-                          @RequestParam(name = "searchCriteriaList", required = false) String searchCriteriaListJson);
+  ResponseEntity<Page<Saga>> findAllSagas(@RequestParam(name = "pageNumber", defaultValue = "0") Integer pageNumber,
+                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                          @RequestParam(name = "sort", defaultValue = "") String sortCriteriaJson,
+                                          @ArraySchema(schema = @Schema(name = "searchCriteriaList",
+                                            description = "searchCriteriaList if provided should be a JSON string of Search Array",
+                                            implementation = ca.bc.gov.educ.api.pen.replication.struct.Search.class))
+                                          @RequestParam(name = "searchCriteriaList", required = false) String searchCriteriaListJson);
 }

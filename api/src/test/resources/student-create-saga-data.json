@@ -1,0 +1,31 @@
+{
+  "penDemogTransaction": {
+    "transactionID": "1234567980",
+    "transactionType": "CS",
+    "transactionStatus": "PEND",
+    "transactionInsertDateTime": "2019-10-19 22:59:05",
+    "pen": "2348845626",
+    "surname": "fake_data",
+    "givenName": "fake_data",
+    "middleName": "fake_data",
+    "usualSurname": "fake_data",
+    "usualGivenName": "fake_data",
+    "usualMiddleName": "fake_data",
+    "birthDate": "19800101",
+    "sex": "M",
+    "demogCode": "A",
+    "status": "A",
+    "penLocalID": "123456789",
+    "penMinCode": "10200001",
+    "postal": "V8T0B1",
+    "grade": "12",
+    "createUser": "fake_data",
+    "createDate": "2028-07-13 18:41:36",
+    "updateUser": "fake_data",
+    "updateDate": "2017-09-02 03:54:28",
+    "mergeToUserName": "fake_data",
+    "mergeToCode": "fake_data",
+    "mergeToDate": "2020-08-20 17:51:36",
+    "updateDemogDate": "2029-01-11 20:26:07"
+  }
+}
