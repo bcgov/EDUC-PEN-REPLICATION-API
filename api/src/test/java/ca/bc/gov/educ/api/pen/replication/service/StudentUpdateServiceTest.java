@@ -55,6 +55,11 @@ public class StudentUpdateServiceTest extends BasePenReplicationAPITest {
     assertThat(penDemog.get().getPostalCode()).isEqualTo(" ");
   }
 
+  /**
+   * Test process event given update student event and transaction part of saga should not save in db.
+   *
+   * @throws JsonProcessingException the json processing exception
+   */
   @Test
   public void testProcessEvent_givenUPDATE_STUDENT_EventAndTransactionPartOfSaga_shouldNotSaveInDB() throws JsonProcessingException {
     final PenDemogTransaction penDemogTransaction = PenDemogTransaction.builder().pen("987654321").transactionStatus(TransactionStatus.IN_PROGRESS.getCode()).transactionID("1234567890").build();

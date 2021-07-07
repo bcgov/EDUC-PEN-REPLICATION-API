@@ -10,7 +10,6 @@ import ca.bc.gov.educ.api.pen.replication.service.SagaService;
 import ca.bc.gov.educ.api.pen.replication.struct.Event;
 import ca.bc.gov.educ.api.pen.replication.struct.saga.StudentCreateSagaData;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.val;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +31,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 
+/**
+ * The type Student create orchestrator test.
+ */
 public class StudentCreateOrchestratorTest extends BasePenReplicationAPITest {
   private final String transactionID = "1234567890";
   private final String pen = "120164447";
@@ -55,6 +57,11 @@ public class StudentCreateOrchestratorTest extends BasePenReplicationAPITest {
    */
   private StudentCreateSagaData sagaData;
 
+  /**
+   * Sets up.
+   *
+   * @throws IOException the io exception
+   */
   @Before
   public void setUp() throws IOException {
     MockitoAnnotations.openMocks(this);
@@ -66,7 +73,9 @@ public class StudentCreateOrchestratorTest extends BasePenReplicationAPITest {
   /**
    * Test get next pen number.
    *
-   * @throws JsonProcessingException the json processing exception
+   * @throws IOException          the io exception
+   * @throws InterruptedException the interrupted exception
+   * @throws TimeoutException     the timeout exception
    */
   @Test
   public void testGetNextPenNumber_givenEventAndSagaData_shouldPostEventToServicesApi() throws IOException, InterruptedException, TimeoutException {
@@ -89,6 +98,13 @@ public class StudentCreateOrchestratorTest extends BasePenReplicationAPITest {
     assertThat(sagaStates.get(0).getSagaEventOutcome()).isEqualTo(EventOutcome.INITIATE_SUCCESS.toString());
   }
 
+  /**
+   * Test create student given event and saga data should post event to student api.
+   *
+   * @throws IOException          the io exception
+   * @throws InterruptedException the interrupted exception
+   * @throws TimeoutException     the timeout exception
+   */
   @Test
   public void testCreateStudent_givenEventAndSagaData_shouldPostEventToStudentApi() throws IOException, InterruptedException, TimeoutException {
     final var event = Event.builder()
@@ -111,6 +127,13 @@ public class StudentCreateOrchestratorTest extends BasePenReplicationAPITest {
     assertThat(sagaStates.get(0).getSagaEventOutcome()).isEqualTo(EventOutcome.NEXT_PEN_NUMBER_RETRIEVED.toString());
   }
 
+  /**
+   * Test add pen demog given event and saga data should post event to student api.
+   *
+   * @throws IOException          the io exception
+   * @throws InterruptedException the interrupted exception
+   * @throws TimeoutException     the timeout exception
+   */
   @Test
   public void testAddPenDemog_givenEventAndSagaData_shouldPostEventToStudentApi() throws IOException, InterruptedException, TimeoutException {
     final var event = Event.builder()
@@ -135,6 +158,13 @@ public class StudentCreateOrchestratorTest extends BasePenReplicationAPITest {
     assertThat(penDemog).isPresent();
   }
 
+  /**
+   * Test update pen demog transaction given event and saga data should post event to student api.
+   *
+   * @throws IOException          the io exception
+   * @throws InterruptedException the interrupted exception
+   * @throws TimeoutException     the timeout exception
+   */
   @Test
   public void testUpdatePenDemogTransaction_givenEventAndSagaData_shouldPostEventToStudentApi() throws IOException, InterruptedException, TimeoutException {
     this.penReplicationTestUtils.getPenDemogTransactionRepository().save(this.createMockPenDemogTransaction());
@@ -161,6 +191,13 @@ public class StudentCreateOrchestratorTest extends BasePenReplicationAPITest {
     assertThat(penDemog.get().getTransactionStatus()).isEqualTo(TransactionStatus.COMPLETE.getCode());
   }
 
+  /**
+   * Test mark saga complete given event and saga data should post event to student api.
+   *
+   * @throws IOException          the io exception
+   * @throws InterruptedException the interrupted exception
+   * @throws TimeoutException     the timeout exception
+   */
   @Test
   public void testMarkSagaComplete_givenEventAndSagaData_shouldPostEventToStudentApi() throws IOException, InterruptedException, TimeoutException {
     this.penReplicationTestUtils.getPenDemogTransactionRepository().save(this.createMockPenDemogTransaction());
@@ -186,6 +223,11 @@ public class StudentCreateOrchestratorTest extends BasePenReplicationAPITest {
     assertThat(penDemog).isPresent();
   }
 
+  /**
+   * Create mock pen demog transaction pen demog transaction.
+   *
+   * @return the pen demog transaction
+   */
   public PenDemogTransaction createMockPenDemogTransaction() {
     return PenDemogTransaction.builder()
       .transactionInsertDateTime(LocalDateTime.now())

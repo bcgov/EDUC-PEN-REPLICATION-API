@@ -15,10 +15,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * The type Pen replication saga controller test.
+ */
 public class PenReplicationSagaControllerTest extends BasePenReplicationAPITest {
   @Autowired
   private MockMvc mockMvc;
 
+  /**
+   * Test read saga given invalid saga id should return 404.
+   *
+   * @throws Exception the exception
+   */
   @Test
   public void testReadSaga_givenInvalidSagaID_shouldReturn404() throws Exception {
     this.mockMvc.perform(get("/api/v1/pen-replication/saga/{sagaId}", UUID.randomUUID())
@@ -27,6 +35,11 @@ public class PenReplicationSagaControllerTest extends BasePenReplicationAPITest 
   }
 
 
+  /**
+   * Test get saga paginated given no data should return status ok.
+   *
+   * @throws Exception the exception
+   */
   @Test
   public void testGetSagaPaginated_givenNoData_shouldReturnStatusOk() throws Exception {
     this.mockMvc.perform(get("/api/v1/pen-replication/saga/paginated")
