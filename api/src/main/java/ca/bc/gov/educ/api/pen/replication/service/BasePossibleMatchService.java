@@ -6,6 +6,7 @@ import ca.bc.gov.educ.api.pen.replication.repository.PenTwinTransactionRepositor
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.PossibleMatch;
 import ca.bc.gov.educ.api.pen.replication.struct.Student;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
 import javax.persistence.EntityManagerFactory;
@@ -16,6 +17,7 @@ import java.util.Map;
 /**
  * The type Base possible match service.
  */
+@Slf4j
 public abstract class BasePossibleMatchService extends BaseService<List<PossibleMatch>> {
   /**
    * The Rest utils.
@@ -57,6 +59,7 @@ public abstract class BasePossibleMatchService extends BaseService<List<Possible
     if (!possibleMatches.isEmpty()) {
       super.persistData(event, possibleMatches);
     } else {
+      log.info("This event is part of orchestrator flow, marking it processed.");
       this.updateEvent(event);
     }
   }
