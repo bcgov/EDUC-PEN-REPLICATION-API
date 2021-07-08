@@ -189,6 +189,7 @@ public class StudentCreateOrchestratorTest extends BasePenReplicationAPITest {
     val penDemog = this.penReplicationTestUtils.getPenDemogTransactionRepository().findById(this.transactionID);
     assertThat(penDemog).isPresent();
     assertThat(penDemog.get().getTransactionStatus()).isEqualTo(TransactionStatus.COMPLETE.getCode());
+    assertThat(penDemog.get().getTransactionProcessedDateTime()).isNotNull();
   }
 
   /**

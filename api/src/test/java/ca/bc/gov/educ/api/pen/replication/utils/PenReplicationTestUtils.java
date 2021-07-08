@@ -18,6 +18,7 @@ public class PenReplicationTestUtils {
   private final PenTwinTransactionRepository penTwinTransactionRepository;
   private final SagaRepository sagaRepository;
   private final SagaEventRepository sagaEventRepository;
+  private final PenTwinsRepository penTwinsRepository;
 
   /**
    * Instantiates a new Pen replication test utils.
@@ -28,14 +29,16 @@ public class PenReplicationTestUtils {
    * @param penTwinTransactionRepository  the pen twin transaction repository
    * @param sagaRepository                the saga repository
    * @param sagaEventRepository           the saga event repository
+   * @param penTwinsRepository            the pen twins repository
    */
-  public PenReplicationTestUtils(PenDemogRepository penDemogRepository, EventRepository eventRepository, final PenDemogTransactionRepository penDemogTransactionRepository, final PenTwinTransactionRepository penTwinTransactionRepository, final SagaRepository sagaRepository, final SagaEventRepository sagaEventRepository) {
+  public PenReplicationTestUtils(final PenDemogRepository penDemogRepository, final EventRepository eventRepository, final PenDemogTransactionRepository penDemogTransactionRepository, final PenTwinTransactionRepository penTwinTransactionRepository, final SagaRepository sagaRepository, final SagaEventRepository sagaEventRepository, final PenTwinsRepository penTwinsRepository) {
     this.penDemogRepository = penDemogRepository;
     this.eventRepository = eventRepository;
     this.penDemogTransactionRepository = penDemogTransactionRepository;
     this.penTwinTransactionRepository = penTwinTransactionRepository;
     this.sagaRepository = sagaRepository;
     this.sagaEventRepository = sagaEventRepository;
+    this.penTwinsRepository = penTwinsRepository;
   }
 
   /**
@@ -48,5 +51,6 @@ public class PenReplicationTestUtils {
     this.sagaRepository.deleteAll();
     this.penTwinTransactionRepository.deleteAll();
     this.penDemogTransactionRepository.deleteAll();
+    this.penTwinsRepository.deleteAll();
   }
 }

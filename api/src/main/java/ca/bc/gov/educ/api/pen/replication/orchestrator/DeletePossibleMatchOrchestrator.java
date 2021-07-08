@@ -4,10 +4,12 @@ import ca.bc.gov.educ.api.pen.replication.constants.SagaEnum;
 import ca.bc.gov.educ.api.pen.replication.constants.SagaTopicsEnum;
 import ca.bc.gov.educ.api.pen.replication.helpers.PenReplicationHelper;
 import ca.bc.gov.educ.api.pen.replication.messaging.MessagePublisher;
+import ca.bc.gov.educ.api.pen.replication.model.PenTwinsEntityID;
 import ca.bc.gov.educ.api.pen.replication.model.Saga;
 import ca.bc.gov.educ.api.pen.replication.model.SagaEvent;
 import ca.bc.gov.educ.api.pen.replication.orchestrator.base.BaseOrchestrator;
 import ca.bc.gov.educ.api.pen.replication.repository.PenTwinTransactionRepository;
+import ca.bc.gov.educ.api.pen.replication.repository.PenTwinsRepository;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.service.SagaService;
 import ca.bc.gov.educ.api.pen.replication.struct.Event;
@@ -37,6 +39,7 @@ public class DeletePossibleMatchOrchestrator extends BaseOrchestrator<PossibleMa
 
   private final PenTwinTransactionRepository penTwinTransactionRepository;
   private final RestUtils restUtils;
+  private final PenTwinsRepository penTwinsRepository;
 
   /**
    * Instantiates a new Base orchestrator.
@@ -46,11 +49,13 @@ public class DeletePossibleMatchOrchestrator extends BaseOrchestrator<PossibleMa
    * @param entityManagerFactory         the entity manager factory
    * @param restUtils                    the rest utils
    * @param penTwinTransactionRepository the pen twin transaction repository
+   * @param penTwinsRepository           the pen twins repository
    */
-  protected DeletePossibleMatchOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher, final EntityManagerFactory entityManagerFactory, final RestUtils restUtils, final PenTwinTransactionRepository penTwinTransactionRepository) {
+  protected DeletePossibleMatchOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher, final EntityManagerFactory entityManagerFactory, final RestUtils restUtils, final PenTwinTransactionRepository penTwinTransactionRepository, final PenTwinsRepository penTwinsRepository) {
     super(entityManagerFactory, sagaService, messagePublisher, PossibleMatchSagaData.class, SagaEnum.PEN_REPLICATION_POSSIBLE_MATCH_DELETE_SAGA, SagaTopicsEnum.PEN_REPLICATION_POSSIBLE_MATCH_DELETE_SAGA_TOPIC);
     this.penTwinTransactionRepository = penTwinTransactionRepository;
     this.restUtils = restUtils;
+    this.penTwinsRepository = penTwinsRepository;
   }
 
   @Override
@@ -67,8 +72,27 @@ public class DeletePossibleMatchOrchestrator extends BaseOrchestrator<PossibleMa
     saga.setSagaState(DELETE_PEN_TWINS.toString());
     final SagaEvent eventStates = this.createEventState(saga, event.getEventType(), event.getEventOutcome(), event.getEventPayload());
     this.getSagaService().updateAttachedSagaWithEvents(saga, eventStates);
-    val penTwinsDelete = PenReplicationHelper.buildPenTwinDelete(possibleMatchSagaData.getPenTwinTransaction());
-    val rowsUpdated = this.persistData(penTwinsDelete);
+
+    val penTwinsLeftSideID = PenTwinsEntityID.builder()
+      .penTwin1(possibleMatchSagaData.getPenTwinTransaction().getPenTwin1())
+      .penTwin2(possibleMatchSagaData.getPenTwinTransaction().getPenTwin2())
+      .build();
+
+    val penTwinsRightSideID = PenTwinsEntityID.builder()
+      .penTwin1(possibleMatchSagaData.getPenTwinTransaction().getPenTwin2())
+      .penTwin2(possibleMatchSagaData.getPenTwinTransaction().getPenTwin1())
+      .build();
+    val isPenTwinLeftSideExist = this.penTwinsRepository.findById(penTwinsLeftSideID);
+    val isPenTwinRightSideExist = this.penTwinsRepository.findById(penTwinsRightSideID);
+    var rowsUpdated = 0;
+    if (isPenTwinLeftSideExist.isPresent()) {
+      val penTwinsDelete = PenReplicationHelper.buildPenTwinDeleteLeftSide(possibleMatchSagaData.getPenTwinTransaction());
+      rowsUpdated += this.persistData(penTwinsDelete);
+    }
+    if (isPenTwinRightSideExist.isPresent()) {
+      val penTwinsDelete = PenReplicationHelper.buildPenTwinDeleteRightSide(possibleMatchSagaData.getPenTwinTransaction());
+      rowsUpdated += this.persistData(penTwinsDelete);
+    }
     val nextEvent = Event.builder().sagaId(saga.getSagaId())
       .eventType(DELETE_PEN_TWINS)
       .eventOutcome(PEN_TWINS_DELETED)
@@ -93,7 +117,7 @@ public class DeletePossibleMatchOrchestrator extends BaseOrchestrator<PossibleMa
         .eventPayload("STUDENTS_NOT_FOUND")
         .build();
       this.postMessageToTopic(this.getTopicToSubscribe().getCode(), nextEvent); // this will make it async and use pub/sub flow even though it is sending message to itself
-      log.info("responded via NATS to {} for {} Event. :: {}", this.getTopicToSubscribe(), ADD_POSSIBLE_MATCH, saga.getSagaId());
+      log.info("responded via NATS to {} for {} Event. :: {}", this.getTopicToSubscribe(), DELETE_POSSIBLE_MATCH, saga.getSagaId());
     } else {
       val possibleMatch = new PossibleMatch();
       possibleMatch.setStudentID(studentMap.get(possibleMatchSagaData.getPenTwinTransaction().getPenTwin1()).getStudentID());
