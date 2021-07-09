@@ -1,56 +1,60 @@
 package ca.bc.gov.educ.api.pen.replication.service;
 
-import ca.bc.gov.educ.api.pen.replication.PenReplicationApiResourceApplication;
-import ca.bc.gov.educ.api.pen.replication.model.Event;
-import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
-import ca.bc.gov.educ.api.pen.replication.repository.PenDemogRepository;
-import ca.bc.gov.educ.api.pen.replication.struct.StudentCreate;
+import ca.bc.gov.educ.api.pen.replication.BasePenReplicationAPITest;
+import ca.bc.gov.educ.api.pen.replication.constants.TransactionStatus;
+import ca.bc.gov.educ.api.pen.replication.model.PenDemogTransaction;
 import ca.bc.gov.educ.api.pen.replication.support.TestUtils;
-import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.After;
+import lombok.val;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-import static ca.bc.gov.educ.api.pen.replication.constants.EventStatus.DB_COMMITTED;
+import static ca.bc.gov.educ.api.pen.replication.constants.EventStatus.PROCESSED;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {PenReplicationApiResourceApplication.class})
-@ActiveProfiles("test")
-public class StudentCreateServiceTest {
+/**
+ * The type Student create service test.
+ */
+public class StudentCreateServiceTest extends BasePenReplicationAPITest {
 
-  @Autowired
-  private PenDemogRepository penDemogRepository;
-  @Autowired
-  private EventRepository eventRepository;
+
   @Autowired
   private StudentCreateService studentCreateService;
 
-  @After
-  public void cleanDB() {
-    this.penDemogRepository.deleteAll();
-    this.eventRepository.deleteAll();
-  }
-
+  /**
+   * Test process event given create student event with null postal code should save blank postal code in db.
+   *
+   * @throws JsonProcessingException the json processing exception
+   */
   @Test
   public void testProcessEvent_givenCREATE_STUDENT_EventWithNullPostalCode_shouldSaveBlankPostalCodeInDB() throws JsonProcessingException {
-    var request = TestUtils.createStudentCreateRequest(null);
-    var event = TestUtils.createEvent("CREATE_STUDENT", request, eventRepository);
-    eventRepository.save(event);
-    studentCreateService.processEvent(request, event);
-    var penDemog = penDemogRepository.findById(request.getPen());
+    final var request = TestUtils.createStudentCreateRequest(null);
+    final var event = TestUtils.createEvent("CREATE_STUDENT", request, this.penReplicationTestUtils.getEventRepository());
+    this.penReplicationTestUtils.getEventRepository().save(event);
+    this.studentCreateService.processEvent(request, event);
+    final var penDemog = this.penReplicationTestUtils.getPenDemogRepository().findById(request.getPen());
     assertThat(penDemog).isPresent();
     assertThat(penDemog.get().getPostalCode()).isEqualTo(" ");
+  }
+
+
+  /**
+   * Test process event given create student event with null postal code should save blank postal code in db.
+   *
+   * @throws JsonProcessingException the json processing exception
+   */
+  @Test
+  public void testProcessEvent_givenCREATE_STUDENT_EventAndTransactionPartOfSaga_shouldNotSaveInDB() throws JsonProcessingException {
+    final PenDemogTransaction penDemogTransaction = PenDemogTransaction.builder().pen("987654321").transactionStatus(TransactionStatus.IN_PROGRESS.getCode()).transactionID("1234567890").build();
+    this.penReplicationTestUtils.getPenDemogTransactionRepository().save(penDemogTransaction);
+    final var request = TestUtils.createStudentCreateRequest(null);
+    final var event = TestUtils.createEvent("CREATE_STUDENT", request, this.penReplicationTestUtils.getEventRepository());
+    this.studentCreateService.processEvent(request, event);
+    final var penDemog = this.penReplicationTestUtils.getPenDemogRepository().findById(request.getPen());
+    assertThat(penDemog).isNotPresent();
+    val updatedEvent = this.penReplicationTestUtils.getEventRepository().findByEventId(event.getEventId());
+    assertThat(updatedEvent).isPresent();
+    assertThat(updatedEvent.get().getEventStatus()).isEqualTo(PROCESSED.toString());
   }
 }

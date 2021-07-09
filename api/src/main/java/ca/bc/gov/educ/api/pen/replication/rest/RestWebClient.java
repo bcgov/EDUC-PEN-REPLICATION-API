@@ -39,6 +39,7 @@ public class RestWebClient {
   /**
    * Web client web client.
    *
+   * @param builder the builder
    * @return the web client
    */
   @Bean

@@ -1,5 +1,7 @@
 package ca.bc.gov.educ.api.pen.replication.struct;
 
+import ca.bc.gov.educ.api.pen.replication.constants.EventOutcome;
+import ca.bc.gov.educ.api.pen.replication.constants.EventType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,12 +10,18 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * The type Choreographed event.
+ */
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ChoreographedEvent {
+  /**
+   * The Event id.
+   */
   UUID eventID;
   /**
    * The Event type.

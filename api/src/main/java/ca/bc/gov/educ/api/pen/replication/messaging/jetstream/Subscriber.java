@@ -71,6 +71,12 @@ public class Subscriber {
   }
 
 
+  /**
+   * Subscribe.
+   *
+   * @throws IOException           the io exception
+   * @throws JetStreamApiException the jet stream api exception
+   */
   @PostConstruct
   public void subscribe() throws IOException, JetStreamApiException {
     val qName = ApplicationProperties.API_NAME.concat("-QUEUE");
@@ -78,10 +84,10 @@ public class Subscriber {
     for (val entry : this.streamTopicsMap.entrySet()) {
       for (val topic : entry.getValue()) {
         final PushSubscribeOptions options = PushSubscribeOptions.builder().stream(entry.getKey())
-            .durable(ApplicationProperties.API_NAME.concat("-DURABLE"))
-            .configuration(ConsumerConfiguration.builder().deliverPolicy(DeliverPolicy.New).build()).build();
+          .durable(ApplicationProperties.API_NAME.concat("-DURABLE"))
+          .configuration(ConsumerConfiguration.builder().deliverPolicy(DeliverPolicy.New).build()).build();
         this.natsConnection.jetStream().subscribe(topic, qName, this.natsConnection.createDispatcher(), this::onMessage,
-            autoAck, options);
+          autoAck, options);
       }
     }
   }

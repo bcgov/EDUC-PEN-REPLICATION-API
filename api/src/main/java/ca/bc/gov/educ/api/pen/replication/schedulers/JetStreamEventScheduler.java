@@ -39,6 +39,9 @@ public class JetStreamEventScheduler {
     this.choreographer = choreographer;
   }
 
+  /**
+   * Find and process events.
+   */
   @Scheduled(cron = "${cron.scheduled.process.events.stan}") // every 5 minutes
   @SchedulerLock(name = "PROCESS_CHOREOGRAPHED_EVENTS_FROM_JET_STREAM", lockAtLeastFor = "${cron.scheduled.process.events.stan.lockAtLeastFor}", lockAtMostFor = "${cron.scheduled.process.events.stan.lockAtMostFor}")
   public void findAndProcessEvents() {
@@ -46,8 +49,8 @@ public class JetStreamEventScheduler {
     final var results = this.eventRepository.findAllByEventStatusOrderByCreateDate(DB_COMMITTED.toString());
     if (!results.isEmpty()) {
       results.stream()
-          .filter(el -> el.getUpdateDate().isBefore(LocalDateTime.now().minusMinutes(5)))
-          .forEach(this.choreographer::handleEvent);
+        .filter(el -> el.getUpdateDate().isBefore(LocalDateTime.now().minusMinutes(5)))
+        .forEach(this.choreographer::handleEvent);
     }
   }
 

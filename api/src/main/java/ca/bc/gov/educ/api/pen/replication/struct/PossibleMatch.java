@@ -2,23 +2,23 @@ package ca.bc.gov.educ.api.pen.replication.struct;
 
 import ca.bc.gov.educ.api.pen.replication.constants.MatchReasonCodes;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Null;
+import java.io.Serializable;
 
 /**
  * The type Possible match.
  */
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PossibleMatch extends BaseRequest {
+public class PossibleMatch extends BaseRequest implements Serializable {
+  private static final long serialVersionUID = 4270771037046576398L;
   /**
    * The Possible match id.
    */
@@ -38,26 +38,4 @@ public class PossibleMatch extends BaseRequest {
    */
   @NotNull
   MatchReasonCodes matchReasonCode;
-  /**
-   * The Create user.
-   */
-  @NotNull
-  String createUser;
-  /**
-   * The Update user.
-   */
-  @NotNull
-  String updateUser;
-
-  /**
-   * The Create date.
-   */
-  @Null
-  String createDate;
-
-  /**
-   * The Update date.
-   */
-  @Null
-  String updateDate;
 }
