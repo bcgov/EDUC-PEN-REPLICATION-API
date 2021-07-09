@@ -29,13 +29,13 @@ echo
 echo Retrieving client ID for pen-replication-api-service
 PR_APIServiceClientID=$(curl -sX GET "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/clients" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TKN" \
-  | jq '.[] | select(.clientId=="pen-replication-api-service")' | jq -r '.id')
+  -H "Authorization: Bearer $TKN" |
+  jq '.[] | select(.clientId=="pen-replication-api-service")' | jq -r '.id')
 
 echo
 echo Removing pen-replication-api-service client if exists
 curl -sX DELETE "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/clients/$PR_APIServiceClientID" \
-  -H "Authorization: Bearer $TKN" \
+  -H "Authorization: Bearer $TKN"
 
 echo
 echo Creating client pen-replication-api-service
@@ -48,15 +48,15 @@ echo
 echo Retrieving client ID for pen-replication-api-service
 PR_APIServiceClientID=$(curl -sX GET "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/clients" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TKN" \
-  | jq '.[] | select(.clientId=="pen-replication-api-service")' | jq -r '.id')
+  -H "Authorization: Bearer $TKN" |
+  jq '.[] | select(.clientId=="pen-replication-api-service")' | jq -r '.id')
 
 echo
 echo Retrieving client secret for pen-validation-api-service
 PR_APIServiceClientSecret=$(curl -sX GET "https://$SOAM_KC/auth/admin/realms/$SOAM_KC_REALM_ID/clients/$PV_APIServiceClientID/client-secret" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TKN" \
-  | jq -r '.value')
+  -H "Authorization: Bearer $TKN" |
+  jq -r '.value')
 
 ###########################################################
 #Setup for config-map
@@ -99,7 +99,7 @@ PARSER_CONFIG="
 "
 
 echo Creating config map "$APP_NAME"-config-map
-oc create -n "$PEN_NAMESPACE"-"$envValue" configmap "$APP_NAME"-config-map --from-literal=TZ=$TZVALUE --from-literal=STUDENT_API_URL="http://student-api-master.$COMMON_NAMESPACE-$envValue.svc.cluster.local:8080/api/v1/student" --from-literal=TOKEN_URL=https://$SOAM_KC/auth/realms/$SOAM_KC_REALM_ID/protocol/openid-connect/token --from-literal=JDBC_URL=$DB_JDBC_CONNECT_STRING --from-literal=ORACLE_USERNAME="$DB_USER" --from-literal=ORACLE_PASSWORD="$DB_PWD" --from-literal=SPRING_SECURITY_LOG_LEVEL=INFO --from-literal=SPRING_WEB_LOG_LEVEL=INFO --from-literal=APP_LOG_LEVEL=INFO --from-literal=SPRING_BOOT_AUTOCONFIG_LOG_LEVEL=INFO --from-literal=SPRING_SHOW_REQUEST_DETAILS=false --from-literal=NATS_URL="$NATS_URL" --from-literal=NATS_CLUSTER="$NATS_CLUSTER" --from-literal=CRON_SCHEDULED_PROCESS_EVENTS_STAN="0 0/5 * * * *" --from-literal=CRON_SCHEDULED_PROCESS_EVENTS_STAN_LOCK_AT_LEAST_FOR="PT4M" --from-literal=CRON_SCHEDULED_PROCESS_EVENTS_STAN_LOCK_AT_MOST_FOR="PT4M" --from-literal=TOKEN_ISSUER_URL="https://$SOAM_KC/auth/realms/$SOAM_KC_REALM_ID" --from-literal=CLIENT_ID="pen-replication-api-service" --from-literal=CLIENT_SECRET="$PR_APIServiceClientSecret" --from-literal=NATS_MAX_RECONNECT=60 --from-literal=HIBERNATE_SQL_LOG_LEVEL=INFO --from-literal=HIBERNATE_PARAM_LOG_LEVEL=INFO --from-literal=DB_CONNECTION_MAX_POOL_SIZE=4 --from-literal=DB_CONNECTION_MIN_IDLE=4 --dry-run -o yaml | oc apply -f -
+oc create -n "$PEN_NAMESPACE"-"$envValue" configmap "$APP_NAME"-config-map --from-literal=TZ=$TZVALUE --from-literal=STUDENT_API_URL="http://student-api-master.$COMMON_NAMESPACE-$envValue.svc.cluster.local:8080/api/v1/student" --from-literal=TOKEN_URL=https://$SOAM_KC/auth/realms/$SOAM_KC_REALM_ID/protocol/openid-connect/token --from-literal=JDBC_URL=$DB_JDBC_CONNECT_STRING --from-literal=ORACLE_USERNAME="$DB_USER" --from-literal=ORACLE_PASSWORD="$DB_PWD" --from-literal=SPRING_SECURITY_LOG_LEVEL=INFO --from-literal=SPRING_WEB_LOG_LEVEL=INFO --from-literal=APP_LOG_LEVEL=INFO --from-literal=SPRING_BOOT_AUTOCONFIG_LOG_LEVEL=INFO --from-literal=SPRING_SHOW_REQUEST_DETAILS=false --from-literal=NATS_URL="$NATS_URL" --from-literal=NATS_CLUSTER="$NATS_CLUSTER" --from-literal=CRON_SCHEDULED_PROCESS_EVENTS_STAN="0 0/5 * * * *" --from-literal=CRON_SCHEDULED_PROCESS_EVENTS_STAN_LOCK_AT_LEAST_FOR="PT4M" --from-literal=CRON_SCHEDULED_PROCESS_EVENTS_STAN_LOCK_AT_MOST_FOR="PT4M" --from-literal=TOKEN_ISSUER_URL="https://$SOAM_KC/auth/realms/$SOAM_KC_REALM_ID" --from-literal=CLIENT_ID="pen-replication-api-service" --from-literal=CLIENT_SECRET="$PR_APIServiceClientSecret" --from-literal=NATS_MAX_RECONNECT=60 --from-literal=HIBERNATE_SQL_LOG_LEVEL=INFO --from-literal=HIBERNATE_PARAM_LOG_LEVEL=INFO --from-literal=DB_CONNECTION_MAX_POOL_SIZE=8 --from-literal=DB_CONNECTION_MIN_IDLE=8 --from-literal=REDIS_URL="redis.$PEN_NAMESPACE-$envValue.svc.cluster.local:6379" --dry-run -o yaml | oc apply -f -
 
 echo
 echo Setting environment variables for $APP_NAME-$SOAM_KC_REALM_ID application
