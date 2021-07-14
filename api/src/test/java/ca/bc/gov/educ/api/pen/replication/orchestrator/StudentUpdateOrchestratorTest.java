@@ -207,7 +207,7 @@ public class StudentUpdateOrchestratorTest extends BasePenReplicationAPITest {
     verify(this.messagePublisher, atLeastOnce()).dispatchMessage(eq(this.orchestrator.getTopicToSubscribe().getCode()), this.eventCaptor.capture());
     final var newEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
     assertThat(newEvent.getEventType()).isEqualTo(UPDATE_PEN_DEMOG_TRANSACTION);
-    assertThat(newEvent.getEventPayload()).contains("\"transactionStatus\":\"COMP\"").contains("\"transactionID\":\"1234567890\"");
+    assertThat(newEvent.getEventPayload()).contains("\"transactionStatus\":\"" + TransactionStatus.COMPLETE.getCode() + "\"").contains("\"transactionID\":\"1234567890\"");
     final var sagaFromDB = this.sagaService.findSagaById(this.saga.getSagaId());
     assertThat(sagaFromDB).isPresent();
     assertThat(sagaFromDB.get().getSagaState()).isEqualTo(UPDATE_PEN_DEMOG_TRANSACTION.toString());

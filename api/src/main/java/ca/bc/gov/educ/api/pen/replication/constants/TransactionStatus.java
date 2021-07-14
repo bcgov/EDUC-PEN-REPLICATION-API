@@ -9,15 +9,15 @@ public enum TransactionStatus {
   /**
    * Pending transaction status.
    */
-  PENDING("PEND"),
+  PENDING("NEW"), // New transaction record created from SLD
   /**
    * In progress transaction status.
    */
-  IN_PROGRESS("IP"),
+  IN_PROGRESS("INPROG"), // Transaction record is in progress in PRR
   /**
    * Complete transaction status.
    */
-  COMPLETE("COMP");
+  COMPLETE("REPLIC"); // Transaction record has been replicated
 
   @Getter
   private final String code;

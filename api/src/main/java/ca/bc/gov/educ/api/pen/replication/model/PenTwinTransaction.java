@@ -42,13 +42,13 @@ public class PenTwinTransaction implements Serializable {
   /**
    * The Transaction type.
    */
-  @Column(name = "TX_TYPE", length = 4)
+  @Column(name = "TX_TYPE", length = 6)
   String transactionType;
 
   /**
    * The Transaction status.
    */
-  @Column(name = "TX_STATUS", length = 4)
+  @Column(name = "TX_STATUS", length = 6)
   String transactionStatus;
 
   /**

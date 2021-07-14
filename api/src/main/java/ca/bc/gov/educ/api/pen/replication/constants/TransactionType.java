@@ -9,11 +9,11 @@ public enum TransactionType {
   /**
    * Create student transaction type.
    */
-  CREATE_STUDENT("CS"),
+  CREATE_STUDENT("NEW"),
   /**
    * Update student transaction type.
    */
-  UPDATE_STUDENT("US"),
+  UPDATE_STUDENT("UPDATE"),
   /**
    * Create twins transaction type.
    */
