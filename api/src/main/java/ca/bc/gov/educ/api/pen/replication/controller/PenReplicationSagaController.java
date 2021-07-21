@@ -13,6 +13,7 @@ import ca.bc.gov.educ.api.pen.replication.struct.Search;
 import ca.bc.gov.educ.api.pen.replication.struct.SearchCriteria;
 import ca.bc.gov.educ.api.pen.replication.struct.ValueType;
 import ca.bc.gov.educ.api.pen.replication.struct.saga.Saga;
+import ca.bc.gov.educ.api.pen.replication.struct.saga.SagaEvent;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -26,6 +27,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -68,6 +70,48 @@ public class PenReplicationSagaController implements PenReplicationSagaEndpoint 
       .map(sagaMapper::toStruct)
       .map(ResponseEntity::ok)
       .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+  }
+
+  @Override
+  @Transactional
+  public ResponseEntity<Saga> updateSaga(final UUID sagaID, final Saga saga) {
+    val sagaOptional = this.getSagaService().findSagaById(sagaID);
+    if (sagaOptional.isPresent()) {
+      val sagaFromDB = sagaOptional.get();
+      sagaFromDB.setPayload(saga.getPayload());
+      this.getSagaService().updateSagaRecord(sagaFromDB);
+      return ResponseEntity.ok(sagaMapper.toStruct(sagaFromDB));
+    } else {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+  }
+
+  @Override
+  @Transactional
+  public ResponseEntity<SagaEvent> updateSagaEventState(final UUID sagaID, final UUID sagaEventID, final SagaEvent sagaEvent) {
+    val sagaEventOptional = this.getSagaService().getSagaEventById(sagaEventID);
+    if (sagaEventOptional.isPresent() && sagaID.equals(sagaEventOptional.get().getSaga().getSagaId())) {
+      val sagaEventFromDB = sagaEventOptional.get();
+      sagaEventFromDB.setSagaEventOutcome(sagaEvent.getSagaEventOutcome());
+      sagaEventFromDB.setSagaEventResponse(sagaEvent.getSagaEventResponse());
+      this.getSagaService().updateSagaEventRecord(sagaEventFromDB);
+      return ResponseEntity.ok(sagaMapper.toStruct(sagaEventFromDB));
+    } else {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+  }
+
+  @Override
+  @Transactional
+  public ResponseEntity<Void> deleteSagaEvent(final UUID sagaID, final UUID sagaEventID) {
+    val sagaEventOptional = this.getSagaService().getSagaEventById(sagaEventID);
+    if (sagaEventOptional.isPresent() && sagaID.equals(sagaEventOptional.get().getSaga().getSagaId())) {
+      val sagaEventFromDB = sagaEventOptional.get();
+      this.getSagaService().deleteSagaEvent(sagaEventFromDB);
+      return ResponseEntity.noContent().build();
+    } else {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
   }
 
   @Override

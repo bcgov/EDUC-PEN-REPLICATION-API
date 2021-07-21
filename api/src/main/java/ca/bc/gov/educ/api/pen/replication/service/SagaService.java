@@ -168,4 +168,17 @@ public class SagaService {
   public Page<Saga> findAll(final Specification<Saga> specs, final Integer pageNumber, final Integer pageSize, final List<Sort.Order> sorts) {
     return this.sagaRepository.findAll(specs, PageRequest.of(pageNumber, pageSize, Sort.by(sorts)));
   }
+
+  @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+  public Optional<SagaEvent> getSagaEventById(final UUID sagaEventID) {
+    return this.sagaEventRepository.findById(sagaEventID);
+  }
+
+  public void updateSagaEventRecord(final SagaEvent sagaEventFromDB) {
+    this.sagaEventRepository.save(sagaEventFromDB);
+  }
+
+  public void deleteSagaEvent(SagaEvent sagaEventFromDB) {
+    this.sagaEventRepository.delete(sagaEventFromDB);
+  }
 }

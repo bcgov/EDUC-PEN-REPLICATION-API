@@ -1,7 +1,9 @@
 package ca.bc.gov.educ.api.pen.replication.mappers;
 
 import ca.bc.gov.educ.api.pen.replication.struct.saga.Saga;
+import ca.bc.gov.educ.api.pen.replication.struct.saga.SagaEvent;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 /**
@@ -21,4 +23,7 @@ public interface SagaMapper {
    * @return the saga
    */
   Saga toStruct(ca.bc.gov.educ.api.pen.replication.model.Saga saga);
+
+  @Mapping(target = "sagaId", source = "saga.sagaId")
+  SagaEvent toStruct(ca.bc.gov.educ.api.pen.replication.model.SagaEvent sagaEvent);
 }

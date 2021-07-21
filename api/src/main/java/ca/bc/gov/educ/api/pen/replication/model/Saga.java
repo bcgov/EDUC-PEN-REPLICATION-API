@@ -1,6 +1,9 @@
 package ca.bc.gov.educ.api.pen.replication.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -11,8 +14,6 @@ import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -96,25 +97,6 @@ public class Saga implements Serializable {
   @PastOrPresent
   @Column(name = "UPDATE_DATE")
   LocalDateTime updateDate;
-  /**
-   * The Saga events.
-   */
-  @EqualsAndHashCode.Exclude
-  @ToString.Exclude
-  @OneToMany(mappedBy = "saga", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true, targetEntity = SagaEvent.class)
-  Set<SagaEvent> sagaEvents;
-
-  /**
-   * Gets saga events.
-   *
-   * @return the saga events
-   */
-  public Set<SagaEvent> getSagaEvents() {
-    if (this.sagaEvents == null) {
-      this.sagaEvents = new LinkedHashSet<>();
-    }
-    return this.sagaEvents;
-  }
 
   /**
    * Gets payload.

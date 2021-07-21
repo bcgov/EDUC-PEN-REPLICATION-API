@@ -1,6 +1,7 @@
 package ca.bc.gov.educ.api.pen.replication.endpoint;
 
 import ca.bc.gov.educ.api.pen.replication.struct.saga.Saga;
+import ca.bc.gov.educ.api.pen.replication.struct.saga.SagaEvent;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -10,10 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -36,6 +34,27 @@ public interface PenReplicationSagaEndpoint {
   @Tag(name = "Endpoint to retrieve saga by its ID (GUID).", description = "Endpoint to retrieve saga by its ID (GUID).")
   ResponseEntity<Saga> readSaga(@PathVariable UUID sagaID);
 
+
+  @PutMapping("/{sagaID}")
+  @PreAuthorize("hasAuthority('SCOPE_PEN_REPLICATION_WRITE_SAGA')")
+  @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK."), @ApiResponse(responseCode = "404", description = "Not Found.")})
+  @Transactional(readOnly = true)
+  @Tag(name = "Endpoint to update saga by its ID (GUID).", description = "Endpoint to update saga by its ID (GUID).")
+  ResponseEntity<Saga> updateSaga(@PathVariable UUID sagaID, @RequestBody Saga saga);
+
+  @PutMapping("/{sagaID}/saga-event-states/{sagaEventID}")
+  @PreAuthorize("hasAuthority('SCOPE_PEN_REPLICATION_WRITE_SAGA')")
+  @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK."), @ApiResponse(responseCode = "404", description = "Not Found.")})
+  @Transactional(readOnly = true)
+  @Tag(name = "Endpoint to update saga event by its ID (GUID) and Saga ID (GUID).", description = "Endpoint to update saga by its ID (GUID) and Saga ID (GUID).")
+  ResponseEntity<SagaEvent> updateSagaEventState(@PathVariable UUID sagaID, @PathVariable UUID sagaEventID, @RequestBody SagaEvent sagaEvent);
+
+  @DeleteMapping("/{sagaID}/saga-event-states/{sagaEventID}")
+  @PreAuthorize("hasAuthority('SCOPE_PEN_REPLICATION_WRITE_SAGA')")
+  @ApiResponses(value = {@ApiResponse(responseCode = "204", description = "NO CONTENT."), @ApiResponse(responseCode = "404", description = "Not Found.")})
+  @Transactional(readOnly = true)
+  @Tag(name = "Endpoint to delete saga event by its ID (GUID) and Saga ID (GUID).", description = "Endpoint to delete saga by its ID (GUID) and Saga ID (GUID).")
+  ResponseEntity<Void> deleteSagaEvent(@PathVariable UUID sagaID, @PathVariable UUID sagaEventID);
 
   /**
    * Find all Sagas for given search criteria.
