@@ -28,4 +28,13 @@ public enum SagaEnum {
   SagaEnum(final String code) {
     this.code = code;
   }
+
+  public static SagaEnum getKeyFromValue(String value) {
+    for (SagaEnum e : SagaEnum.values()) {
+      if (value.equalsIgnoreCase(e.getCode())) {
+        return e;
+      }
+    }
+    return null;
+  }
 }

@@ -98,6 +98,9 @@ public class Saga implements Serializable {
   @Column(name = "UPDATE_DATE")
   LocalDateTime updateDate;
 
+  @Column(name = "RETRY_COUNT")
+  private Integer retryCount;
+
   /**
    * Gets payload.
    *

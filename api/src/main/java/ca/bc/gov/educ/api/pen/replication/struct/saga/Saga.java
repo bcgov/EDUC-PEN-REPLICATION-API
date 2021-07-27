@@ -51,4 +51,6 @@ public class Saga {
    * The Update date.
    */
   String updateDate;
+
+  Integer retryCount;
 }
