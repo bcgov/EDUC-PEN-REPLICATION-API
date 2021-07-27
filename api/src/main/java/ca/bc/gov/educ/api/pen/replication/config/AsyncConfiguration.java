@@ -36,7 +36,7 @@ public class AsyncConfiguration {
    *
    * @return the executor
    */
-  @Bean(name = "taskExecutor")
+  @Bean(name = "asyncTaskExecutor")
   public Executor controllerTaskExecutor() {
     return new EnhancedQueueExecutor.Builder()
       .setThreadFactory(new ThreadFactoryBuilder().setNameFormat("async-executor-%d").build())
@@ -51,7 +51,7 @@ public class AsyncConfiguration {
   @Bean
   public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
     val threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
-    threadPoolTaskScheduler.setThreadNamePrefix("scheduled-task-executor");
+    threadPoolTaskScheduler.setThreadNamePrefix("scheduled-task-executor-");
     threadPoolTaskScheduler.setPoolSize(5);
     return threadPoolTaskScheduler;
   }
