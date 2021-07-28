@@ -9,7 +9,7 @@ public enum TransactionType {
   /**
    * Create student transaction type.
    */
-  CREATE_STUDENT("NEW"),
+  CREATE_STUDENT("INSERT"),
   /**
    * Update student transaction type.
    */
@@ -17,11 +17,11 @@ public enum TransactionType {
   /**
    * Create twins transaction type.
    */
-  CREATE_TWINS("CT"),
+  CREATE_TWINS("INSERT"),
   /**
    * Delete twins transaction type.
    */
-  DELETE_TWINS("DT");
+  DELETE_TWINS("DELETE");
 
   @Getter
   private final String code;
