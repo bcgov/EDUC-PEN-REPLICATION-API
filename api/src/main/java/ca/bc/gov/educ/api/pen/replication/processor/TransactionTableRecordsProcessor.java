@@ -138,6 +138,7 @@ public class TransactionTableRecordsProcessor {
         } else {
           log.warn("unknown transaction type :: {} found in table, ignoring", txType);
         }
+        this.stringRedisTemplate.delete(redisKey);
       } else {
         log.debug(SKIP_RECORD_LOG, redisKey);
       }
