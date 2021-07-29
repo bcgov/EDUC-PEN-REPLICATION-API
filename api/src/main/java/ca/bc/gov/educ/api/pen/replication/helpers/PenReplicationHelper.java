@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -26,6 +28,7 @@ public final class PenReplicationHelper {
 
   private static final String TO_DATE = "TO_DATE('";
   private static final String YYYY_MM_DD_HH_24_MI_SS = ", 'YYYY-MM-DD HH24:MI:SS'),";
+  private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
   private static final String DELETE_FROM_PEN_TWINS_WHERE_PEN_TWIN_1 = "delete from pen_twins where PEN_TWIN1 = '";
   private static final String AND_PEN_TWIN_2 = " AND PEN_TWIN2 = '";
   private static final String INSERT_INTO_PEN_TWINS = "insert into pen_twins (PEN_TWIN1, PEN_TWIN2, TWIN_REASON, RUN_DATE, TWIN_DATE, TWIN_USER_ID) values (";
@@ -65,7 +68,7 @@ public final class PenReplicationHelper {
       "'" + (penDemographicsEntity.getStudStatus() == null ? "" : penDemographicsEntity.getStudStatus()) + "'" + "," +
       "'" + penDemographicsEntity.getStudSurname() + "'" + "," +
       "'" + "'" + "," +
-      TO_DATE + penDemographicsEntity.getUpdateDate() + "'" + YYYY_MM_DD_HH_24_MI_SS +
+      TO_DATE + LocalDateTime.now().format(formatter) + "'" + YYYY_MM_DD_HH_24_MI_SS +
       "'" + penDemographicsEntity.getUpdateUser() + "'" + "," +
       "'" + (penDemographicsEntity.getUsualGiven() == null ? "" : penDemographicsEntity.getUsualGiven()) + "'" + "," +
       "'" + (penDemographicsEntity.getUsualMiddle() == null ? "" : penDemographicsEntity.getUsualMiddle()) + "'" + "," +
@@ -102,7 +105,7 @@ public final class PenReplicationHelper {
       + "MERGE_TO_DATE=" + getMergeToDate(penDemographicsEntity.getMergeToDate()) + ","
       + "MERGE_TO_CODE=" + "'" + (penDemographicsEntity.getMergeToCode() == null ? "" : penDemographicsEntity.getMergeToCode()) + "'" + ","
       + "STUD_TRUE_NO=" + "'" + (penDemographicsEntity.getStudentTrueNo() == null ? "" : penDemographicsEntity.getStudentTrueNo()) + "'" + ","
-      + "UPDATE_DATE=" + TO_DATE + penDemographicsEntity.getUpdateDate() + "'" + YYYY_MM_DD_HH_24_MI_SS
+      + "UPDATE_DATE=" + TO_DATE + LocalDateTime.now().format(formatter) + "'" + YYYY_MM_DD_HH_24_MI_SS
       + "UPDATE_USER_NAME=" + "'" + penDemographicsEntity.getUpdateUser() + "'" + ","
       + "USUAL_GIVEN=" + "'" + (penDemographicsEntity.getUsualGiven() == null ? "" : penDemographicsEntity.getUsualGiven()) + "'" + ","
       + "USUAL_MIDDLE=" + "'" + (penDemographicsEntity.getUsualMiddle() == null ? "" : penDemographicsEntity.getUsualMiddle()) + "'" + ","
