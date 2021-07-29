@@ -5,6 +5,7 @@ import ca.bc.gov.educ.api.pen.replication.model.PenDemogTransaction;
 import ca.bc.gov.educ.api.pen.replication.model.Saga;
 import ca.bc.gov.educ.api.pen.replication.repository.PenDemogTransactionRepository;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,5 +47,15 @@ public class PenDemogTransactionService {
       this.penDemogTransactionRepository.save(demogTransaction);
     });
     return this.sagaService.createSagaRecordInDB(sagaName, userName, payload);
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public void addPenNumberToTransactionTable(final String penDemogTransactionId, final String pen) {
+    val pendDemogTxOptional = penDemogTransactionRepository.findById(penDemogTransactionId);
+    if (pendDemogTxOptional.isPresent()) {
+      val penDemogTxUpdated = pendDemogTxOptional.get();
+      penDemogTxUpdated.setPen(pen);
+      penDemogTransactionRepository.save(penDemogTxUpdated);
+    }
   }
 }

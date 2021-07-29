@@ -11,6 +11,7 @@ import ca.bc.gov.educ.api.pen.replication.orchestrator.base.BaseOrchestrator;
 import ca.bc.gov.educ.api.pen.replication.repository.PenDemogRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.PenDemogTransactionRepository;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
+import ca.bc.gov.educ.api.pen.replication.service.PenDemogTransactionService;
 import ca.bc.gov.educ.api.pen.replication.service.SagaService;
 import ca.bc.gov.educ.api.pen.replication.struct.Event;
 import ca.bc.gov.educ.api.pen.replication.struct.saga.StudentCreateSagaData;
@@ -38,6 +39,7 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
   private final PenDemogTransactionRepository penDemogTransactionRepository;
   private final RestUtils restUtils;
   private final PenDemogRepository penDemogRepository;
+  private final PenDemogTransactionService penDemogTransactionService;
 
   /**
    * Instantiates a new Base orchestrator.
@@ -48,12 +50,14 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
    * @param penDemogTransactionRepository the pen demog transaction repository
    * @param restUtils                     the rest utils
    * @param penDemogRepository            the pen demog repository
+   * @param penDemogTransactionService    the pen demog transaction service
    */
-  protected StudentCreateOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher, final EntityManagerFactory entityManagerFactory, final PenDemogTransactionRepository penDemogTransactionRepository, final RestUtils restUtils, final PenDemogRepository penDemogRepository) {
+  protected StudentCreateOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher, final EntityManagerFactory entityManagerFactory, final PenDemogTransactionRepository penDemogTransactionRepository, final RestUtils restUtils, final PenDemogRepository penDemogRepository, PenDemogTransactionService penDemogTransactionService) {
     super(entityManagerFactory, sagaService, messagePublisher, StudentCreateSagaData.class, SagaEnum.PEN_REPLICATION_STUDENT_CREATE_SAGA, SagaTopicsEnum.PEN_REPLICATION_STUDENT_CREATE_SAGA_TOPIC);
     this.penDemogTransactionRepository = penDemogTransactionRepository;
     this.restUtils = restUtils;
     this.penDemogRepository = penDemogRepository;
+    this.penDemogTransactionService = penDemogTransactionService;
   }
 
   @Override
@@ -107,6 +111,8 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
     final var pen = event.getEventPayload();
     final var student = studentCreateSagaData.getStudentCreate();
     student.setPen(pen);
+    // update the pen in pen demog transaction first.
+    this.penDemogTransactionService.addPenNumberToTransactionTable(studentCreateSagaData.getPenDemogTransaction().getTransactionID(), pen);
     saga.setSagaState(CREATE_STUDENT.toString());
     saga.setPayload(JsonUtil.getJsonStringFromObject(studentCreateSagaData));
     final SagaEvent eventStates = this.createEventState(saga, event.getEventType(), event.getEventOutcome(), event.getEventPayload());

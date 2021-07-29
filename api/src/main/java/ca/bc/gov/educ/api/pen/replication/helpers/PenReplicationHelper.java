@@ -51,7 +51,7 @@ public final class PenReplicationHelper {
 
     final String insert = "insert into pen_demog (create_date, create_user_name, stud_demog_code, stud_grade, stud_grade_year, pen_local_id, merge_to_code, merge_to_date, merge_to_user_name, pen_mincode, postal, stud_birth, stud_given, stud_middle, stud_sex, stud_status, stud_surname, stud_true_no, update_date, update_user_name, usual_given, usual_middle, usual_surname, stud_no) values (" +
       TO_DATE + penDemographicsEntity.getCreateDate() + "'" + YYYY_MM_DD_HH_24_MI_SS +
-      "'" + penDemographicsEntity.getCreateUser() + "'" + "," +
+      "'" + StringUtils.substring(penDemographicsEntity.getCreateUser(), 0, 15) + "'" + "," + // max length is 15.
       "'" + (penDemographicsEntity.getDemogCode() == null ? "" : penDemographicsEntity.getDemogCode()) + "'" + "," +
       "'" + ReplicationUtils.getBlankWhenNull(penDemographicsEntity.getGrade()) + "'" + "," +
       "'" + (penDemographicsEntity.getGradeYear() == null ? "" : penDemographicsEntity.getGradeYear()) + "'" + "," +
@@ -106,7 +106,7 @@ public final class PenReplicationHelper {
       + "MERGE_TO_CODE=" + "'" + (penDemographicsEntity.getMergeToCode() == null ? "" : penDemographicsEntity.getMergeToCode()) + "'" + ","
       + "STUD_TRUE_NO=" + "'" + (penDemographicsEntity.getStudentTrueNo() == null ? "" : penDemographicsEntity.getStudentTrueNo()) + "'" + ","
       + "UPDATE_DATE=" + TO_DATE + LocalDateTime.now().format(formatter) + "'" + YYYY_MM_DD_HH_24_MI_SS
-      + "UPDATE_USER_NAME=" + "'" + penDemographicsEntity.getUpdateUser() + "'" + ","
+      + "UPDATE_USER_NAME=" + "'" + StringUtils.substring(penDemographicsEntity.getUpdateUser(), 0, 15) + "'" + ","// max length is 15.
       + "USUAL_GIVEN=" + "'" + (penDemographicsEntity.getUsualGiven() == null ? "" : penDemographicsEntity.getUsualGiven()) + "'" + ","
       + "USUAL_MIDDLE=" + "'" + (penDemographicsEntity.getUsualMiddle() == null ? "" : penDemographicsEntity.getUsualMiddle()) + "'" + ","
       + "USUAL_SURNAME=" + "'" + (penDemographicsEntity.getUsualSurname() == null ? "" : penDemographicsEntity.getUsualSurname()) + "'"
