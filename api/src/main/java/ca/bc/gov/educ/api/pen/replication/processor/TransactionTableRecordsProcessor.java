@@ -6,6 +6,7 @@ import ca.bc.gov.educ.api.pen.replication.mappers.StudentMapper;
 import ca.bc.gov.educ.api.pen.replication.model.PenDemogTransaction;
 import ca.bc.gov.educ.api.pen.replication.model.PenTwinTransaction;
 import ca.bc.gov.educ.api.pen.replication.orchestrator.base.Orchestrator;
+import ca.bc.gov.educ.api.pen.replication.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.pen.replication.repository.PenDemogTransactionRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.PenTwinTransactionRepository;
 import ca.bc.gov.educ.api.pen.replication.service.PenDemogTransactionService;
@@ -98,11 +99,11 @@ public class TransactionTableRecordsProcessor {
         final PossibleMatchSagaData possibleMatchSagaData = PossibleMatchSagaData.builder().penTwinTransaction(penTwinTransaction).build();
         if (CREATE_TWINS.getCode().equals(txType)) {
           val orchestrator = this.sagaEnumOrchestratorMap.get(PEN_REPLICATION_POSSIBLE_MATCH_CREATE_SAGA);
-          val saga = this.penTwinTransactionService.createSagaAndUpdatePenTwinTransaction(orchestrator.getSagaName().getCode(), penTwinTransaction.getTwinUserID(), JsonUtil.getJsonStringFromObject(possibleMatchSagaData), penTwinTransaction);
+          val saga = this.penTwinTransactionService.createSagaAndUpdatePenTwinTransaction(orchestrator.getSagaName().getCode(), ApplicationProperties.API_NAME, JsonUtil.getJsonStringFromObject(possibleMatchSagaData), penTwinTransaction);
           orchestrator.startSaga(saga);
         } else if (DELETE_TWINS.getCode().equals(txType)) {
           val orchestrator = this.sagaEnumOrchestratorMap.get(PEN_REPLICATION_POSSIBLE_MATCH_DELETE_SAGA);
-          val saga = this.penTwinTransactionService.createSagaAndUpdatePenTwinTransaction(orchestrator.getSagaName().getCode(), penTwinTransaction.getTwinUserID(), JsonUtil.getJsonStringFromObject(possibleMatchSagaData), penTwinTransaction);
+          val saga = this.penTwinTransactionService.createSagaAndUpdatePenTwinTransaction(orchestrator.getSagaName().getCode(), ApplicationProperties.API_NAME, JsonUtil.getJsonStringFromObject(possibleMatchSagaData), penTwinTransaction);
           orchestrator.startSaga(saga);
         } else {
           log.warn("unknown transaction type :: {} found in table, ignoring", txType);
@@ -128,12 +129,12 @@ public class TransactionTableRecordsProcessor {
             .studentCreate(StudentMapper.mapper.toStudentCreate(penDemogTransaction))
             .build();
           val orchestrator = this.sagaEnumOrchestratorMap.get(PEN_REPLICATION_STUDENT_CREATE_SAGA);
-          val saga = this.penDemogTransactionService.createSagaAndUpdatePenDemogTransaction(orchestrator.getSagaName().getCode(), penDemogTransaction.getCreateUser(), JsonUtil.getJsonStringFromObject(studentCreateSagaData), penDemogTransaction);
+          val saga = this.penDemogTransactionService.createSagaAndUpdatePenDemogTransaction(orchestrator.getSagaName().getCode(), ApplicationProperties.API_NAME, JsonUtil.getJsonStringFromObject(studentCreateSagaData), penDemogTransaction);
           orchestrator.startSaga(saga);
         } else if (UPDATE_STUDENT.getCode().equals(txType)) {
           val studentUpdateSagaData = StudentUpdateSagaData.builder().penDemogTransaction(penDemogTransaction).studentUpdate(StudentMapper.mapper.toStudent(penDemogTransaction)).build();
           val orchestrator = this.sagaEnumOrchestratorMap.get(PEN_REPLICATION_STUDENT_UPDATE_SAGA);
-          val saga = this.penDemogTransactionService.createSagaAndUpdatePenDemogTransaction(orchestrator.getSagaName().getCode(), penDemogTransaction.getCreateUser(), JsonUtil.getJsonStringFromObject(studentUpdateSagaData), penDemogTransaction);
+          val saga = this.penDemogTransactionService.createSagaAndUpdatePenDemogTransaction(orchestrator.getSagaName().getCode(), ApplicationProperties.API_NAME, JsonUtil.getJsonStringFromObject(studentUpdateSagaData), penDemogTransaction);
           orchestrator.startSaga(saga);
         } else {
           log.warn("unknown transaction type :: {} found in table, ignoring", txType);
