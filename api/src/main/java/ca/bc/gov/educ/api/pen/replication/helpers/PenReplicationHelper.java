@@ -12,6 +12,7 @@ import ca.bc.gov.educ.api.pen.replication.struct.StudentUpdate;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -73,6 +74,13 @@ public final class PenReplicationHelper {
    */
   public static String buildPenDemogUpdatePS() {
     return "UPDATE PEN_DEMOG SET " + "STUD_DEMOG_CODE=?," + "STUD_GRADE=?," + "STUD_GRADE_YEAR=?," + "PEN_LOCAL_ID=?," + "PEN_MINCODE=?," + "POSTAL=?," + "STUD_BIRTH=?," + "STUD_GIVEN=?," + "STUD_MIDDLE=?," + "STUD_SEX=?," + "STUD_STATUS=?," + "STUD_SURNAME=?," + "MERGE_TO_DATE=?," + "MERGE_TO_CODE=?," + "STUD_TRUE_NO=?," + "UPDATE_DATE=?," + "UPDATE_USER_NAME=?," + "USUAL_GIVEN=?," + "USUAL_MIDDLE=?," + "USUAL_SURNAME=?," + " WHERE STUD_NO=?";
+  }
+
+
+  public static int updatePenDemogUsingJDBC(final PenDemographicsEntity penDemographicsEntity, final JdbcTemplate jdbcTemplate) {
+    val updateSql = "UPDATE PEN_DEMOG SET STUD_DEMOG_CODE=?, STUD_GRADE=?, STUD_GRADE_YEAR=?, PEN_LOCAL_ID=?, PEN_MINCODE=?, POSTAL=?, STUD_BIRTH=?, STUD_GIVEN=?,STUD_MIDDLE=?, STUD_SEX=?, STUD_STATUS=?, STUD_SURNAME=?, MERGE_TO_DATE=?, MERGE_TO_CODE=?, STUD_TRUE_NO=?, UPDATE_DATE=?, UPDATE_USER_NAME=?, USUAL_GIVEN=?,USUAL_MIDDLE=?, USUAL_SURNAME=?  WHERE STUD_NO=?";
+
+    return jdbcTemplate.update(updateSql, penDemographicsEntity.getDemogCode(), penDemographicsEntity.getGrade(), penDemographicsEntity.getGradeYear(), penDemographicsEntity.getLocalID(), penDemographicsEntity.getMincode(), penDemographicsEntity.getPostalCode(), penDemographicsEntity.getStudBirth(), penDemographicsEntity.getStudGiven(), penDemographicsEntity.getStudMiddle(), penDemographicsEntity.getStudSex(), penDemographicsEntity.getStudStatus(), penDemographicsEntity.getStudSurname(), penDemographicsEntity.getMergeToDate(), penDemographicsEntity.getMergeToCode(), penDemographicsEntity.getStudentTrueNo(), penDemographicsEntity.getUpdateDate(), penDemographicsEntity.getUpdateUser(), penDemographicsEntity.getUsualGiven(), penDemographicsEntity.getUsualGiven(), penDemographicsEntity.getUsualMiddle(), penDemographicsEntity.getUsualSurname(), penDemographicsEntity.getStudNo());
   }
 
   /**

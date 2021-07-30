@@ -57,7 +57,7 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
    * @param penDemogTransactionService    the pen demog transaction service
    * @param jdbcTemplate                  the jdbc template
    */
-  protected StudentCreateOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher, final EntityManagerFactory entityManagerFactory, final PenDemogTransactionRepository penDemogTransactionRepository, final RestUtils restUtils, PenDemogService penDemogService, PenDemogTransactionService penDemogTransactionService, JdbcTemplate jdbcTemplate) {
+  protected StudentCreateOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher, final EntityManagerFactory entityManagerFactory, final PenDemogTransactionRepository penDemogTransactionRepository, final RestUtils restUtils, final PenDemogService penDemogService, final PenDemogTransactionService penDemogTransactionService, final JdbcTemplate jdbcTemplate) {
     super(entityManagerFactory, sagaService, messagePublisher, StudentCreateSagaData.class, SagaEnum.PEN_REPLICATION_STUDENT_CREATE_SAGA, SagaTopicsEnum.PEN_REPLICATION_STUDENT_CREATE_SAGA_TOPIC);
     this.penDemogTransactionRepository = penDemogTransactionRepository;
     this.restUtils = restUtils;
@@ -101,12 +101,11 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
 
   private int createOrUpdatePenDemog(final StudentCreateSagaData studentCreateSagaData) {
     final int rowsUpdated;
-    val existingPenDemogRecord = penDemogService.findPenDemogByPen(StringUtils.rightPad(studentCreateSagaData.getStudentCreate().getPen(), 10));
+    val existingPenDemogRecord = this.penDemogService.findPenDemogByPen(StringUtils.rightPad(studentCreateSagaData.getStudentCreate().getPen(), 10));
     if (existingPenDemogRecord.isPresent()) {
       val existingPenDemog = existingPenDemogRecord.get();
       val penDemographicsEntity = PenReplicationHelper.getPenDemogFromStudentUpdate(StudentMapper.mapper.toStudentUpdate(studentCreateSagaData.getStudentCreate()), existingPenDemog, this.restUtils);
-      val updateSql = PenReplicationHelper.buildPenDemogUpdatePS();
-      rowsUpdated = this.jdbcTemplate.update(updateSql, penDemographicsEntity.getDemogCode(), penDemographicsEntity.getGrade(), penDemographicsEntity.getGradeYear(), penDemographicsEntity.getLocalID(), penDemographicsEntity.getMincode(), penDemographicsEntity.getPostalCode(), penDemographicsEntity.getStudBirth(), penDemographicsEntity.getStudGiven(), penDemographicsEntity.getStudMiddle(), penDemographicsEntity.getStudSex(), penDemographicsEntity.getStudStatus(), penDemographicsEntity.getStudSurname(), penDemographicsEntity.getMergeToDate(), penDemographicsEntity.getMergeToCode(), penDemographicsEntity.getStudentTrueNo(), penDemographicsEntity.getUpdateDate(), penDemographicsEntity.getUpdateUser(), penDemographicsEntity.getUsualGiven(), penDemographicsEntity.getUsualGiven(), penDemographicsEntity.getUsualMiddle(), penDemographicsEntity.getUsualSurname(), penDemographicsEntity.getStudNo());
+      rowsUpdated = PenReplicationHelper.updatePenDemogUsingJDBC(penDemographicsEntity, this.jdbcTemplate);
     } else {
       val penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(studentCreateSagaData.getStudentCreate());
       penDemographicsEntity.setCreateDate(LocalDateTime.now());
