@@ -28,5 +28,5 @@ public interface PenTwinTransactionRepository extends JpaRepository<PenTwinTrans
    * @param transactionStatus the transaction status
    * @return the list
    */
-  List<PenTwinTransaction> findAllByTransactionStatusOrderByTransactionInsertDateTime(String transactionStatus);
+  List<PenTwinTransaction> findAllByTransactionStatusAndTransactionTypeInOrderByTransactionInsertDateTime(String transactionStatus, List<String> transactionTypes);
 }

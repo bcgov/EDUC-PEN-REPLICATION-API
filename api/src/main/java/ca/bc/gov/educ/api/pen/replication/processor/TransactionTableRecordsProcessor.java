@@ -23,6 +23,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -74,8 +75,8 @@ public class TransactionTableRecordsProcessor {
     val valueFromRedis = this.stringRedisTemplate.opsForValue().get(redisKey);
     if (StringUtils.isBlank(valueFromRedis)) {
       this.stringRedisTemplate.opsForValue().set(redisKey, "true", 1, TimeUnit.MINUTES); // add timeout of one minute so that it self expires in case delete operation was not successful.
-      val penTwinTransactions = this.penTwinTransactionRepository.findAllByTransactionStatusOrderByTransactionInsertDateTime(TransactionStatus.PENDING.getCode());
-      val penDemogTransactions = this.penDemogTransactionRepository.findAllByTransactionStatusOrderByTransactionInsertDateTime(TransactionStatus.PENDING.getCode());
+      val penTwinTransactions = this.penTwinTransactionRepository.findAllByTransactionStatusAndTransactionTypeInOrderByTransactionInsertDateTime(TransactionStatus.PENDING.getCode(), Arrays.asList(CREATE_TWINS.getCode(), DELETE_TWINS.getCode()));
+      val penDemogTransactions = this.penDemogTransactionRepository.findAllByTransactionStatusAndTransactionTypeInOrderByTransactionInsertDateTime(TransactionStatus.PENDING.getCode(), Arrays.asList(CREATE_STUDENT.getCode(), UPDATE_STUDENT.getCode()));
       if (!penTwinTransactions.isEmpty()) {
         this.processTwinTransactions(penTwinTransactions);
       }
