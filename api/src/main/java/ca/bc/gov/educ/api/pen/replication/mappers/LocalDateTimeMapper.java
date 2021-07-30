@@ -41,8 +41,14 @@ public class LocalDateTimeMapper {
     if (dateTime == null) {
       return null;
     }
-    final var pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    return LocalDateTime.parse(dateTime, pattern);
+    final DateTimeFormatter pattern;
+    if (dateTime.contains("T")) {
+      pattern = DateTimeFormatter.ofPattern("yyyy-MM-ddTHH:mm:ss");
+    } else {
+      pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    }
+
+    return LocalDateTime.parse(dateTime.substring(0, 19), pattern);
   }
 
 }
