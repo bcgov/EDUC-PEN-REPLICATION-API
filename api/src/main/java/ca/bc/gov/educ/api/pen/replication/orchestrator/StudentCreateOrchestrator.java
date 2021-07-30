@@ -102,7 +102,8 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
     if (existingPenDemogRecord.isPresent()) {
       val existingPenDemog = existingPenDemogRecord.get();
       val penDemographicsEntity = PenReplicationHelper.getPenDemogFromStudentUpdate(StudentMapper.mapper.toStudentUpdate(studentCreateSagaData.getStudentCreate()), existingPenDemog, this.restUtils);
-      BeanUtils.copyProperties(penDemographicsEntity, existingPenDemog, "createDate", "createUser", "studNo");
+      penDemographicsEntity.setStudNo(StringUtils.rightPad(penDemographicsEntity.getStudNo(), 10));
+      BeanUtils.copyProperties(penDemographicsEntity, existingPenDemog, "createDate", "createUser");
       this.penDemogService.savePenDemog(existingPenDemog);
       rowsUpdated = 1;
     } else {
