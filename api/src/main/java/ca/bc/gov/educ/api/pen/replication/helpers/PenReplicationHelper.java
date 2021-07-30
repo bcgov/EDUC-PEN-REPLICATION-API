@@ -8,15 +8,13 @@ import ca.bc.gov.educ.api.pen.replication.model.PenTwinTransaction;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.PossibleMatch;
 import ca.bc.gov.educ.api.pen.replication.struct.Student;
-import ca.bc.gov.educ.api.pen.replication.struct.StudentCreate;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentUpdate;
-import ca.bc.gov.educ.api.pen.replication.util.ReplicationUtils;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -27,8 +25,6 @@ import java.util.Map;
 public final class PenReplicationHelper {
 
   private static final String TO_DATE = "TO_DATE('";
-  private static final String YYYY_MM_DD_HH_24_MI_SS = ", 'YYYY-MM-DD HH24:MI:SS'),";
-  private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
   private static final String DELETE_FROM_PEN_TWINS_WHERE_PEN_TWIN_1 = "delete from pen_twins where PEN_TWIN1 = '";
   private static final String AND_PEN_TWIN_2 = " AND PEN_TWIN2 = '";
   private static final String INSERT_INTO_PEN_TWINS = "insert into pen_twins (PEN_TWIN1, PEN_TWIN2, TWIN_REASON, RUN_DATE, TWIN_DATE, TWIN_USER_ID) values (";
@@ -37,92 +33,13 @@ public final class PenReplicationHelper {
 
   }
 
-  /**
-   * Build pen demog insert string.
-   *
-   * @param studentCreate the student create
-   * @return the string
-   */
-  public static String buildPenDemogInsert(final StudentCreate studentCreate) {
-    val penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(studentCreate);
-    penDemographicsEntity.setCreateDate(formatDateTime(penDemographicsEntity.getCreateDate()));
-    penDemographicsEntity.setUpdateDate(formatDateTime(penDemographicsEntity.getUpdateDate()));
-    penDemographicsEntity.setStudBirth(StringUtils.replace(penDemographicsEntity.getStudBirth(), "-", ""));
-
-    final String insert = "insert into pen_demog (create_date, create_user_name, stud_demog_code, stud_grade, stud_grade_year, pen_local_id, merge_to_code, merge_to_date, merge_to_user_name, pen_mincode, postal, stud_birth, stud_given, stud_middle, stud_sex, stud_status, stud_surname, stud_true_no, update_date, update_user_name, usual_given, usual_middle, usual_surname, stud_no) values (" +
-      TO_DATE + penDemographicsEntity.getCreateDate() + "'" + YYYY_MM_DD_HH_24_MI_SS +
-      "'" + StringUtils.substring(penDemographicsEntity.getCreateUser(), 0, 15) + "'" + "," + // max length is 15.
-      "'" + (penDemographicsEntity.getDemogCode() == null ? "" : penDemographicsEntity.getDemogCode()) + "'" + "," +
-      "'" + ReplicationUtils.getBlankWhenNull(penDemographicsEntity.getGrade()) + "'" + "," +
-      "'" + (penDemographicsEntity.getGradeYear() == null ? "" : penDemographicsEntity.getGradeYear()) + "'" + "," +
-      "'" + (penDemographicsEntity.getLocalID() == null ? "" : penDemographicsEntity.getLocalID()) + "'" + "," +
-      "'" + "'" + "," +
-      "'" + "'" + "," +
-      "'" + "'" + "," +
-      "'" + (penDemographicsEntity.getMincode() == null ? "" : penDemographicsEntity.getMincode()) + "'" + "," +
-      "'" + (penDemographicsEntity.getPostalCode() == null ? " " : penDemographicsEntity.getPostalCode()) + "'" + "," +
-      "'" + penDemographicsEntity.getStudBirth() + "'" + "," +
-      "'" + (penDemographicsEntity.getStudGiven() == null ? "" : penDemographicsEntity.getStudGiven()) + "'" + "," +
-      "'" + (penDemographicsEntity.getStudMiddle() == null ? "" : penDemographicsEntity.getStudMiddle()) + "'" + "," +
-      "'" + penDemographicsEntity.getStudSex() + "'" + "," +
-      "'" + (penDemographicsEntity.getStudStatus() == null ? "" : penDemographicsEntity.getStudStatus()) + "'" + "," +
-      "'" + penDemographicsEntity.getStudSurname() + "'" + "," +
-      "'" + "'" + "," +
-      TO_DATE + LocalDateTime.now().format(formatter) + "'" + YYYY_MM_DD_HH_24_MI_SS +
-      "'" + penDemographicsEntity.getUpdateUser() + "'" + "," +
-      "'" + (penDemographicsEntity.getUsualGiven() == null ? "" : penDemographicsEntity.getUsualGiven()) + "'" + "," +
-      "'" + (penDemographicsEntity.getUsualMiddle() == null ? "" : penDemographicsEntity.getUsualMiddle()) + "'" + "," +
-      "'" + (penDemographicsEntity.getUsualSurname() == null ? "" : penDemographicsEntity.getUsualSurname()) + "'" + "," +
-      "'" + penDemographicsEntity.getStudNo() + "'" +
-      ")";
-    log.debug("Pen Demog Insert statement: " + insert);
-    return insert;
-  }
-
-  /**
-   * Build pen demog update string.
-   *
-   * @param studentUpdate    the student update
-   * @param existingPenDemog the existing pen demog
-   * @param restUtils        the rest utils
-   * @return the string
-   */
-  public static String buildPenDemogUpdate(final StudentUpdate studentUpdate, final PenDemographicsEntity existingPenDemog, final RestUtils restUtils) {
-    val penDemographicsEntity = getPenDemogFromStudentUpdate(studentUpdate, existingPenDemog, restUtils);
-    final String updatePenDemogStatement = "UPDATE PEN_DEMOG SET "
-      + "STUD_DEMOG_CODE=" + "'" + (penDemographicsEntity.getDemogCode() == null ? "" : penDemographicsEntity.getDemogCode()) + "'" + ","
-      + "STUD_GRADE=" + "'" + ReplicationUtils.getBlankWhenNull(penDemographicsEntity.getGrade()) + "'" + ","
-      + "STUD_GRADE_YEAR=" + "'" + (penDemographicsEntity.getGradeYear() == null ? "" : penDemographicsEntity.getGradeYear()) + "'" + ","
-      + "PEN_LOCAL_ID=" + "'" + (penDemographicsEntity.getLocalID() == null ? "" : penDemographicsEntity.getLocalID()) + "'" + ","
-      + "PEN_MINCODE=" + "'" + (penDemographicsEntity.getMincode() == null ? "" : penDemographicsEntity.getMincode()) + "'" + ","
-      + "POSTAL=" + "'" + (penDemographicsEntity.getPostalCode() == null ? " " : penDemographicsEntity.getPostalCode()) + "'" + ","
-      + "STUD_BIRTH=" + "'" + penDemographicsEntity.getStudBirth() + "'" + ","
-      + "STUD_GIVEN=" + "'" + (penDemographicsEntity.getStudGiven() == null ? "" : penDemographicsEntity.getStudGiven()) + "'" + ","
-      + "STUD_MIDDLE=" + "'" + (penDemographicsEntity.getStudMiddle() == null ? "" : penDemographicsEntity.getStudMiddle()) + "'" + ","
-      + "STUD_SEX=" + "'" + penDemographicsEntity.getStudSex() + "'" + ","
-      + "STUD_STATUS=" + "'" + (penDemographicsEntity.getStudStatus() == null ? "" : penDemographicsEntity.getStudStatus()) + "'" + ","
-      + "STUD_SURNAME=" + "'" + penDemographicsEntity.getStudSurname() + "'" + ","
-      + "MERGE_TO_DATE=" + getMergeToDate(penDemographicsEntity.getMergeToDate()) + ","
-      + "MERGE_TO_CODE=" + "'" + (penDemographicsEntity.getMergeToCode() == null ? "" : penDemographicsEntity.getMergeToCode()) + "'" + ","
-      + "STUD_TRUE_NO=" + "'" + (penDemographicsEntity.getStudentTrueNo() == null ? "" : penDemographicsEntity.getStudentTrueNo()) + "'" + ","
-      + "UPDATE_DATE=" + TO_DATE + LocalDateTime.now().format(formatter) + "'" + YYYY_MM_DD_HH_24_MI_SS
-      + "UPDATE_USER_NAME=" + "'" + StringUtils.substring(penDemographicsEntity.getUpdateUser(), 0, 15) + "'" + ","// max length is 15.
-      + "USUAL_GIVEN=" + "'" + (penDemographicsEntity.getUsualGiven() == null ? "" : penDemographicsEntity.getUsualGiven()) + "'" + ","
-      + "USUAL_MIDDLE=" + "'" + (penDemographicsEntity.getUsualMiddle() == null ? "" : penDemographicsEntity.getUsualMiddle()) + "'" + ","
-      + "USUAL_SURNAME=" + "'" + (penDemographicsEntity.getUsualSurname() == null ? "" : penDemographicsEntity.getUsualSurname()) + "'"
-      + " WHERE STUD_NO=" + "'" + StringUtils.rightPad(penDemographicsEntity.getStudNo(), 10) + "'"; // a space is appended CAREFUL not to remove.
-    log.debug("Update Pen Demog: " + updatePenDemogStatement);
-    return updatePenDemogStatement;
-  }
-
   public static PenDemographicsEntity getPenDemogFromStudentUpdate(final StudentUpdate studentUpdate, final PenDemographicsEntity existingPenDemog, final RestUtils restUtils) {
     val penDemog = PenDemogStudentMapper.mapper.toPenDemog(studentUpdate);
-    penDemog.setCreateDate(formatDateTime(penDemog.getCreateDate()));
-    penDemog.setUpdateDate(formatDateTime(penDemog.getUpdateDate()));
+    penDemog.setUpdateDate(LocalDateTime.now());
     penDemog.setStudBirth(StringUtils.replace(penDemog.getStudBirth(), "-", ""));
     if (StringUtils.isNotBlank(studentUpdate.getTrueStudentID()) && StringUtils.isBlank(existingPenDemog.getStudentTrueNo())) {
       penDemog.setStudentTrueNo(restUtils.getStudentPen(studentUpdate.getTrueStudentID()));
-      penDemog.setMergeToDate(studentUpdate.getUpdateDate());
+      penDemog.setMergeToDate(LocalDate.now());
       penDemog.setMergeToCode("MI");
     } else if (StringUtils.isBlank(studentUpdate.getTrueStudentID()) && StringUtils.isNotBlank(existingPenDemog.getStudentTrueNo())) {
       penDemog.setStudentTrueNo(null);

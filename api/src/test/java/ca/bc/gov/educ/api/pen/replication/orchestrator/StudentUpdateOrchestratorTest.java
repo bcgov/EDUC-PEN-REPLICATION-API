@@ -269,8 +269,8 @@ public class StudentUpdateOrchestratorTest extends BasePenReplicationAPITest {
       .givenName("givenName")
       .transactionID(this.transactionID)
       .pen(this.pen)
-      .createDate(LocalDateTime.now())
-      .updateDate(LocalDateTime.now())
+      .createDate(LocalDateTime.now().withNano(0))
+      .updateDate(LocalDateTime.now().withNano(0))
       .build();
   }
 }

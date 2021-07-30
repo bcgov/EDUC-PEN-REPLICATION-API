@@ -2,11 +2,20 @@ package ca.bc.gov.educ.api.pen.replication.mappers;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
 
 /**
  * The type Local date time mapper.
  */
 public class LocalDateTimeMapper {
+  DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+    .parseCaseInsensitive()
+    .append(ISO_LOCAL_DATE)
+    .appendLiteral(' ')
+    .append(ISO_LOCAL_TIME).toFormatter();
 
   /**
    * Map string.
@@ -14,11 +23,12 @@ public class LocalDateTimeMapper {
    * @param dateTime the date time
    * @return the string
    */
-  public String map(LocalDateTime dateTime) {
+  public String map(final LocalDateTime dateTime) {
     if (dateTime == null) {
       return null;
     }
-    return DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(dateTime);
+
+    return this.formatter.format(dateTime);
   }
 
   /**
@@ -27,11 +37,11 @@ public class LocalDateTimeMapper {
    * @param dateTime the date time
    * @return the local date time
    */
-  public LocalDateTime map(String dateTime) {
+  public LocalDateTime map(final String dateTime) {
     if (dateTime == null) {
       return null;
     }
-    var pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    final var pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     return LocalDateTime.parse(dateTime, pattern);
   }
 

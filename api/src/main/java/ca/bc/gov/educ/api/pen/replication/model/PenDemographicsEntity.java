@@ -10,6 +10,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * The type Pen demographics entity.
@@ -73,13 +75,13 @@ public class PenDemographicsEntity {
   private String mincode;
 
   @Column(name = "CREATE_DATE")
-  private String createDate;
+  private LocalDateTime createDate;
 
   @Column(name = "CREATE_USER_NAME")
   private String createUser;
 
   @Column(name = "UPDATE_DATE")
-  private String updateDate;
+  private LocalDateTime updateDate;
 
   @Column(name = "UPDATE_USER_NAME")
   private String updateUser;
@@ -95,6 +97,6 @@ public class PenDemographicsEntity {
   private String mergeToCode;
 
   @Column(name = "MERGE_TO_DATE")
-  private String mergeToDate;
+  private LocalDate mergeToDate;
 
 }

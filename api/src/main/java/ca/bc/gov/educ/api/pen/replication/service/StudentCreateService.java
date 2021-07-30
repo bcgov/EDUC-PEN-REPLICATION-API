@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import java.time.LocalDateTime;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventType.CREATE_STUDENT;
 
@@ -52,8 +53,8 @@ public class StudentCreateService extends BaseService<StudentCreate> {
     final var existingPenDemogRecord = this.penDemogService.findPenDemogByPen(StringUtils.rightPad(request.getPen(), 10));
     if (existingPenDemogRecord.isEmpty()) {
       val penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(request);
-      penDemographicsEntity.setCreateDate(formatDateTime(penDemographicsEntity.getCreateDate()));
-      penDemographicsEntity.setUpdateDate(formatDateTime(penDemographicsEntity.getUpdateDate()));
+      penDemographicsEntity.setCreateDate(LocalDateTime.now());
+      penDemographicsEntity.setUpdateDate(LocalDateTime.now());
       penDemographicsEntity.setStudBirth(StringUtils.replace(penDemographicsEntity.getStudBirth(), "-", ""));
       this.penDemogService.savePenDemog(penDemographicsEntity);
     }

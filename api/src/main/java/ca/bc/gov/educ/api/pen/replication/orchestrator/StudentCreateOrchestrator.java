@@ -25,12 +25,12 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManagerFactory;
+import java.time.LocalDateTime;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventOutcome.*;
 import static ca.bc.gov.educ.api.pen.replication.constants.EventType.*;
 import static ca.bc.gov.educ.api.pen.replication.constants.SagaTopicsEnum.PEN_SERVICES_API_TOPIC;
 import static ca.bc.gov.educ.api.pen.replication.constants.SagaTopicsEnum.STUDENT_API_TOPIC;
-import static ca.bc.gov.educ.api.pen.replication.helpers.PenReplicationHelper.formatDateTime;
 
 /**
  * The type Student create orchestrator.
@@ -102,13 +102,13 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
     if (existingPenDemogRecord.isPresent()) {
       val existingPenDemog = existingPenDemogRecord.get();
       val penDemographicsEntity = PenReplicationHelper.getPenDemogFromStudentUpdate(StudentMapper.mapper.toStudentUpdate(studentCreateSagaData.getStudentCreate()), existingPenDemog, this.restUtils);
-      BeanUtils.copyProperties(penDemographicsEntity, existingPenDemog);
+      BeanUtils.copyProperties(penDemographicsEntity, existingPenDemog, "createDate", "createUser");
       this.penDemogService.savePenDemog(existingPenDemog);
       rowsUpdated = 1;
     } else {
       val penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(studentCreateSagaData.getStudentCreate());
-      penDemographicsEntity.setCreateDate(formatDateTime(penDemographicsEntity.getCreateDate()));
-      penDemographicsEntity.setUpdateDate(formatDateTime(penDemographicsEntity.getUpdateDate()));
+      penDemographicsEntity.setCreateDate(LocalDateTime.now());
+      penDemographicsEntity.setUpdateDate(LocalDateTime.now());
       penDemographicsEntity.setStudBirth(StringUtils.replace(penDemographicsEntity.getStudBirth(), "-", ""));
       this.penDemogService.savePenDemog(penDemographicsEntity);
       rowsUpdated = 1;
