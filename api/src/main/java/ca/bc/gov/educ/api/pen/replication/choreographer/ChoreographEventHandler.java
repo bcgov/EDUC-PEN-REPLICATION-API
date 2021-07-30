@@ -105,6 +105,7 @@ public class ChoreographEventHandler {
                 break;
 
             }
+            log.info("Replication Event was processed, ID :: {}", event.getPenReplicationEventId());
           } catch (final Exception exception) {
             log.error("Exception while processing event :: {}", event, exception);
           }
