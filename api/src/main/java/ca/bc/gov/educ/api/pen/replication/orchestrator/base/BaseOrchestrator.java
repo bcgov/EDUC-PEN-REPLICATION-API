@@ -19,8 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceException;
@@ -368,7 +366,6 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
    */
   @Override
   @Async("asyncTaskExecutor")
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void replaySaga(final Saga saga) throws IOException, InterruptedException, TimeoutException {
     final var eventStates = this.getSagaService().findAllSagaStates(saga);
     final var t = JsonUtil.getJsonObjectFromString(this.clazz, saga.getPayload());
@@ -440,7 +437,6 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
    */
   @Override
   @Async("subscriberExecutor")
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void handleEvent(@NotNull final Event event) throws InterruptedException, IOException, TimeoutException {
     log.info("executing saga event {}", event.getEventType());
     log.trace("Full event :: {}", event);
@@ -477,7 +473,6 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
    */
   @Override
   @Async("subscriberExecutor")
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void startSaga(@NotNull final Saga saga) {
     try {
       this.handleEvent(Event.builder()
