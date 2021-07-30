@@ -22,9 +22,9 @@ public class PenDemogService {
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void savePenDemog(final PenDemographicsEntity entity) {
     try {
-      this.penDemogRepository.save(entity);
+      this.penDemogRepository.saveAndFlush(entity);
     } catch (Exception e) {
-      e.printStackTrace();
+      log.warn("Exception", e);
     }
   }
 
