@@ -28,7 +28,7 @@ public class AsyncConfiguration {
   public Executor threadPoolTaskExecutor() {
     return new EnhancedQueueExecutor.Builder()
       .setThreadFactory(new ThreadFactoryBuilder().setNameFormat("message-subscriber-%d").build())
-      .setCorePoolSize(5).setMaximumPoolSize(10).setKeepAliveTime(Duration.ofSeconds(60)).build();
+      .setCorePoolSize(1).setMaximumPoolSize(1).setKeepAliveTime(Duration.ofSeconds(60)).build();
   }
 
   /**
@@ -40,7 +40,7 @@ public class AsyncConfiguration {
   public Executor controllerTaskExecutor() {
     return new EnhancedQueueExecutor.Builder()
       .setThreadFactory(new ThreadFactoryBuilder().setNameFormat("async-executor-%d").build())
-      .setCorePoolSize(5).setMaximumPoolSize(10).setKeepAliveTime(Duration.ofSeconds(60)).build();
+      .setCorePoolSize(2).setMaximumPoolSize(2).setKeepAliveTime(Duration.ofSeconds(60)).build();
   }
 
   /**
