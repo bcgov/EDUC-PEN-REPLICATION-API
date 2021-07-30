@@ -4,6 +4,7 @@ import ca.bc.gov.educ.api.pen.replication.helpers.PenReplicationHelper;
 import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.PenTwinTransactionRepository;
+import ca.bc.gov.educ.api.pen.replication.repository.PenTwinsRepository;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.PossibleMatch;
 import lombok.extern.slf4j.Slf4j;
@@ -36,13 +37,13 @@ public class PossibleMatchCreateService extends BasePossibleMatchService {
    * @param restUtils                    the rest utils
    */
   @Autowired
-  public PossibleMatchCreateService(final EntityManagerFactory emf, final EventRepository eventRepository, final PenTwinTransactionRepository penTwinTransactionRepository, final RestUtils restUtils) {
-    super(eventRepository, emf, restUtils, penTwinTransactionRepository);
+  public PossibleMatchCreateService(final EntityManagerFactory emf, final EventRepository eventRepository, final PenTwinTransactionRepository penTwinTransactionRepository, final RestUtils restUtils, final PenTwinsRepository penTwinsRepository) {
+    super(eventRepository, emf, restUtils, penTwinTransactionRepository, penTwinsRepository);
   }
 
   @Override
   public void processEvent(final List<PossibleMatch> request, final Event event) {
-    this.checkAndProcessEvent(request, event);
+    this.checkAndProcessEvent(request, event, "create");
   }
 
 
