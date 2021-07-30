@@ -13,7 +13,7 @@ import ca.bc.gov.educ.api.pen.replication.repository.PenDemogTransactionReposito
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.service.SagaService;
 import ca.bc.gov.educ.api.pen.replication.struct.Event;
-import ca.bc.gov.educ.api.pen.replication.struct.Student;
+import ca.bc.gov.educ.api.pen.replication.struct.StudentUpdate;
 import ca.bc.gov.educ.api.pen.replication.struct.saga.StudentUpdateSagaData;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -134,7 +134,7 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
   private void updateStudent(final Event event, final Saga saga, final StudentUpdateSagaData studentUpdateSagaData) throws JsonProcessingException {
     final SagaEvent eventStates = this.createEventState(saga, event.getEventType(), event.getEventOutcome(), event.getEventPayload());
     saga.setSagaState(UPDATE_STUDENT.toString()); // set current event as saga state.
-    val studentDataFromEventResponse = JsonUtil.getJsonObjectFromString(Student.class, event.getEventPayload());
+    val studentDataFromEventResponse = JsonUtil.getJsonObjectFromString(StudentUpdate.class, event.getEventPayload());
     val studentUpdate = StudentMapper.mapper.toStudent(studentUpdateSagaData.getPenDemogTransaction());
     BeanUtils.copyProperties(studentUpdate, studentDataFromEventResponse, "createDate", "createUser", "studentID", "email", "emailVerified", "trueStudentID");
     studentUpdateSagaData.getStudentUpdate().setStudentID(studentDataFromEventResponse.getStudentID());
