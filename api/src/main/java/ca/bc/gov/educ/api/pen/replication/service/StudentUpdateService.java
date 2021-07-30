@@ -68,7 +68,6 @@ public class StudentUpdateService extends BaseService<StudentUpdate> {
     if (existingPenDemogRecord.isPresent()) {
       val existingPenDemog = existingPenDemogRecord.get();
       val penDemographicsEntity = PenReplicationHelper.getPenDemogFromStudentUpdate(studentUpdate, existingPenDemog, this.restUtils);
-      penDemographicsEntity.setStudNo(StringUtils.rightPad(penDemographicsEntity.getStudNo(), 10));
       BeanUtils.copyProperties(penDemographicsEntity, existingPenDemog, "createDate", "createUser");
       this.penDemogService.savePenDemog(existingPenDemog);
     }
