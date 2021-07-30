@@ -26,7 +26,7 @@ import java.time.LocalDateTime;
 public class PenDemographicsEntity {
 
   @Id
-  @Column(name = "STUD_NO")
+  @Column(name = "STUD_NO", updatable = false)
   private String studNo;
 
   @Column(name = "STUD_SURNAME")
