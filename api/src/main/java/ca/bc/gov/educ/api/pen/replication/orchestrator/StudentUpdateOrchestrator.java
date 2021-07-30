@@ -22,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManagerFactory;
@@ -43,7 +42,6 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
   private final RestUtils restUtils;
   private final PenDemogService penDemogService;
 
-  private final JdbcTemplate jdbcTemplate;
 
   /**
    * Instantiates a new Base orchestrator.
@@ -54,14 +52,12 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
    * @param penDemogTransactionRepository the pen demog transaction repository
    * @param restUtils                     the rest utils
    * @param penDemogService               the pen demog service
-   * @param jdbcTemplate                  the jdbc template
    */
-  protected StudentUpdateOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher, final EntityManagerFactory entityManagerFactory, final PenDemogTransactionRepository penDemogTransactionRepository, final RestUtils restUtils, final PenDemogService penDemogService, final JdbcTemplate jdbcTemplate) {
+  protected StudentUpdateOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher, final EntityManagerFactory entityManagerFactory, final PenDemogTransactionRepository penDemogTransactionRepository, final RestUtils restUtils, final PenDemogService penDemogService) {
     super(entityManagerFactory, sagaService, messagePublisher, StudentUpdateSagaData.class, SagaEnum.PEN_REPLICATION_STUDENT_UPDATE_SAGA, SagaTopicsEnum.PEN_REPLICATION_STUDENT_UPDATE_SAGA_TOPIC);
     this.penDemogTransactionRepository = penDemogTransactionRepository;
     this.restUtils = restUtils;
     this.penDemogService = penDemogService;
-    this.jdbcTemplate = jdbcTemplate;
   }
 
   @Override
@@ -131,7 +127,9 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
     if (existingPenDemogRecord.isPresent()) {
       val existingPenDemog = existingPenDemogRecord.get();
       val penDemographicsEntity = PenReplicationHelper.getPenDemogFromStudentUpdate(studentUpdateSagaData.getStudentUpdate(), existingPenDemog, this.restUtils);
-      rowsUpdated = PenReplicationHelper.updatePenDemogUsingJDBC(penDemographicsEntity, this.jdbcTemplate);
+      BeanUtils.copyProperties(penDemographicsEntity, existingPenDemog, "createDate", "createUser", "studNo");
+      this.penDemogService.savePenDemog(existingPenDemog);
+      rowsUpdated = 1;
     } else {
       val penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(StudentMapper.mapper.toStudentCreate(studentUpdateSagaData.getStudentUpdate()));
       penDemographicsEntity.setCreateDate(LocalDateTime.now());

@@ -21,7 +21,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManagerFactory;
@@ -43,7 +43,6 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
   private final RestUtils restUtils;
   private final PenDemogService penDemogService;
   private final PenDemogTransactionService penDemogTransactionService;
-  private final JdbcTemplate jdbcTemplate;
 
   /**
    * Instantiates a new Base orchestrator.
@@ -55,15 +54,13 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
    * @param restUtils                     the rest utils
    * @param penDemogService               the pen demog service
    * @param penDemogTransactionService    the pen demog transaction service
-   * @param jdbcTemplate                  the jdbc template
    */
-  protected StudentCreateOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher, final EntityManagerFactory entityManagerFactory, final PenDemogTransactionRepository penDemogTransactionRepository, final RestUtils restUtils, final PenDemogService penDemogService, final PenDemogTransactionService penDemogTransactionService, final JdbcTemplate jdbcTemplate) {
+  protected StudentCreateOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher, final EntityManagerFactory entityManagerFactory, final PenDemogTransactionRepository penDemogTransactionRepository, final RestUtils restUtils, final PenDemogService penDemogService, final PenDemogTransactionService penDemogTransactionService) {
     super(entityManagerFactory, sagaService, messagePublisher, StudentCreateSagaData.class, SagaEnum.PEN_REPLICATION_STUDENT_CREATE_SAGA, SagaTopicsEnum.PEN_REPLICATION_STUDENT_CREATE_SAGA_TOPIC);
     this.penDemogTransactionRepository = penDemogTransactionRepository;
     this.restUtils = restUtils;
     this.penDemogService = penDemogService;
     this.penDemogTransactionService = penDemogTransactionService;
-    this.jdbcTemplate = jdbcTemplate;
   }
 
   @Override
@@ -105,7 +102,10 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
     if (existingPenDemogRecord.isPresent()) {
       val existingPenDemog = existingPenDemogRecord.get();
       val penDemographicsEntity = PenReplicationHelper.getPenDemogFromStudentUpdate(StudentMapper.mapper.toStudentUpdate(studentCreateSagaData.getStudentCreate()), existingPenDemog, this.restUtils);
-      rowsUpdated = PenReplicationHelper.updatePenDemogUsingJDBC(penDemographicsEntity, this.jdbcTemplate);
+      BeanUtils.copyProperties(penDemographicsEntity, existingPenDemog, "createDate", "createUser");
+      BeanUtils.copyProperties(penDemographicsEntity, existingPenDemog, "createDate", "createUser", "studNo");
+      this.penDemogService.savePenDemog(existingPenDemog);
+      rowsUpdated = 1;
     } else {
       val penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(studentCreateSagaData.getStudentCreate());
       penDemographicsEntity.setCreateDate(LocalDateTime.now());

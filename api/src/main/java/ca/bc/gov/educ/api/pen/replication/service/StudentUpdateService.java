@@ -3,14 +3,13 @@ package ca.bc.gov.educ.api.pen.replication.service;
 import ca.bc.gov.educ.api.pen.replication.helpers.PenReplicationHelper;
 import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
-import ca.bc.gov.educ.api.pen.replication.repository.PenDemogRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.PenDemogTransactionRepository;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentUpdate;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -34,25 +33,21 @@ public class StudentUpdateService extends BaseService<StudentUpdate> {
    * The Rest utils.
    */
   private final RestUtils restUtils;
-  private final JdbcTemplate jdbcTemplate;
 
   /**
    * Instantiates a new Student update service.
    *
    * @param emf                           the emf
-   * @param penDemogRepository            the pen demog repository
    * @param eventRepository               the event repository
    * @param penDemogTransactionRepository the pen demog transaction repository
    * @param penDemogService               the pen demog service
    * @param restUtils                     the rest utils
-   * @param jdbcTemplate
    */
-  public StudentUpdateService(final EntityManagerFactory emf, final PenDemogRepository penDemogRepository, final EventRepository eventRepository, final PenDemogTransactionRepository penDemogTransactionRepository, final PenDemogService penDemogService, final RestUtils restUtils, final JdbcTemplate jdbcTemplate) {
+  public StudentUpdateService(final EntityManagerFactory emf, final EventRepository eventRepository, final PenDemogTransactionRepository penDemogTransactionRepository, final PenDemogService penDemogService, final RestUtils restUtils) {
     super(eventRepository, emf);
     this.penDemogService = penDemogService;
     this.penDemogTransactionRepository = penDemogTransactionRepository;
     this.restUtils = restUtils;
-    this.jdbcTemplate = jdbcTemplate;
   }
 
   /**
@@ -71,7 +66,8 @@ public class StudentUpdateService extends BaseService<StudentUpdate> {
     if (existingPenDemogRecord.isPresent()) {
       val existingPenDemog = existingPenDemogRecord.get();
       val penDemographicsEntity = PenReplicationHelper.getPenDemogFromStudentUpdate(studentUpdate, existingPenDemog, this.restUtils);
-      PenReplicationHelper.updatePenDemogUsingJDBC(penDemographicsEntity, this.jdbcTemplate);
+      BeanUtils.copyProperties(penDemographicsEntity, existingPenDemog, "createDate", "createUser", "studNo");
+      this.penDemogService.savePenDemog(existingPenDemog);
     }
     this.updateEvent(event);
   }
