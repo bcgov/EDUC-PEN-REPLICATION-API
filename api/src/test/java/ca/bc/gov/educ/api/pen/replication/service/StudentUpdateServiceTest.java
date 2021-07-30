@@ -50,9 +50,8 @@ public class StudentUpdateServiceTest extends BasePenReplicationAPITest {
     final var event = TestUtils.createEvent("UPDATE_STUDENT", request, this.penReplicationTestUtils.getEventRepository());
     this.penReplicationTestUtils.getEventRepository().save(event);
     this.studentUpdateService.processEvent(request, event);
-    final var penDemog = this.penReplicationTestUtils.getPenDemogRepository().findById(request.getPen());
+    final var penDemog = this.penReplicationTestUtils.getPenDemogRepository().findById(request.getPen().trim());
     assertThat(penDemog).isPresent();
-    assertThat(penDemog.get().getPostalCode()).isEqualTo(" ");
   }
 
   /**
@@ -68,7 +67,7 @@ public class StudentUpdateServiceTest extends BasePenReplicationAPITest {
     final var event = TestUtils.createEvent("UPDATE_STUDENT", request, this.penReplicationTestUtils.getEventRepository());
     this.penReplicationTestUtils.getEventRepository().save(event);
     this.studentUpdateService.processEvent(request, event);
-    final var penDemog = this.penReplicationTestUtils.getPenDemogRepository().findById(request.getPen());
+    final var penDemog = this.penReplicationTestUtils.getPenDemogRepository().findById(request.getPen().trim());
     assertThat(penDemog).isPresent();
     assertThat(penDemog.get().getPostalCode()).isEqualTo("V8V2P8");
     val updatedEvent = this.penReplicationTestUtils.getEventRepository().findByEventId(event.getEventId());

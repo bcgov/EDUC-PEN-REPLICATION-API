@@ -10,6 +10,7 @@ import ca.bc.gov.educ.api.pen.replication.struct.StudentUpdate;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -26,8 +27,9 @@ public class StudentUpdateService extends BaseService<StudentUpdate> {
   /**
    * The Pen demog repository.
    */
-  private final PenDemogRepository penDemogRepository;
   private final PenDemogTransactionRepository penDemogTransactionRepository;
+
+  private final PenDemogService penDemogService;
   /**
    * The Rest utils.
    */
@@ -40,11 +42,12 @@ public class StudentUpdateService extends BaseService<StudentUpdate> {
    * @param penDemogRepository            the pen demog repository
    * @param eventRepository               the event repository
    * @param penDemogTransactionRepository the pen demog transaction repository
+   * @param penDemogService               the pen demog service
    * @param restUtils                     the rest utils
    */
-  public StudentUpdateService(final EntityManagerFactory emf, final PenDemogRepository penDemogRepository, final EventRepository eventRepository, final PenDemogTransactionRepository penDemogTransactionRepository, final RestUtils restUtils) {
+  public StudentUpdateService(final EntityManagerFactory emf, final PenDemogRepository penDemogRepository, final EventRepository eventRepository, final PenDemogTransactionRepository penDemogTransactionRepository, PenDemogService penDemogService, final RestUtils restUtils) {
     super(eventRepository, emf);
-    this.penDemogRepository = penDemogRepository;
+    this.penDemogService = penDemogService;
     this.penDemogTransactionRepository = penDemogTransactionRepository;
     this.restUtils = restUtils;
   }
@@ -61,12 +64,14 @@ public class StudentUpdateService extends BaseService<StudentUpdate> {
       log.info("This event is part of orchestrator flow, marking it processed.");
       return;
     }
-    val existingPenDemogRecord = this.penDemogRepository.findById(StringUtils.rightPad(studentUpdate.getPen(), 10));
+    val existingPenDemogRecord = this.penDemogService.findPenDemogByPen(StringUtils.rightPad(studentUpdate.getPen(), 10));
     if (existingPenDemogRecord.isPresent()) {
-      super.persistData(event, studentUpdate);
-    } else {
-      this.updateEvent(event);
+      val existingPenDemog = existingPenDemogRecord.get();
+      val penDemographicsEntity = PenReplicationHelper.getPenDemogFromStudentUpdate(studentUpdate, existingPenDemog, this.restUtils);
+      BeanUtils.copyProperties(penDemographicsEntity, existingPenDemog);
+      this.penDemogService.savePenDemog(existingPenDemog);
     }
+    this.updateEvent(event);
   }
 
 
@@ -81,8 +86,7 @@ public class StudentUpdateService extends BaseService<StudentUpdate> {
   }
 
   @Override
-  protected void buildAndExecutePreparedStatements(final EntityManager em, final StudentUpdate studentUpdate) {
-    val existingPenDemogRecord = this.penDemogRepository.findById(StringUtils.rightPad(studentUpdate.getPen(), 10));
-    existingPenDemogRecord.ifPresent(penDemographicsEntity -> em.createNativeQuery(PenReplicationHelper.buildPenDemogUpdate(studentUpdate, penDemographicsEntity, this.restUtils)).setHint("javax.persistence.query.timeout", 10000).executeUpdate());
+  protected void buildAndExecutePreparedStatements(EntityManager em, StudentUpdate studentUpdate) {
+    // Not required this child class use repository pattern of spring.
   }
 }

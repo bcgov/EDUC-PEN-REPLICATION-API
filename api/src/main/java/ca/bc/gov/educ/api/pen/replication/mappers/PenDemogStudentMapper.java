@@ -11,7 +11,7 @@ import org.mapstruct.factory.Mappers;
 /**
  * The interface Pen demog student mapper.
  */
-@Mapper(uses = {LocalDateTimeMapper.class})
+@Mapper(uses = {LocalDateTimeMapper.class, StringMapper.class})
 public interface PenDemogStudentMapper {
   /**
    * The constant mapper.

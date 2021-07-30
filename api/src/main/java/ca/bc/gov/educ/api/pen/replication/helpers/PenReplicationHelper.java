@@ -115,7 +115,7 @@ public final class PenReplicationHelper {
     return updatePenDemogStatement;
   }
 
-  private static PenDemographicsEntity getPenDemogFromStudentUpdate(final StudentUpdate studentUpdate, final PenDemographicsEntity existingPenDemog, final RestUtils restUtils) {
+  public static PenDemographicsEntity getPenDemogFromStudentUpdate(final StudentUpdate studentUpdate, final PenDemographicsEntity existingPenDemog, final RestUtils restUtils) {
     val penDemog = PenDemogStudentMapper.mapper.toPenDemog(studentUpdate);
     penDemog.setCreateDate(formatDateTime(penDemog.getCreateDate()));
     penDemog.setUpdateDate(formatDateTime(penDemog.getUpdateDate()));

@@ -1,12 +1,13 @@
 package ca.bc.gov.educ.api.pen.replication.service;
 
-import ca.bc.gov.educ.api.pen.replication.helpers.PenReplicationHelper;
+import ca.bc.gov.educ.api.pen.replication.mappers.PenDemogStudentMapper;
 import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.PenDemogRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.PenDemogTransactionRepository;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentCreate;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,7 @@ import static ca.bc.gov.educ.api.pen.replication.constants.EventType.CREATE_STUD
 @Service
 @Slf4j
 public class StudentCreateService extends BaseService<StudentCreate> {
-  private final PenDemogRepository penDemogRepository;
+  private final PenDemogService penDemogService;
   private final PenDemogTransactionRepository penDemogTransactionRepository;
 
   /**
@@ -31,12 +32,13 @@ public class StudentCreateService extends BaseService<StudentCreate> {
    * @param emf                           the emf
    * @param penDemogRepository            the pen demog repository
    * @param eventRepository               the event repository
+   * @param penDemogService               the pen demog service
    * @param penDemogTransactionRepository the pen demog transaction repository
    */
   @Autowired
-  public StudentCreateService(final EntityManagerFactory emf, final PenDemogRepository penDemogRepository, final EventRepository eventRepository, final PenDemogTransactionRepository penDemogTransactionRepository) {
+  public StudentCreateService(final EntityManagerFactory emf, final PenDemogRepository penDemogRepository, final EventRepository eventRepository, PenDemogService penDemogService, final PenDemogTransactionRepository penDemogTransactionRepository) {
     super(eventRepository, emf);
-    this.penDemogRepository = penDemogRepository;
+    this.penDemogService = penDemogService;
     this.penDemogTransactionRepository = penDemogTransactionRepository;
   }
 
@@ -47,12 +49,15 @@ public class StudentCreateService extends BaseService<StudentCreate> {
       log.info("This event is part of orchestrator flow, marking it processed.");
       return;
     }
-    final var existingPenDemogRecord = this.penDemogRepository.findById(StringUtils.rightPad(request.getPen(), 10));
+    final var existingPenDemogRecord = this.penDemogService.findPenDemogByPen(StringUtils.rightPad(request.getPen(), 10));
     if (existingPenDemogRecord.isEmpty()) {
-      super.persistData(event, request);
-    } else {
-      this.updateEvent(event);
+      val penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(request);
+      penDemographicsEntity.setCreateDate(formatDateTime(penDemographicsEntity.getCreateDate()));
+      penDemographicsEntity.setUpdateDate(formatDateTime(penDemographicsEntity.getUpdateDate()));
+      penDemographicsEntity.setStudBirth(StringUtils.replace(penDemographicsEntity.getStudBirth(), "-", ""));
+      this.penDemogService.savePenDemog(penDemographicsEntity);
     }
+    this.updateEvent(event);
 
   }
 
@@ -65,6 +70,6 @@ public class StudentCreateService extends BaseService<StudentCreate> {
 
   @Override
   protected void buildAndExecutePreparedStatements(final EntityManager em, final StudentCreate studentCreate) {
-    em.createNativeQuery(PenReplicationHelper.buildPenDemogInsert(studentCreate)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
+    // Not required this child class use repository pattern of spring.
   }
 }

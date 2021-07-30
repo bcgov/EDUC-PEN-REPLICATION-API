@@ -6,7 +6,6 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PastOrPresent;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -31,7 +30,6 @@ public class Event {
    * The Create date.
    */
   @Column(name = "CREATE_DATE", updatable = false)
-  @PastOrPresent
   LocalDateTime createDate;
   /**
    * The Update user.
@@ -42,7 +40,6 @@ public class Event {
    * The Update date.
    */
   @Column(name = "UPDATE_DATE")
-  @PastOrPresent
   LocalDateTime updateDate;
   @Id
   @GeneratedValue(generator = "UUID")

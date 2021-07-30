@@ -3,14 +3,15 @@ package ca.bc.gov.educ.api.pen.replication.orchestrator;
 import ca.bc.gov.educ.api.pen.replication.constants.SagaEnum;
 import ca.bc.gov.educ.api.pen.replication.constants.SagaTopicsEnum;
 import ca.bc.gov.educ.api.pen.replication.helpers.PenReplicationHelper;
+import ca.bc.gov.educ.api.pen.replication.mappers.PenDemogStudentMapper;
 import ca.bc.gov.educ.api.pen.replication.mappers.StudentMapper;
 import ca.bc.gov.educ.api.pen.replication.messaging.MessagePublisher;
 import ca.bc.gov.educ.api.pen.replication.model.Saga;
 import ca.bc.gov.educ.api.pen.replication.model.SagaEvent;
 import ca.bc.gov.educ.api.pen.replication.orchestrator.base.BaseOrchestrator;
-import ca.bc.gov.educ.api.pen.replication.repository.PenDemogRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.PenDemogTransactionRepository;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
+import ca.bc.gov.educ.api.pen.replication.service.PenDemogService;
 import ca.bc.gov.educ.api.pen.replication.service.PenDemogTransactionService;
 import ca.bc.gov.educ.api.pen.replication.service.SagaService;
 import ca.bc.gov.educ.api.pen.replication.struct.Event;
@@ -20,6 +21,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManagerFactory;
@@ -28,6 +30,7 @@ import static ca.bc.gov.educ.api.pen.replication.constants.EventOutcome.*;
 import static ca.bc.gov.educ.api.pen.replication.constants.EventType.*;
 import static ca.bc.gov.educ.api.pen.replication.constants.SagaTopicsEnum.PEN_SERVICES_API_TOPIC;
 import static ca.bc.gov.educ.api.pen.replication.constants.SagaTopicsEnum.STUDENT_API_TOPIC;
+import static ca.bc.gov.educ.api.pen.replication.helpers.PenReplicationHelper.formatDateTime;
 
 /**
  * The type Student create orchestrator.
@@ -38,7 +41,7 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
 
   private final PenDemogTransactionRepository penDemogTransactionRepository;
   private final RestUtils restUtils;
-  private final PenDemogRepository penDemogRepository;
+  private final PenDemogService penDemogService;
   private final PenDemogTransactionService penDemogTransactionService;
 
   /**
@@ -49,14 +52,14 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
    * @param entityManagerFactory          the entity manager factory
    * @param penDemogTransactionRepository the pen demog transaction repository
    * @param restUtils                     the rest utils
-   * @param penDemogRepository            the pen demog repository
+   * @param penDemogService               the pen demog service
    * @param penDemogTransactionService    the pen demog transaction service
    */
-  protected StudentCreateOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher, final EntityManagerFactory entityManagerFactory, final PenDemogTransactionRepository penDemogTransactionRepository, final RestUtils restUtils, final PenDemogRepository penDemogRepository, PenDemogTransactionService penDemogTransactionService) {
+  protected StudentCreateOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher, final EntityManagerFactory entityManagerFactory, final PenDemogTransactionRepository penDemogTransactionRepository, final RestUtils restUtils, PenDemogService penDemogService, PenDemogTransactionService penDemogTransactionService) {
     super(entityManagerFactory, sagaService, messagePublisher, StudentCreateSagaData.class, SagaEnum.PEN_REPLICATION_STUDENT_CREATE_SAGA, SagaTopicsEnum.PEN_REPLICATION_STUDENT_CREATE_SAGA_TOPIC);
     this.penDemogTransactionRepository = penDemogTransactionRepository;
     this.restUtils = restUtils;
-    this.penDemogRepository = penDemogRepository;
+    this.penDemogService = penDemogService;
     this.penDemogTransactionService = penDemogTransactionService;
   }
 
@@ -81,7 +84,7 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
     saga.setSagaState(ADD_PEN_DEMOG.toString());
     final SagaEvent eventStates = this.createEventState(saga, event.getEventType(), event.getEventOutcome(), event.getEventPayload());
     this.getSagaService().updateAttachedSagaWithEvents(saga, eventStates);
-    final int rowsUpdated = this.createOrUpdatePenDemog(studentCreateSagaData, this.penDemogRepository);
+    final int rowsUpdated = this.createOrUpdatePenDemog(studentCreateSagaData);
     log.debug("{} rows were inserted to pen demog", rowsUpdated);
 
     val nextEvent = Event.builder().sagaId(saga.getSagaId())
@@ -93,15 +96,22 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
     log.info("responded via NATS to {} for {} Event. :: {}", this.getTopicToSubscribe(), ADD_PEN_DEMOG, saga.getSagaId());
   }
 
-  private int createOrUpdatePenDemog(final StudentCreateSagaData studentCreateSagaData, final PenDemogRepository penDemogRepository) {
+  private int createOrUpdatePenDemog(final StudentCreateSagaData studentCreateSagaData) {
     final int rowsUpdated;
-    val existingPenDemogRecord = penDemogRepository.findById(StringUtils.rightPad(studentCreateSagaData.getStudentCreate().getPen(), 10));
+    val existingPenDemogRecord = penDemogService.findPenDemogByPen(StringUtils.rightPad(studentCreateSagaData.getStudentCreate().getPen(), 10));
     if (existingPenDemogRecord.isPresent()) {
-      val penDemogUpdateSql = PenReplicationHelper.buildPenDemogUpdate(StudentMapper.mapper.toStudentUpdate(studentCreateSagaData.getStudentCreate()), existingPenDemogRecord.get(), this.restUtils);
-      rowsUpdated = this.persistData(penDemogUpdateSql);
+      val existingPenDemog = existingPenDemogRecord.get();
+      val penDemographicsEntity = PenReplicationHelper.getPenDemogFromStudentUpdate(StudentMapper.mapper.toStudentUpdate(studentCreateSagaData.getStudentCreate()), existingPenDemog, this.restUtils);
+      BeanUtils.copyProperties(penDemographicsEntity, existingPenDemog);
+      this.penDemogService.savePenDemog(existingPenDemog);
+      rowsUpdated = 1;
     } else {
-      val penDemogInsertSql = PenReplicationHelper.buildPenDemogInsert(studentCreateSagaData.getStudentCreate());
-      rowsUpdated = this.persistData(penDemogInsertSql);
+      val penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(studentCreateSagaData.getStudentCreate());
+      penDemographicsEntity.setCreateDate(formatDateTime(penDemographicsEntity.getCreateDate()));
+      penDemographicsEntity.setUpdateDate(formatDateTime(penDemographicsEntity.getUpdateDate()));
+      penDemographicsEntity.setStudBirth(StringUtils.replace(penDemographicsEntity.getStudBirth(), "-", ""));
+      this.penDemogService.savePenDemog(penDemographicsEntity);
+      rowsUpdated = 1;
     }
     log.debug("{} rows were inserted/updated in pen demog", rowsUpdated);
     return rowsUpdated;
