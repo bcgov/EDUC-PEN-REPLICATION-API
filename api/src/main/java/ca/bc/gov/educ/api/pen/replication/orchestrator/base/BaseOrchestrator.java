@@ -368,7 +368,7 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
    */
   @Override
   @Async("asyncTaskExecutor")
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void replaySaga(final Saga saga) throws IOException, InterruptedException, TimeoutException {
     final var eventStates = this.getSagaService().findAllSagaStates(saga);
     final var t = JsonUtil.getJsonObjectFromString(this.clazz, saga.getPayload());
@@ -440,7 +440,7 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
    */
   @Override
   @Async("subscriberExecutor")
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void handleEvent(@NotNull final Event event) throws InterruptedException, IOException, TimeoutException {
     log.info("executing saga event {}", event.getEventType());
     log.trace("Full event :: {}", event);
