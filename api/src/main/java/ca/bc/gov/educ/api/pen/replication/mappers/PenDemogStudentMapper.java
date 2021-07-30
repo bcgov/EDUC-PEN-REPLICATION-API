@@ -1,7 +1,6 @@
 package ca.bc.gov.educ.api.pen.replication.mappers;
 
 import ca.bc.gov.educ.api.pen.replication.model.PenDemographicsEntity;
-import ca.bc.gov.educ.api.pen.replication.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentCreate;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentUpdate;
 import org.mapstruct.Mapper;
@@ -40,8 +39,8 @@ public interface PenDemogStudentMapper {
   @Mapping(source = "gradeCode", target = "grade")
   @Mapping(source = "localID", target = "localID")
   @Mapping(source = "dob", target = "studBirth")
-  @Mapping(source = "createUser", target = "createUser", defaultValue = ApplicationProperties.API_NAME)
-  @Mapping(source = "updateUser", target = "updateUser", defaultValue = ApplicationProperties.API_NAME)
+  @Mapping(source = "createUser", target = "createUser", defaultValue = "API")
+  @Mapping(source = "updateUser", target = "updateUser", defaultValue = "API")
   PenDemographicsEntity toPenDemog(StudentCreate studentCreate);
 
   /**
@@ -66,8 +65,8 @@ public interface PenDemogStudentMapper {
   @Mapping(source = "gradeCode", target = "grade")
   @Mapping(source = "localID", target = "localID")
   @Mapping(source = "dob", target = "studBirth")
-  @Mapping(source = "createUser", target = "createUser", defaultValue = ApplicationProperties.API_NAME)
-  @Mapping(source = "updateUser", target = "updateUser", defaultValue = ApplicationProperties.API_NAME)
+  @Mapping(source = "createUser", target = "createUser", defaultValue = "API")
+  @Mapping(source = "updateUser", target = "updateUser", defaultValue = "API")
   PenDemographicsEntity toPenDemog(StudentUpdate studentUpdate);
 
 }
