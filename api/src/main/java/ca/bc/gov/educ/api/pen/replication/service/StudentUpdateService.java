@@ -10,7 +10,7 @@ import ca.bc.gov.educ.api.pen.replication.struct.StudentUpdate;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -34,6 +34,7 @@ public class StudentUpdateService extends BaseService<StudentUpdate> {
    * The Rest utils.
    */
   private final RestUtils restUtils;
+  private final JdbcTemplate jdbcTemplate;
 
   /**
    * Instantiates a new Student update service.
@@ -44,12 +45,14 @@ public class StudentUpdateService extends BaseService<StudentUpdate> {
    * @param penDemogTransactionRepository the pen demog transaction repository
    * @param penDemogService               the pen demog service
    * @param restUtils                     the rest utils
+   * @param jdbcTemplate
    */
-  public StudentUpdateService(final EntityManagerFactory emf, final PenDemogRepository penDemogRepository, final EventRepository eventRepository, final PenDemogTransactionRepository penDemogTransactionRepository, PenDemogService penDemogService, final RestUtils restUtils) {
+  public StudentUpdateService(final EntityManagerFactory emf, final PenDemogRepository penDemogRepository, final EventRepository eventRepository, final PenDemogTransactionRepository penDemogTransactionRepository, final PenDemogService penDemogService, final RestUtils restUtils, final JdbcTemplate jdbcTemplate) {
     super(eventRepository, emf);
     this.penDemogService = penDemogService;
     this.penDemogTransactionRepository = penDemogTransactionRepository;
     this.restUtils = restUtils;
+    this.jdbcTemplate = jdbcTemplate;
   }
 
   /**
@@ -68,8 +71,8 @@ public class StudentUpdateService extends BaseService<StudentUpdate> {
     if (existingPenDemogRecord.isPresent()) {
       val existingPenDemog = existingPenDemogRecord.get();
       val penDemographicsEntity = PenReplicationHelper.getPenDemogFromStudentUpdate(studentUpdate, existingPenDemog, this.restUtils);
-      BeanUtils.copyProperties(penDemographicsEntity, existingPenDemog, "createDate", "createUser");
-      this.penDemogService.savePenDemog(existingPenDemog);
+      val updateSql = PenReplicationHelper.buildPenDemogUpdatePS();
+      this.jdbcTemplate.update(updateSql, penDemographicsEntity.getDemogCode(), penDemographicsEntity.getGrade(), penDemographicsEntity.getGradeYear(), penDemographicsEntity.getLocalID(), penDemographicsEntity.getMincode(), penDemographicsEntity.getPostalCode(), penDemographicsEntity.getStudBirth(), penDemographicsEntity.getStudGiven(), penDemographicsEntity.getStudMiddle(), penDemographicsEntity.getStudSex(), penDemographicsEntity.getStudStatus(), penDemographicsEntity.getStudSurname(), penDemographicsEntity.getMergeToDate(), penDemographicsEntity.getMergeToCode(), penDemographicsEntity.getStudentTrueNo(), penDemographicsEntity.getUpdateDate(), penDemographicsEntity.getUpdateUser(), penDemographicsEntity.getUsualGiven(), penDemographicsEntity.getUsualGiven(), penDemographicsEntity.getUsualMiddle(), penDemographicsEntity.getUsualSurname(), penDemographicsEntity.getStudNo());
     }
     this.updateEvent(event);
   }
@@ -86,7 +89,7 @@ public class StudentUpdateService extends BaseService<StudentUpdate> {
   }
 
   @Override
-  protected void buildAndExecutePreparedStatements(EntityManager em, StudentUpdate studentUpdate) {
+  protected void buildAndExecutePreparedStatements(final EntityManager em, final StudentUpdate studentUpdate) {
     // Not required this child class use repository pattern of spring.
   }
 }

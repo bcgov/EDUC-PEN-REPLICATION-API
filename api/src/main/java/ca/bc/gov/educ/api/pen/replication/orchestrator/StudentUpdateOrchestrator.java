@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManagerFactory;
@@ -42,6 +43,8 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
   private final RestUtils restUtils;
   private final PenDemogService penDemogService;
 
+  private final JdbcTemplate jdbcTemplate;
+
   /**
    * Instantiates a new Base orchestrator.
    *
@@ -51,12 +54,14 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
    * @param penDemogTransactionRepository the pen demog transaction repository
    * @param restUtils                     the rest utils
    * @param penDemogService               the pen demog service
+   * @param jdbcTemplate                  the jdbc template
    */
-  protected StudentUpdateOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher, final EntityManagerFactory entityManagerFactory, final PenDemogTransactionRepository penDemogTransactionRepository, final RestUtils restUtils, final PenDemogService penDemogService) {
+  protected StudentUpdateOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher, final EntityManagerFactory entityManagerFactory, final PenDemogTransactionRepository penDemogTransactionRepository, final RestUtils restUtils, final PenDemogService penDemogService, final JdbcTemplate jdbcTemplate) {
     super(entityManagerFactory, sagaService, messagePublisher, StudentUpdateSagaData.class, SagaEnum.PEN_REPLICATION_STUDENT_UPDATE_SAGA, SagaTopicsEnum.PEN_REPLICATION_STUDENT_UPDATE_SAGA_TOPIC);
     this.penDemogTransactionRepository = penDemogTransactionRepository;
     this.restUtils = restUtils;
     this.penDemogService = penDemogService;
+    this.jdbcTemplate = jdbcTemplate;
   }
 
   @Override
@@ -119,15 +124,15 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
     log.info("responded via NATS to {} for {} Event. :: {}", this.getTopicToSubscribe(), UPDATE_PEN_DEMOG, saga.getSagaId());
   }
 
+  // this uses jdbc template for the update part due to issues with underlying vms system. otherwise, it raises ORA-02047: cannot join the distributed transaction in progress
   private int createOrUpdatePenDemog(final StudentUpdateSagaData studentUpdateSagaData) {
     final int rowsUpdated;
     val existingPenDemogRecord = this.penDemogService.findPenDemogByPen(StringUtils.rightPad(studentUpdateSagaData.getStudentUpdate().getPen(), 10));
     if (existingPenDemogRecord.isPresent()) {
       val existingPenDemog = existingPenDemogRecord.get();
       val penDemographicsEntity = PenReplicationHelper.getPenDemogFromStudentUpdate(studentUpdateSagaData.getStudentUpdate(), existingPenDemog, this.restUtils);
-      BeanUtils.copyProperties(penDemographicsEntity, existingPenDemog, "createDate", "createUser");
-      this.penDemogService.savePenDemog(existingPenDemog);
-      rowsUpdated = 1;
+      val updateSql = PenReplicationHelper.buildPenDemogUpdatePS();
+      rowsUpdated = this.jdbcTemplate.update(updateSql, penDemographicsEntity.getDemogCode(), penDemographicsEntity.getGrade(), penDemographicsEntity.getGradeYear(), penDemographicsEntity.getLocalID(), penDemographicsEntity.getMincode(), penDemographicsEntity.getPostalCode(), penDemographicsEntity.getStudBirth(), penDemographicsEntity.getStudGiven(), penDemographicsEntity.getStudMiddle(), penDemographicsEntity.getStudSex(), penDemographicsEntity.getStudStatus(), penDemographicsEntity.getStudSurname(), penDemographicsEntity.getMergeToDate(), penDemographicsEntity.getMergeToCode(), penDemographicsEntity.getStudentTrueNo(), penDemographicsEntity.getUpdateDate(), penDemographicsEntity.getUpdateUser(), penDemographicsEntity.getUsualGiven(), penDemographicsEntity.getUsualGiven(), penDemographicsEntity.getUsualMiddle(), penDemographicsEntity.getUsualSurname(), penDemographicsEntity.getStudNo());
     } else {
       val penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(StudentMapper.mapper.toStudentCreate(studentUpdateSagaData.getStudentUpdate()));
       penDemographicsEntity.setCreateDate(LocalDateTime.now());
