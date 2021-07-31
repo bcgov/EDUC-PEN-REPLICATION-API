@@ -12,7 +12,6 @@ import ca.bc.gov.educ.api.pen.replication.struct.StudentUpdate;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,7 +24,6 @@ import java.util.Map;
 @Slf4j
 public final class PenReplicationHelper {
 
-  private static final String TO_DATE = "TO_DATE('";
   private static final String DELETE_FROM_PEN_TWINS_WHERE_PEN_TWIN_1 = "delete from pen_twins where PEN_TWIN1 = '";
   private static final String AND_PEN_TWIN_2 = " AND PEN_TWIN2 = '";
   private static final String INSERT_INTO_PEN_TWINS = "insert into pen_twins (PEN_TWIN1, PEN_TWIN2, TWIN_REASON, RUN_DATE, TWIN_DATE, TWIN_USER_ID) values (";
@@ -50,51 +48,9 @@ public final class PenReplicationHelper {
     return penDemog;
   }
 
-  /**
-   * Format date time string.
-   *
-   * @param activityDate the activity date
-   * @return the string
-   */
-  public static String formatDateTime(String activityDate) {
-    if (StringUtils.isBlank(activityDate)) {
-      return activityDate;
-    }
-    activityDate = activityDate.replace("T", " ");
-    if (activityDate.length() > 19) {
-      activityDate = activityDate.substring(0, 19);
-    }
-    return activityDate;
-  }
-
-  /**
-   * Build pen demog update string.
-   *
-   * @return the string
-   */
-  public static String buildPenDemogUpdatePS() {
-    return "UPDATE PEN_DEMOG SET " + "STUD_DEMOG_CODE=?," + "STUD_GRADE=?," + "STUD_GRADE_YEAR=?," + "PEN_LOCAL_ID=?," + "PEN_MINCODE=?," + "POSTAL=?," + "STUD_BIRTH=?," + "STUD_GIVEN=?," + "STUD_MIDDLE=?," + "STUD_SEX=?," + "STUD_STATUS=?," + "STUD_SURNAME=?," + "MERGE_TO_DATE=?," + "MERGE_TO_CODE=?," + "STUD_TRUE_NO=?," + "UPDATE_DATE=?," + "UPDATE_USER_NAME=?," + "USUAL_GIVEN=?," + "USUAL_MIDDLE=?," + "USUAL_SURNAME=?," + " WHERE STUD_NO=?";
-  }
 
 
-  public static int updatePenDemogUsingJDBC(final PenDemographicsEntity penDemographicsEntity, final JdbcTemplate jdbcTemplate) {
-    val updateSql = "UPDATE PEN_DEMOG SET STUD_DEMOG_CODE=?, STUD_GRADE=?, STUD_GRADE_YEAR=?, PEN_LOCAL_ID=?, PEN_MINCODE=?, POSTAL=?, STUD_BIRTH=?, STUD_GIVEN=?, STUD_MIDDLE=?, STUD_SEX=?, STUD_STATUS=?, STUD_SURNAME=?, MERGE_TO_DATE=?, MERGE_TO_CODE=?, STUD_TRUE_NO=?, UPDATE_DATE=?, UPDATE_USER_NAME=?, USUAL_GIVEN=?, USUAL_MIDDLE=?, USUAL_SURNAME=?  WHERE STUD_NO=?";
 
-    return jdbcTemplate.update(updateSql, penDemographicsEntity.getDemogCode(), penDemographicsEntity.getGrade(), penDemographicsEntity.getGradeYear(), penDemographicsEntity.getLocalID(), penDemographicsEntity.getMincode(), penDemographicsEntity.getPostalCode(), penDemographicsEntity.getStudBirth(), penDemographicsEntity.getStudGiven(), penDemographicsEntity.getStudMiddle(), penDemographicsEntity.getStudSex(), penDemographicsEntity.getStudStatus(), penDemographicsEntity.getStudSurname(), penDemographicsEntity.getMergeToDate(), penDemographicsEntity.getMergeToCode(), penDemographicsEntity.getStudentTrueNo(), penDemographicsEntity.getUpdateDate(), penDemographicsEntity.getUpdateUser(), penDemographicsEntity.getUsualGiven(), penDemographicsEntity.getUsualMiddle(), penDemographicsEntity.getUsualSurname(), penDemographicsEntity.getStudNo());
-  }
-
-  /**
-   * Gets merge to date.
-   *
-   * @param mergeToDate the merge to date
-   * @return the merge to date
-   */
-  public static String getMergeToDate(final String mergeToDate) {
-    if (mergeToDate == null) {
-      return "''";
-    }
-    return TO_DATE + mergeToDate.substring(0, 19).replace("T", " ") + "'" + ", 'YYYY-MM-DD HH24:MI:SS')";
-  }
 
   /**
    * Build pen twin delete string.
