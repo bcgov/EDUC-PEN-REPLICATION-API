@@ -114,7 +114,7 @@ public class StudentUpdateOrchestratorTest extends BasePenReplicationAPITest {
     verify(this.messagePublisher, atLeastOnce()).dispatchMessage(eq(STUDENT_API_TOPIC.getCode()), this.eventCaptor.capture());
     final var newEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
     assertThat(newEvent.getEventType()).isEqualTo(CREATE_STUDENT);
-    assertThat(newEvent.getEventPayload()).contains("\"studentID\":null,\"pen\":\"120164447\",\"legalFirstName\":\"givenName\"");
+    assertThat(newEvent.getEventPayload()).contains("\"studentID\":null,\"pen\":\"120164447\",\"legalFirstName\":\"GIVENNAME\"");
     final var sagaFromDB = this.sagaService.findSagaById(this.saga.getSagaId());
     assertThat(sagaFromDB).isPresent();
     assertThat(sagaFromDB.get().getSagaState()).isEqualTo(CREATE_STUDENT.toString());
@@ -145,7 +145,7 @@ public class StudentUpdateOrchestratorTest extends BasePenReplicationAPITest {
     verify(this.messagePublisher, atLeastOnce()).dispatchMessage(eq(STUDENT_API_TOPIC.getCode()), this.eventCaptor.capture());
     final var newEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
     assertThat(newEvent.getEventType()).isEqualTo(UPDATE_STUDENT);
-    assertThat(newEvent.getEventPayload()).contains("\"pen\":\"120164447\",\"legalFirstName\":\"givenName\"").contains("\"studentID\":\"" + saga.getSagaId() + "\"");
+    assertThat(newEvent.getEventPayload()).contains("\"pen\":\"120164447\",\"legalFirstName\":\"GIVENNAME\"").contains("\"studentID\":\"" + saga.getSagaId() + "\"");
     final var sagaFromDB = this.sagaService.findSagaById(this.saga.getSagaId());
     assertThat(sagaFromDB).isPresent();
     assertThat(sagaFromDB.get().getSagaState()).isEqualTo(UPDATE_STUDENT.toString());
