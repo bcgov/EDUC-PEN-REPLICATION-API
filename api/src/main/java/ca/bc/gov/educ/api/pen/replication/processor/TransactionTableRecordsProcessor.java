@@ -133,10 +133,15 @@ public class TransactionTableRecordsProcessor {
           val saga = this.penDemogTransactionService.createSagaAndUpdatePenDemogTransaction(orchestrator.getSagaName().getCode(), ApplicationProperties.API_NAME, JsonUtil.getJsonStringFromObject(studentCreateSagaData), penDemogTransaction);
           orchestrator.startSaga(saga);
         } else if (UPDATE_STUDENT.getCode().equals(txType)) {
-          val studentUpdateSagaData = StudentUpdateSagaData.builder().penDemogTransaction(penDemogTransaction).studentUpdate(StudentMapper.mapper.toStudent(penDemogTransaction)).build();
-          val orchestrator = this.sagaEnumOrchestratorMap.get(PEN_REPLICATION_STUDENT_UPDATE_SAGA);
-          val saga = this.penDemogTransactionService.createSagaAndUpdatePenDemogTransaction(orchestrator.getSagaName().getCode(), ApplicationProperties.API_NAME, JsonUtil.getJsonStringFromObject(studentUpdateSagaData), penDemogTransaction);
-          orchestrator.startSaga(saga);
+          if (StringUtils.isNotBlank(penDemogTransaction.getPen())) {
+            val studentUpdateSagaData = StudentUpdateSagaData.builder().penDemogTransaction(penDemogTransaction).studentUpdate(StudentMapper.mapper.toStudent(penDemogTransaction)).build();
+            val orchestrator = this.sagaEnumOrchestratorMap.get(PEN_REPLICATION_STUDENT_UPDATE_SAGA);
+            val saga = this.penDemogTransactionService.createSagaAndUpdatePenDemogTransaction(orchestrator.getSagaName().getCode(), ApplicationProperties.API_NAME, JsonUtil.getJsonStringFromObject(studentUpdateSagaData), penDemogTransaction);
+            orchestrator.startSaga(saga);
+          } else {
+            log.warn("Pen Number is blank for pen demog update, ignoring. transaction ID :: {}", penDemogTransaction.getTransactionID());
+          }
+
         } else {
           log.warn("unknown transaction type :: {} found in table, ignoring", txType);
         }

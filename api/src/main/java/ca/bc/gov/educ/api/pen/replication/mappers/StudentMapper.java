@@ -46,6 +46,8 @@ public interface StudentMapper {
   @Mapping(target = "email", ignore = true)
   @Mapping(target = "dob", ignore = true)
   @Mapping(target = "deceasedDate", ignore = true)
+  @Mapping(source = "createUser", target = "createUser", defaultValue = "REPLICATION_API")
+  @Mapping(source = "updateUser", target = "updateUser", defaultValue = "REPLICATION_API")
   StudentCreate toStudentCreate(PenDemogTransaction penDemogTransaction);
 
 
@@ -55,6 +57,8 @@ public interface StudentMapper {
    * @param studentUpdate the student update
    * @return the student create
    */
+  @Mapping(source = "createUser", target = "createUser", defaultValue = "REPLICATION_API")
+  @Mapping(source = "updateUser", target = "updateUser", defaultValue = "REPLICATION_API")
   StudentCreate toStudentCreate(StudentUpdate studentUpdate);
 
   /**
@@ -63,6 +67,8 @@ public interface StudentMapper {
    * @param studentCreate the student create
    * @return the student update
    */
+  @Mapping(source = "createUser", target = "createUser", defaultValue = "REPLICATION_API")
+  @Mapping(source = "updateUser", target = "updateUser", defaultValue = "REPLICATION_API")
   StudentUpdate toStudentUpdate(StudentCreate studentCreate);
 
   /**
@@ -92,6 +98,8 @@ public interface StudentMapper {
   @Mapping(target = "email", ignore = true)
   @Mapping(target = "dob", ignore = true)
   @Mapping(target = "deceasedDate", ignore = true)
+  @Mapping(source = "createUser", target = "createUser", defaultValue = "REPLICATION_API")
+  @Mapping(source = "updateUser", target = "updateUser", defaultValue = "REPLICATION_API")
   StudentUpdate toStudent(PenDemogTransaction penDemogTransaction);
 
 }
