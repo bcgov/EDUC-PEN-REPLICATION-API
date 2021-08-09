@@ -33,7 +33,7 @@ import static ca.bc.gov.educ.api.pen.replication.constants.EventType.*;
 public class ChoreographEventHandler {
   private final Executor singleTaskExecutor = new EnhancedQueueExecutor.Builder()
     .setThreadFactory(new ThreadFactoryBuilder().setNameFormat("task-executor-%d").build())
-    .setCorePoolSize(1).setMaximumPoolSize(1).build();
+    .setCorePoolSize(2).setMaximumPoolSize(2).build();
   private final Map<String, EventService<?>> eventServiceMap;
   private final EventRepository eventRepository;
 
