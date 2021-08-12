@@ -103,8 +103,11 @@ public class PenReplicationSagaController implements PenReplicationSagaEndpoint 
   }
 
   @Override
-  public List<SagaEvent> getSagaEventsBySagaID(final UUID sagaID) {
-    return this.getSagaService().findAllSagaStates(ca.bc.gov.educ.api.pen.replication.model.Saga.builder().sagaId(sagaID).build()).stream().map(SagaMapper.mapper::toStruct).collect(Collectors.toList());
+  public ResponseEntity<List<SagaEvent>> getSagaEventsBySagaID(final UUID sagaID) {
+    val sagaOptional = this.getSagaService().findSagaById(sagaID);
+    return sagaOptional.map(saga -> ResponseEntity.ok(this.getSagaService().findAllSagaStates(saga).stream()
+      .map(SagaMapper.mapper::toStruct).collect(Collectors.toList())))
+      .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
   }
 
   @Override
