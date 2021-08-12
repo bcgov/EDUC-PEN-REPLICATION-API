@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -48,6 +49,11 @@ public interface PenReplicationSagaEndpoint {
   @Transactional(readOnly = true)
   @Tag(name = "Endpoint to update saga event by its ID (GUID) and Saga ID (GUID).", description = "Endpoint to update saga by its ID (GUID) and Saga ID (GUID).")
   ResponseEntity<SagaEvent> updateSagaEventState(@PathVariable UUID sagaID, @PathVariable UUID sagaEventID, @RequestBody SagaEvent sagaEvent);
+
+  @GetMapping("/{sagaID}/events")
+  @PreAuthorize("hasAuthority('SCOPE_PEN_REPLICATION_READ_SAGA')")
+  @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK."), @ApiResponse(responseCode = "404", description = "NOT FOUND.")})
+  List<SagaEvent> getSagaEventsBySagaID(@PathVariable UUID sagaID);
 
   @DeleteMapping("/{sagaID}/saga-event-states/{sagaEventID}")
   @PreAuthorize("hasAuthority('SCOPE_PEN_REPLICATION_WRITE_SAGA')")
