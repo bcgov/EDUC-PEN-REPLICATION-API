@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static lombok.AccessLevel.PRIVATE;
 
@@ -99,6 +100,11 @@ public class PenReplicationSagaController implements PenReplicationSagaEndpoint 
     } else {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
+  }
+
+  @Override
+  public List<SagaEvent> getSagaEventsBySagaID(final UUID sagaID) {
+    return this.getSagaService().findAllSagaStates(ca.bc.gov.educ.api.pen.replication.model.Saga.builder().sagaId(sagaID).build()).stream().map(SagaMapper.mapper::toStruct).collect(Collectors.toList());
   }
 
   @Override

@@ -1,13 +1,16 @@
 package ca.bc.gov.educ.api.pen.replication.controller;
 
 import ca.bc.gov.educ.api.pen.replication.BasePenReplicationAPITest;
+import ca.bc.gov.educ.api.pen.replication.constants.SagaEnum;
 import ca.bc.gov.educ.api.pen.replication.model.Saga;
+import ca.bc.gov.educ.api.pen.replication.repository.SagaEventRepository;
+import ca.bc.gov.educ.api.pen.replication.repository.SagaRepository;
+import ca.bc.gov.educ.api.pen.replication.service.SagaService;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import lombok.val;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
-
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -25,6 +28,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class PenReplicationSagaControllerTest extends BasePenReplicationAPITest {
   @Autowired
   private MockMvc mockMvc;
+
+  @Autowired
+  SagaRepository repository;
+
+  @Autowired
+  SagaEventRepository sagaEventRepository;
+
+  @Autowired
+  SagaService sagaService;
 
   /**
    * Test read saga given invalid saga id should return 404.
@@ -68,6 +80,22 @@ public class PenReplicationSagaControllerTest extends BasePenReplicationAPITest 
     this.mockMvc.perform(get("/api/v1/pen-replication/saga/paginated")
       .with(jwt().jwt((jwt) -> jwt.claim("scope", "PEN_REPLICATION_READ_SAGA")))
       .contentType(APPLICATION_JSON)).andDo(print()).andExpect(status().isOk()).andExpect(jsonPath("$.content", hasSize(0)));
+  }
+
+  @Test
+  @SuppressWarnings("java:S100")
+  public void testReadSagaEvents_givenSagaDoesntExist_shouldReturnStatusNotFound() throws Exception {
+    this.mockMvc.perform(get("/api/v1/pen-replication/saga//{sagaID}/events", UUID.randomUUID())
+      .with(jwt().jwt((jwt) -> jwt.claim("scope", "PEN_REPLICATION_READ_SAGA")))
+      .contentType(APPLICATION_JSON)).andDo(print()).andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(0)));
+  }
+
+  @Test
+  @SuppressWarnings("java:S100")
+  public void testGetSagaBySagaID_whenSagaIDIsValidWithNoEvents_shouldReturnStatusOk() throws Exception {
+    var saga = this.sagaService.createSagaRecordInDB(SagaEnum.PEN_REPLICATION_STUDENT_CREATE_SAGA.getCode(), "JOCOX", "test");
+    this.repository.save(saga);
+    this.mockMvc.perform(get("/api/v1/pen-replication/saga//{sagaID}/events", saga.getSagaId()).with(jwt().jwt((jwt) -> jwt.claim("scope", "PEN_REPLICATION_READ_SAGA")))).andDo(print()).andExpect(status().isOk());
   }
 
 }
