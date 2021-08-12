@@ -53,7 +53,7 @@ public interface PenReplicationSagaEndpoint {
   @GetMapping("/{sagaID}/events")
   @PreAuthorize("hasAuthority('SCOPE_PEN_REPLICATION_READ_SAGA')")
   @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK."), @ApiResponse(responseCode = "404", description = "NOT FOUND.")})
-  List<SagaEvent> getSagaEventsBySagaID(@PathVariable UUID sagaID);
+  ResponseEntity<List<SagaEvent>> getSagaEventsBySagaID(@PathVariable UUID sagaID);
 
   @DeleteMapping("/{sagaID}/saga-event-states/{sagaEventID}")
   @PreAuthorize("hasAuthority('SCOPE_PEN_REPLICATION_WRITE_SAGA')")
