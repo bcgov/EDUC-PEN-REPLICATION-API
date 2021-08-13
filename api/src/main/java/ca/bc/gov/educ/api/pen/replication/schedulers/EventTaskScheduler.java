@@ -48,7 +48,7 @@ public class EventTaskScheduler {
   @Scheduled(cron = "${cron.scheduled.process.uncompleted.saga}")
   @SchedulerLock(name = "REPLAY_UNCOMPLETED_SAGAS", lockAtLeastFor = "${cron.scheduled.process.uncompleted.saga.lockAtLeastFor}", lockAtMostFor = "${cron.scheduled.process.uncompleted.saga.lockAtMostFor}")
   public void findAndProcessUncompletedSagas() {
-    final List<Saga> sagas = this.getSagaRepository().findAllByStatusIn(this.getStatusFilters());
+    final List<Saga> sagas = this.getSagaRepository().findFirst100ByStatusInOrderByCreateDate(this.getStatusFilters());
     if (!sagas.isEmpty()) {
       this.processUncompletedSagas(sagas);
     }

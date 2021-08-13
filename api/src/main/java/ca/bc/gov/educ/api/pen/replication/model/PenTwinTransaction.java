@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.Column;
@@ -69,6 +70,7 @@ public class PenTwinTransaction implements Serializable {
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   LocalDateTime transactionProcessedDateTime;
 
+
   /**
    * The Pen twin 1.
    */
@@ -99,5 +101,13 @@ public class PenTwinTransaction implements Serializable {
    */
   @Column(name = "TWIN_USER_ID", length = 15)
   String twinUserID;
+
+  public String getPenTwin1() {
+    return StringUtils.trim(penTwin1);
+  }
+
+  public String getPenTwin2() {
+    return StringUtils.trim(penTwin2);
+  }
 
 }
