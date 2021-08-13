@@ -15,6 +15,8 @@ import ca.bc.gov.educ.api.pen.replication.struct.saga.PossibleMatchSagaData;
 import ca.bc.gov.educ.api.pen.replication.struct.saga.StudentCreateSagaData;
 import ca.bc.gov.educ.api.pen.replication.struct.saga.StudentUpdateSagaData;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
+import ca.bc.gov.educ.api.pen.replication.validator.PenDemogTransactionValidator;
+import ca.bc.gov.educ.api.pen.replication.validator.PenTwinTransactionValidator;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -23,6 +25,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
@@ -75,8 +78,8 @@ public class TransactionTableRecordsProcessor {
     val valueFromRedis = this.stringRedisTemplate.opsForValue().get(redisKey);
     if (StringUtils.isBlank(valueFromRedis)) {
       this.stringRedisTemplate.opsForValue().set(redisKey, "true", 1, TimeUnit.MINUTES); // add timeout of one minute so that it self expires in case delete operation was not successful.
-      val penTwinTransactions = this.penTwinTransactionRepository.findAllByTransactionStatusAndTransactionTypeInOrderByTransactionInsertDateTime(TransactionStatus.PENDING.getCode(), Arrays.asList(CREATE_TWINS.getCode(), DELETE_TWINS.getCode()));
-      val penDemogTransactions = this.penDemogTransactionRepository.findAllByTransactionStatusAndTransactionTypeInOrderByTransactionInsertDateTime(TransactionStatus.PENDING.getCode(), Arrays.asList(CREATE_STUDENT.getCode(), UPDATE_STUDENT.getCode()));
+      val penTwinTransactions = this.penTwinTransactionRepository.findFirst100ByTransactionStatusAndTransactionTypeInOrderByTransactionInsertDateTime(TransactionStatus.PENDING.getCode(), Arrays.asList(CREATE_TWINS.getCode(), DELETE_TWINS.getCode()));
+      val penDemogTransactions = this.penDemogTransactionRepository.findFirst100ByTransactionStatusAndTransactionTypeInOrderByTransactionInsertDateTime(TransactionStatus.PENDING.getCode(), Arrays.asList(CREATE_STUDENT.getCode(), UPDATE_STUDENT.getCode()));
       if (!penTwinTransactions.isEmpty()) {
         this.processTwinTransactions(penTwinTransactions);
       }
@@ -98,6 +101,12 @@ public class TransactionTableRecordsProcessor {
         this.stringRedisTemplate.opsForValue().set(redisKey, "true", 1, TimeUnit.MINUTES); // add timeout of one minute so that it self expires in case delete operation was not successful.
         val txType = penTwinTransaction.getTransactionType();
         final PossibleMatchSagaData possibleMatchSagaData = PossibleMatchSagaData.builder().penTwinTransaction(penTwinTransaction).build();
+        val error = PenTwinTransactionValidator.validatePenTwinTransaction(penTwinTransaction);
+        if (error.isPresent()) {
+          log.error(error.get());
+          this.updatePenTwinTransactionToErrorState(penTwinTransaction);
+          return;
+        }
         if (CREATE_TWINS.getCode().equals(txType)) {
           val orchestrator = this.sagaEnumOrchestratorMap.get(PEN_REPLICATION_POSSIBLE_MATCH_CREATE_SAGA);
           val saga = this.penTwinTransactionService.createSagaAndUpdatePenTwinTransaction(orchestrator.getSagaName().getCode(), ApplicationProperties.API_NAME, JsonUtil.getJsonStringFromObject(possibleMatchSagaData), penTwinTransaction);
@@ -107,7 +116,8 @@ public class TransactionTableRecordsProcessor {
           val saga = this.penTwinTransactionService.createSagaAndUpdatePenTwinTransaction(orchestrator.getSagaName().getCode(), ApplicationProperties.API_NAME, JsonUtil.getJsonStringFromObject(possibleMatchSagaData), penTwinTransaction);
           orchestrator.startSaga(saga);
         } else {
-          log.warn("unknown transaction type :: {} found in table, ignoring", txType);
+          log.error("unknown transaction type :: {} found in table, ignoring transaction id :: {}", txType, penTwinTransaction.getTransactionID());
+          this.updatePenTwinTransactionToErrorState(penTwinTransaction);
         }
         this.stringRedisTemplate.delete(redisKey);// delete the key from redis after it processed.
       } else {
@@ -119,12 +129,19 @@ public class TransactionTableRecordsProcessor {
   @SneakyThrows
   private void processDemogTransactions(final List<PenDemogTransaction> penDemogTransactions) {
     for (val penDemogTransaction : penDemogTransactions) {
+
       val redisKey = "pen-replication-api::processDemogTransactions::" + penDemogTransaction.getTransactionID();
       val valueFromRedis = this.stringRedisTemplate.opsForValue().get(redisKey);
       if (StringUtils.isBlank(valueFromRedis)) {
         this.stringRedisTemplate.opsForValue().set(redisKey, "true", 1, TimeUnit.MINUTES); // add timeout of one minute so that it self expires in case delete operation was not successful.
         val txType = penDemogTransaction.getTransactionType();
         if (CREATE_STUDENT.getCode().equals(txType)) {
+          val error = PenDemogTransactionValidator.validatePenDemogForCreate(penDemogTransaction);
+          if (error.isPresent()) {
+            log.error(error.get());
+            this.updatePenDemogTransactionToErrorState(penDemogTransaction);
+            return;
+          }
           final StudentCreateSagaData studentCreateSagaData = StudentCreateSagaData.builder()
             .penDemogTransaction(penDemogTransaction)
             .studentCreate(StudentMapper.mapper.toStudentCreate(penDemogTransaction))
@@ -133,22 +150,37 @@ public class TransactionTableRecordsProcessor {
           val saga = this.penDemogTransactionService.createSagaAndUpdatePenDemogTransaction(orchestrator.getSagaName().getCode(), ApplicationProperties.API_NAME, JsonUtil.getJsonStringFromObject(studentCreateSagaData), penDemogTransaction);
           orchestrator.startSaga(saga);
         } else if (UPDATE_STUDENT.getCode().equals(txType)) {
-          if (StringUtils.isNotBlank(penDemogTransaction.getPen())) {
-            val studentUpdateSagaData = StudentUpdateSagaData.builder().penDemogTransaction(penDemogTransaction).studentUpdate(StudentMapper.mapper.toStudent(penDemogTransaction)).build();
-            val orchestrator = this.sagaEnumOrchestratorMap.get(PEN_REPLICATION_STUDENT_UPDATE_SAGA);
-            val saga = this.penDemogTransactionService.createSagaAndUpdatePenDemogTransaction(orchestrator.getSagaName().getCode(), ApplicationProperties.API_NAME, JsonUtil.getJsonStringFromObject(studentUpdateSagaData), penDemogTransaction);
-            orchestrator.startSaga(saga);
-          } else {
-            log.warn("Pen Number is blank for pen demog update, ignoring. transaction ID :: {}", penDemogTransaction.getTransactionID());
+          val error = PenDemogTransactionValidator.validatePenDemogForUpdate(penDemogTransaction);
+          if (error.isPresent()) {
+            log.error(error.get());
+            this.updatePenDemogTransactionToErrorState(penDemogTransaction);
+            return;
           }
+          val studentUpdateSagaData = StudentUpdateSagaData.builder().penDemogTransaction(penDemogTransaction).studentUpdate(StudentMapper.mapper.toStudent(penDemogTransaction)).build();
+          val orchestrator = this.sagaEnumOrchestratorMap.get(PEN_REPLICATION_STUDENT_UPDATE_SAGA);
+          val saga = this.penDemogTransactionService.createSagaAndUpdatePenDemogTransaction(orchestrator.getSagaName().getCode(), ApplicationProperties.API_NAME, JsonUtil.getJsonStringFromObject(studentUpdateSagaData), penDemogTransaction);
+          orchestrator.startSaga(saga);
 
         } else {
-          log.warn("unknown transaction type :: {} found in table, ignoring", txType);
+          log.error("unknown transaction type :: {} found in table, ignoring transaction id :: {}", txType, penDemogTransaction.getTransactionID());
+          this.updatePenDemogTransactionToErrorState(penDemogTransaction);
         }
         this.stringRedisTemplate.delete(redisKey);
       } else {
         log.debug(SKIP_RECORD_LOG, redisKey);
       }
     }
+  }
+
+  private void updatePenDemogTransactionToErrorState(final PenDemogTransaction penDemogTransaction) {
+    penDemogTransaction.setTransactionProcessedDateTime(LocalDateTime.now());
+    penDemogTransaction.setTransactionStatus(TransactionStatus.ERROR.getCode());
+    this.penDemogTransactionRepository.save(penDemogTransaction);
+  }
+
+  private void updatePenTwinTransactionToErrorState(final PenTwinTransaction penTwinTransaction) {
+    penTwinTransaction.setTransactionProcessedDateTime(LocalDateTime.now());
+    penTwinTransaction.setTransactionStatus(TransactionStatus.ERROR.getCode());
+    this.penTwinTransactionRepository.save(penTwinTransaction);
   }
 }

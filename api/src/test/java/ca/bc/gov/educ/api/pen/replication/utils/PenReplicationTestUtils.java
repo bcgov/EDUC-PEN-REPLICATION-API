@@ -4,6 +4,8 @@ import ca.bc.gov.educ.api.pen.replication.repository.*;
 import lombok.Getter;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * The type Pen replication test utils.
@@ -44,6 +46,7 @@ public class PenReplicationTestUtils {
   /**
    * Clean db.
    */
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void cleanDB() {
     this.penDemogRepository.deleteAll();
     this.eventRepository.deleteAll();

@@ -214,8 +214,8 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
    * @param currentEvent the event that has occurred.
    * @param outcome      outcome of the event.
    */
-  public void end(final EventType currentEvent, final EventOutcome outcome) {
-    this.registerStepToExecute(currentEvent, outcome, (T sagaData) -> true, MARK_SAGA_COMPLETE, this::markSagaComplete);
+  public BaseOrchestrator<T> end(final EventType currentEvent, final EventOutcome outcome) {
+    return this.registerStepToExecute(currentEvent, outcome, (T sagaData) -> true, MARK_SAGA_COMPLETE, this::markSagaComplete);
   }
 
   /**
@@ -668,7 +668,17 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
       this.postMessageToTopic(this.getTopicToSubscribe().getCode(), nextEvent); // this will make it async and use pub/sub flow even though it is sending message to itself
       log.info("responded via NATS to {} for {} Event. :: {}", this.getTopicToSubscribe(), ADD_PEN_DEMOG, saga.getSagaId());
     } else {
-      log.error("This should not have happened as it is not expected to have a saga running without a transaction in Pen Demog Transaction. Transaction ID :: {}", penTwinTransaction.getTransactionID());
+      log.error("This should not have happened as it is not expected to have a saga running without a transaction in Pen Twin Transaction. Transaction ID :: {}", penTwinTransaction.getTransactionID());
+    }
+  }
+
+  protected void updatePenTwinTransactionToError(final PenTwinTransaction penTwinTransaction, final PenTwinTransactionRepository penTwinTransactionRepository) {
+    val penTwinTransactionOptional = penTwinTransactionRepository.findById(penTwinTransaction.getTransactionID());
+    if (penTwinTransactionOptional.isPresent()) {
+      val twinTransaction = penTwinTransactionOptional.get();
+      twinTransaction.setTransactionStatus(TransactionStatus.ERROR.getCode());
+      twinTransaction.setTransactionProcessedDateTime(LocalDateTime.now());
+      penTwinTransactionRepository.save(twinTransaction);
     }
   }
 }

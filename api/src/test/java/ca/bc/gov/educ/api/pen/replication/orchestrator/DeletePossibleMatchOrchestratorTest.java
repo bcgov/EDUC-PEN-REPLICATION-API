@@ -206,11 +206,11 @@ public class DeletePossibleMatchOrchestratorTest extends BasePenReplicationAPITe
     this.orchestrator.handleEvent(event2);
     verify(this.messagePublisher, atLeastOnce()).dispatchMessage(eq(this.orchestrator.getTopicToSubscribe().getCode()), this.eventCaptor.capture());
     final var newEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
-    assertThat(newEvent.getEventType()).isEqualTo(DELETE_PEN_TWINS);
-    assertThat(newEvent.getEventPayload()).isEqualTo("2");
+    assertThat(newEvent.getEventType()).isEqualTo(MARK_SAGA_COMPLETE);
+    assertThat(newEvent.getEventPayload()).isNull();
     final var sagaFromDB = this.sagaService.findSagaById(this.saga.getSagaId());
     assertThat(sagaFromDB).isPresent();
-    assertThat(sagaFromDB.get().getSagaState()).isEqualTo(DELETE_PEN_TWINS.toString());
+    assertThat(sagaFromDB.get().getSagaState()).isEqualTo(COMPLETED.toString());
     final var sagaStates = this.sagaService.findAllSagaStates(this.saga);
     assertThat(sagaStates.size()).isEqualTo(2);
     assertThat(sagaStates.get(1).getSagaEventState()).isEqualTo(EventType.DELETE_POSSIBLE_MATCH.toString());

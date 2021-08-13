@@ -156,11 +156,10 @@ public class AddPossibleMatchOrchestratorTest extends BasePenReplicationAPITest 
     this.orchestrator.handleEvent(event);
     verify(this.messagePublisher, atLeastOnce()).dispatchMessage(eq(orchestrator.getTopicToSubscribe().getCode()), this.eventCaptor.capture());
     final var newEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
-    assertThat(newEvent.getEventType()).isEqualTo(CREATE_PEN_TWINS);
-    assertThat(newEvent.getEventPayload()).isEqualTo("2");
+    assertThat(newEvent.getEventType()).isEqualTo(MARK_SAGA_COMPLETE);
     final var sagaFromDB = this.sagaService.findSagaById(this.saga.getSagaId());
     assertThat(sagaFromDB).isPresent();
-    assertThat(sagaFromDB.get().getSagaState()).isEqualTo(CREATE_PEN_TWINS.toString());
+    assertThat(sagaFromDB.get().getSagaState()).isEqualTo(COMPLETED.toString());
     final var sagaStates = this.sagaService.findAllSagaStates(this.saga);
     assertThat(sagaStates.size()).isEqualTo(1);
     assertThat(sagaStates.get(0).getSagaEventState()).isEqualTo(EventType.ADD_POSSIBLE_MATCH.toString());
