@@ -48,7 +48,7 @@ public class EventTaskScheduler {
   @Scheduled(cron = "${cron.scheduled.process.uncompleted.saga}")
   @SchedulerLock(name = "REPLAY_UNCOMPLETED_SAGAS", lockAtLeastFor = "${cron.scheduled.process.uncompleted.saga.lockAtLeastFor}", lockAtMostFor = "${cron.scheduled.process.uncompleted.saga.lockAtMostFor}")
   public void findAndProcessUncompletedSagas() {
-    final List<Saga> sagas = this.getSagaRepository().findFirst100ByStatusInOrderByCreateDate(this.getStatusFilters());
+    final List<Saga> sagas = this.getSagaRepository().findAllByStatusInOrderByCreateDate(this.getStatusFilters());
     if (!sagas.isEmpty()) {
       this.processUncompletedSagas(sagas);
     }
@@ -61,7 +61,8 @@ public class EventTaskScheduler {
    */
   private void processUncompletedSagas(final List<Saga> sagas) {
     for (val saga : sagas) {
-      if (saga.getCreateDate().isBefore(LocalDateTime.now().minusMinutes(1))
+      val compareDate = this.calculateDateBasedOnSagaName(saga);
+      if (saga.getCreateDate().isBefore(compareDate)
         && this.getSagaEnumOrchestratorMap().containsKey(SagaEnum.getKeyFromValue(saga.getSagaName()))) {
         try {
           this.setRetryCountAndLog(saga);
@@ -74,6 +75,13 @@ public class EventTaskScheduler {
         }
       }
     }
+  }
+
+  private LocalDateTime calculateDateBasedOnSagaName(final Saga saga) {
+    if (SagaEnum.PEN_REPLICATION_POSSIBLE_MATCH_CREATE_SAGA.getCode().equals(saga.getSagaName()) || SagaEnum.PEN_REPLICATION_POSSIBLE_MATCH_DELETE_SAGA.getCode().equals(saga.getSagaName())) {
+      return LocalDateTime.now().minusMinutes(20);
+    }
+    return LocalDateTime.now().minusMinutes(1);
   }
 
   /**
