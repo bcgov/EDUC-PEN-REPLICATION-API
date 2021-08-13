@@ -17,7 +17,8 @@ public enum TransactionStatus {
   /**
    * Complete transaction status.
    */
-  COMPLETE("REPLIC"); // Transaction record has been replicated
+  COMPLETE("REPLIC"), // Transaction record has been replicated,
+  ERROR("ERROR");
 
   @Getter
   private final String code;

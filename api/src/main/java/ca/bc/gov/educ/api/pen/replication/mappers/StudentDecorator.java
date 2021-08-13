@@ -3,6 +3,7 @@ package ca.bc.gov.educ.api.pen.replication.mappers;
 import ca.bc.gov.educ.api.pen.replication.model.PenDemogTransaction;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentCreate;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentUpdate;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * The type Student decorator.
@@ -23,6 +24,12 @@ public abstract class StudentDecorator implements StudentMapper {
   public StudentCreate toStudentCreate(final PenDemogTransaction penDemogTransaction) {
     final var entity = this.delegate.toStudentCreate(penDemogTransaction);
     entity.setDob(this.getFormattedDOB(penDemogTransaction.getBirthDate()));
+    if (StringUtils.isBlank(entity.getCreateUser())) {
+      entity.setCreateUser("REPLICATION_API");
+    }
+    if (StringUtils.isBlank(entity.getUpdateUser())) {
+      entity.setCreateUser("REPLICATION_API");
+    }
     return entity;
   }
 
@@ -30,6 +37,12 @@ public abstract class StudentDecorator implements StudentMapper {
   public StudentUpdate toStudent(final PenDemogTransaction penDemogTransaction) {
     final var entity = this.delegate.toStudent(penDemogTransaction);
     entity.setDob(this.getFormattedDOB(penDemogTransaction.getBirthDate()));
+    if (StringUtils.isBlank(entity.getCreateUser())) {
+      entity.setCreateUser("REPLICATION_API");
+    }
+    if (StringUtils.isBlank(entity.getUpdateUser())) {
+      entity.setCreateUser("REPLICATION_API");
+    }
     return entity;
   }
 

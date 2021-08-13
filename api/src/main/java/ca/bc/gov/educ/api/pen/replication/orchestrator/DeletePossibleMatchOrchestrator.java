@@ -19,6 +19,7 @@ import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManagerFactory;
@@ -62,7 +63,7 @@ public class DeletePossibleMatchOrchestrator extends BaseOrchestrator<PossibleMa
   public void populateStepsToExecuteMap() {
     this.stepBuilder()
       .begin(DELETE_POSSIBLE_MATCH, this::deletePossibleMatchFromStudent)
-      .step(DELETE_POSSIBLE_MATCH, STUDENTS_NOT_FOUND, DELETE_PEN_TWINS, this::deletePenTwins)
+      .step(DELETE_POSSIBLE_MATCH, STUDENTS_NOT_FOUND, MARK_SAGA_COMPLETE, this::markSagaComplete)
       .step(DELETE_POSSIBLE_MATCH, POSSIBLE_MATCH_DELETED, DELETE_PEN_TWINS, this::deletePenTwins)
       .step(DELETE_PEN_TWINS, PEN_TWINS_DELETED, UPDATE_PEN_TWIN_TRANSACTION, this::updatePenTwinTransaction)
       .end(UPDATE_PEN_TWIN_TRANSACTION, PEN_TWIN_TRANSACTION_UPDATED);
@@ -107,8 +108,8 @@ public class DeletePossibleMatchOrchestrator extends BaseOrchestrator<PossibleMa
     final SagaEvent eventStates = this.createEventState(saga, event.getEventType(), event.getEventOutcome(), event.getEventPayload());
     this.getSagaService().updateAttachedSagaWithEvents(saga, eventStates);
     final List<String> pens = new ArrayList<>();
-    pens.add(possibleMatchSagaData.getPenTwinTransaction().getPenTwin1());
-    pens.add(possibleMatchSagaData.getPenTwinTransaction().getPenTwin2());
+    pens.add(StringUtils.trim(possibleMatchSagaData.getPenTwinTransaction().getPenTwin1()));
+    pens.add(StringUtils.trim(possibleMatchSagaData.getPenTwinTransaction().getPenTwin2()));
     val studentMap = this.restUtils.createStudentMapFromPenNumbers(pens, saga.getSagaId());
     if (studentMap.size() != pens.size()) { // size mismatch student does not exist.
       val nextEvent = Event.builder().sagaId(saga.getSagaId())
@@ -116,6 +117,8 @@ public class DeletePossibleMatchOrchestrator extends BaseOrchestrator<PossibleMa
         .eventOutcome(STUDENTS_NOT_FOUND)
         .eventPayload("STUDENTS_NOT_FOUND")
         .build();
+      log.error("Students not found for pen numbers :: {} . Transaction ID :: {},  SAGA will be ended", pens, possibleMatchSagaData.getPenTwinTransaction().getTransactionID());
+      this.updatePenTwinTransactionToError(possibleMatchSagaData.getPenTwinTransaction(), this.penTwinTransactionRepository);
       this.postMessageToTopic(this.getTopicToSubscribe().getCode(), nextEvent); // this will make it async and use pub/sub flow even though it is sending message to itself
       log.info("responded via NATS to {} for {} Event. :: {}", this.getTopicToSubscribe(), DELETE_POSSIBLE_MATCH, saga.getSagaId());
     } else {
