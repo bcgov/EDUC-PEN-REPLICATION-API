@@ -54,7 +54,7 @@ public class TransactionTableRecordsProcessorTest extends BasePenReplicationAPIT
     assertThat(penDemogTr.get().getTransactionStatus()).isEqualTo(TransactionStatus.IN_PROGRESS.getCode());
     val penTwinTr = this.penReplicationTestUtils.getPenTwinTransactionRepository().findById(this.transactionID);
     assertThat(penTwinTr).isPresent();
-    assertThat(penTwinTr.get().getTransactionStatus()).isEqualTo(TransactionStatus.IN_PROGRESS.getCode());
+    assertThat(penTwinTr.get().getTransactionStatus()).isEqualTo(TransactionStatus.ERROR.getCode());
 
   }
 
