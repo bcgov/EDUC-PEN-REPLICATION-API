@@ -101,11 +101,11 @@ objects:
                   name: metrics
               resources:
                 requests:
-                  cpu: "5m"
-                  memory: "25Mi"
+                  cpu: "25m"
+                  memory: "125Mi"
                 limits:
-                  cpu: "10m"
-                  memory: "50Mi"
+                  cpu: "50m"
+                  memory: "250Mi"
           volumes:
             - name: tls-certs
               secret:
