@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 /**
  * The type Pen demog transaction service.
  */
@@ -57,5 +59,10 @@ public class PenDemogTransactionService {
       penDemogTxUpdated.setPen(pen);
       penDemogTransactionRepository.save(penDemogTxUpdated);
     }
+  }
+
+  @Transactional(propagation = Propagation.SUPPORTS)
+  public Optional<PenDemogTransaction> getPenDemogTransaction(final String penDemogTransactionId) {
+    return penDemogTransactionRepository.findById(penDemogTransactionId);
   }
 }

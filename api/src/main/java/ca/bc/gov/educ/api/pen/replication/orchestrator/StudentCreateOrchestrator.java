@@ -2,6 +2,7 @@ package ca.bc.gov.educ.api.pen.replication.orchestrator;
 
 import ca.bc.gov.educ.api.pen.replication.constants.SagaEnum;
 import ca.bc.gov.educ.api.pen.replication.constants.SagaTopicsEnum;
+import ca.bc.gov.educ.api.pen.replication.exception.PenReplicationAPIRuntimeException;
 import ca.bc.gov.educ.api.pen.replication.helpers.PenReplicationHelper;
 import ca.bc.gov.educ.api.pen.replication.mappers.PenDemogStudentMapper;
 import ca.bc.gov.educ.api.pen.replication.mappers.StudentMapper;
@@ -98,7 +99,11 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
 
   private int createOrUpdatePenDemog(final StudentCreateSagaData studentCreateSagaData) {
     final int rowsUpdated;
-    val existingPenDemogRecord = this.penDemogService.findPenDemogByPen(StringUtils.rightPad(studentCreateSagaData.getStudentCreate().getPen(), 10));
+    val penDemogTxFromDBOptional = this.penDemogTransactionService.getPenDemogTransaction(studentCreateSagaData.getPenDemogTransaction().getTransactionID());
+    if (penDemogTxFromDBOptional.isEmpty() || StringUtils.isBlank(penDemogTxFromDBOptional.get().getPen())) {
+      throw new PenReplicationAPIRuntimeException("Pen number is null for transaction id ::" + studentCreateSagaData.getPenDemogTransaction().getTransactionID() + " this is not expected.");
+    }
+    val existingPenDemogRecord = this.penDemogService.findPenDemogByPen(StringUtils.rightPad(penDemogTxFromDBOptional.get().getPen(), 10));
     if (existingPenDemogRecord.isPresent()) {
       val existingPenDemog = existingPenDemogRecord.get();
       val penDemographicsEntity = PenReplicationHelper.getPenDemogFromStudentUpdate(StudentMapper.mapper.toStudentUpdate(studentCreateSagaData.getStudentCreate()), existingPenDemog, this.restUtils);
@@ -108,6 +113,7 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
       rowsUpdated = 1;
     } else {
       val penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(studentCreateSagaData.getStudentCreate());
+      penDemographicsEntity.setStudNo(penDemogTxFromDBOptional.get().getPen());
       penDemographicsEntity.setCreateDate(LocalDateTime.now());
       penDemographicsEntity.setUpdateDate(LocalDateTime.now());
       penDemographicsEntity.setStudBirth(StringUtils.replace(penDemographicsEntity.getStudBirth(), "-", ""));
@@ -124,6 +130,10 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
     student.setPen(pen);
     // update the pen in pen demog transaction first.
     this.penDemogTransactionService.addPenNumberToTransactionTable(studentCreateSagaData.getPenDemogTransaction().getTransactionID(), pen);
+    val penDemogTxFromDBOptional = this.penDemogTransactionService.getPenDemogTransaction(studentCreateSagaData.getPenDemogTransaction().getTransactionID());
+    if (penDemogTxFromDBOptional.isEmpty() || StringUtils.isBlank(penDemogTxFromDBOptional.get().getPen())) {
+      throw new PenReplicationAPIRuntimeException("Pen number is null for transaction id ::" + studentCreateSagaData.getPenDemogTransaction().getTransactionID() + " this is not expected.");
+    }
     saga.setSagaState(CREATE_STUDENT.toString());
     saga.setPayload(JsonUtil.getJsonStringFromObject(studentCreateSagaData));
     final SagaEvent eventStates = this.createEventState(saga, event.getEventType(), event.getEventOutcome(), event.getEventPayload());
