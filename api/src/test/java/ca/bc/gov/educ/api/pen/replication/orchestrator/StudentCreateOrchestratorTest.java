@@ -65,7 +65,9 @@ public class StudentCreateOrchestratorTest extends BasePenReplicationAPITest {
   @Before
   public void setUp() throws IOException {
     MockitoAnnotations.openMocks(this);
-    this.sagaData = StudentCreateSagaData.builder().penDemogTransaction(this.createMockPenDemogTransaction()).studentCreate(StudentMapper.mapper.toStudentCreate(this.createMockPenDemogTransaction())).build();
+    val penDemogTx = this.createMockPenDemogTransaction();
+    penReplicationTestUtils.getPenDemogTransactionRepository().save(penDemogTx);
+    this.sagaData = StudentCreateSagaData.builder().penDemogTransaction(penDemogTx).studentCreate(StudentMapper.mapper.toStudentCreate(this.createMockPenDemogTransaction())).build();
     this.saga = this.sagaService.createSagaRecordInDB(SagaEnum.PEN_REPLICATION_STUDENT_CREATE_SAGA.getCode(), "Test", JsonUtil.objectMapper.writeValueAsString(this.sagaData));
   }
 
