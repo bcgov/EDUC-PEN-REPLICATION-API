@@ -29,8 +29,8 @@ public class TransactionTablePoller {
   /**
    * Find and process events.
    */
-  @Scheduled(cron = "${cron.scheduled.process.records.transaction}") // every second
-  @SchedulerLock(name = "PROCESS_ROWS_TRANSACTION", lockAtLeastFor = "${cron.scheduled.process.records.transaction.lockAtLeastFor}", lockAtMostFor = "${cron.scheduled.process.records.transaction.lockAtMostFor}")
+  @Scheduled(fixedRateString = "${fix.scheduled.process.records.transaction}") // every 100 milliseconds
+  @SchedulerLock(name = "PROCESS_ROWS_TRANSACTION", lockAtLeastFor = "${fix.scheduled.process.records.transaction.lockAtLeastFor}", lockAtMostFor = "${fix.scheduled.process.records.transaction.lockAtMostFor}")
   public void findAndProcessEvents() {
     LockAssert.assertLocked();
     this.processor.processUnprocessedRecords();

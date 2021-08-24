@@ -77,7 +77,7 @@ public class TransactionTableRecordsProcessor {
     val redisKey = "pen-replication-api::extractPendingRecordsFromTransactionTables";
     val valueFromRedis = this.stringRedisTemplate.opsForValue().get(redisKey);
     if (StringUtils.isBlank(valueFromRedis)) {
-      this.stringRedisTemplate.opsForValue().set(redisKey, "true", 1, TimeUnit.MINUTES); // add timeout of one minute so that it self expires in case delete operation was not successful.
+      this.stringRedisTemplate.opsForValue().set(redisKey, "true", 1, TimeUnit.MINUTES); // add timeout of one minute so that it self-expires in case delete operation was not successful.
       val penTwinTransactions = this.penTwinTransactionRepository.findFirst100ByTransactionStatusAndTransactionTypeInOrderByTransactionInsertDateTime(TransactionStatus.PENDING.getCode(), Arrays.asList(CREATE_TWINS.getCode(), DELETE_TWINS.getCode()));
       val penDemogTransactions = this.penDemogTransactionRepository.findFirst100ByTransactionStatusAndTransactionTypeInOrderByTransactionInsertDateTime(TransactionStatus.PENDING.getCode(), Arrays.asList(CREATE_STUDENT.getCode(), UPDATE_STUDENT.getCode()));
       if (!penTwinTransactions.isEmpty()) {
@@ -133,7 +133,7 @@ public class TransactionTableRecordsProcessor {
       val redisKey = "pen-replication-api::processDemogTransactions::" + penDemogTransaction.getTransactionID();
       val valueFromRedis = this.stringRedisTemplate.opsForValue().get(redisKey);
       if (StringUtils.isBlank(valueFromRedis)) {
-        this.stringRedisTemplate.opsForValue().set(redisKey, "true", 1, TimeUnit.MINUTES); // add timeout of one minute so that it self expires in case delete operation was not successful.
+        this.stringRedisTemplate.opsForValue().set(redisKey, "true", 1, TimeUnit.MINUTES); // add timeout of one minute so that it self-expires in case delete operation was not successful.
         val txType = penDemogTransaction.getTransactionType();
         if (CREATE_STUDENT.getCode().equals(txType)) {
           val error = PenDemogTransactionValidator.validatePenDemogForCreate(penDemogTransaction);
