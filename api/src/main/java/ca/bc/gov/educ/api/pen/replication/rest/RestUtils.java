@@ -54,7 +54,7 @@ public class RestUtils {
    * @return the students by id
    */
   @SneakyThrows({IOException.class, InterruptedException.class})
-  @Retryable(value = {Exception.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
+  @Retryable(value = {Exception.class}, exclude = {PenReplicationAPIRuntimeException.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
   public Map<String, Student> getStudentsByID(final List<String> studentIDs) {
     log.info("called STUDENT_API to get students :: {}", studentIDs);
     final var event = ca.bc.gov.educ.api.pen.replication.struct.Event.builder().sagaId(UUID.randomUUID()).eventType(EventType.GET_STUDENTS).eventPayload(JsonUtil.getJsonStringFromObject(studentIDs)).build();
