@@ -6,10 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Immutable;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.IdClass;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
@@ -22,9 +19,11 @@ import java.io.Serializable;
 @IdClass(PenMergePK.class)
 public class PenMergesEntity implements Serializable {
 
+  @Id
   @Column(name = "STUD_NO")
   private String studNo;
 
+  @Id
   @Column(name = "STUD_TRUE_NO")
   private String studTrueNo;
 
