@@ -13,9 +13,12 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.lang.NonNull;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -55,6 +58,7 @@ public class RestUtils {
    */
   @SneakyThrows({IOException.class, InterruptedException.class})
   @Retryable(value = {Exception.class}, exclude = {PenReplicationAPIRuntimeException.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
+  @Cacheable(value = "studentsMap")
   public Map<String, Student> getStudentsByID(final List<String> studentIDs) {
     log.info("called STUDENT_API to get students :: {}", studentIDs);
     final var event = ca.bc.gov.educ.api.pen.replication.struct.Event.builder().sagaId(UUID.randomUUID()).eventType(EventType.GET_STUDENTS).eventPayload(JsonUtil.getJsonStringFromObject(studentIDs)).build();
@@ -113,7 +117,7 @@ public class RestUtils {
    * @return the map
    */
   @SneakyThrows
-  @Retryable(value = {Exception.class}, maxAttempts = 10, backoff = @Backoff(multiplier = 2, delay = 2000))
+  @Retryable(value = {Exception.class}, exclude = {PenReplicationAPIRuntimeException.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
   public Map<String, Student> createStudentMapFromPenNumbers(@NonNull final List<String> pens, final UUID sagaId) {
     final Map<String, Student> penStudentMap = new HashMap<>();
     for (val pen : pens) {
@@ -129,4 +133,11 @@ public class RestUtils {
     }
     return penStudentMap;
   }
+
+  @Scheduled(fixedRate = 5000)
+  @CacheEvict(value = "studentsMap", allEntries = true)
+  public void evictAllCachesAtIntervals() {
+    log.debug("Evicting student map cache");
+  }
+
 }
