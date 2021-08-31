@@ -14,7 +14,7 @@ public class StringMapper {
    * @return the string
    */
   public String map(String value) {
-    if (StringUtils.isNotEmpty(value)) {
+    if (StringUtils.isNotBlank(value)) {
       return value.trim().toUpperCase();
     }
     return " ";
