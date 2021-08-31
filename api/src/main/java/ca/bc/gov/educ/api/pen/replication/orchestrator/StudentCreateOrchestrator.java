@@ -107,8 +107,10 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
     if (existingPenDemogRecord.isPresent()) {
       val existingPenDemog = existingPenDemogRecord.get();
       val penDemographicsEntity = PenReplicationHelper.getPenDemogFromStudentUpdate(StudentMapper.mapper.toStudentUpdate(studentCreateSagaData.getStudentCreate()), existingPenDemog, this.restUtils);
-      BeanUtils.copyProperties(penDemographicsEntity, existingPenDemog, "createDate", "createUser");
       BeanUtils.copyProperties(penDemographicsEntity, existingPenDemog, "createDate", "createUser", "studNo");
+      if (studentCreateSagaData.getPenDemogTransaction().getUpdateDemogDate() != null) {
+        existingPenDemog.setUpdateDemogDate(studentCreateSagaData.getPenDemogTransaction().getUpdateDemogDate().toLocalDate());
+      }
       this.penDemogService.savePenDemog(existingPenDemog);
       rowsUpdated = 1;
     } else {
@@ -117,6 +119,9 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
       penDemographicsEntity.setCreateDate(LocalDateTime.now());
       penDemographicsEntity.setUpdateDate(LocalDateTime.now());
       penDemographicsEntity.setStudBirth(StringUtils.replace(penDemographicsEntity.getStudBirth(), "-", ""));
+      if (studentCreateSagaData.getPenDemogTransaction().getUpdateDemogDate() != null) {
+        penDemographicsEntity.setUpdateDemogDate(studentCreateSagaData.getPenDemogTransaction().getUpdateDemogDate().toLocalDate());
+      }
       this.penDemogService.savePenDemog(penDemographicsEntity);
       rowsUpdated = 1;
     }

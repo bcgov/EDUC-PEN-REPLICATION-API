@@ -99,4 +99,6 @@ public class PenDemographicsEntity {
   @Column(name = "MERGE_TO_DATE")
   private LocalDate mergeToDate;
 
+  @Column(name = "UPDATE_DEMOG_DATE")
+  private LocalDate updateDemogDate;
 }
