@@ -1,6 +1,7 @@
 package ca.bc.gov.educ.api.pen.replication.service;
 
 import ca.bc.gov.educ.api.pen.replication.helpers.PenReplicationHelper;
+import ca.bc.gov.educ.api.pen.replication.mappers.PenDemogStudentMapper;
 import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.PenDemogTransactionRepository;
@@ -9,7 +10,6 @@ import ca.bc.gov.educ.api.pen.replication.struct.StudentUpdate;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -66,7 +66,8 @@ public class StudentUpdateService extends BaseService<StudentUpdate> {
     if (existingPenDemogRecord.isPresent()) {
       val existingPenDemog = existingPenDemogRecord.get();
       val penDemographicsEntity = PenReplicationHelper.getPenDemogFromStudentUpdate(studentUpdate, existingPenDemog, this.restUtils);
-      BeanUtils.copyProperties(penDemographicsEntity, existingPenDemog, "createDate", "createUser", "studNo");
+      PenDemogStudentMapper.mapper.updatePenDemog(penDemographicsEntity, existingPenDemog);
+      log.debug("existing pen demog is :: {}", existingPenDemog);
       this.penDemogService.savePenDemog(existingPenDemog);
     }
     this.updateEvent(event);

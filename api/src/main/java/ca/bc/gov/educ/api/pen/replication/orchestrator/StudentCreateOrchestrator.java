@@ -22,7 +22,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManagerFactory;
@@ -107,7 +106,8 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
     if (existingPenDemogRecord.isPresent()) {
       val existingPenDemog = existingPenDemogRecord.get();
       val penDemographicsEntity = PenReplicationHelper.getPenDemogFromStudentUpdate(StudentMapper.mapper.toStudentUpdate(studentCreateSagaData.getStudentCreate()), existingPenDemog, this.restUtils);
-      BeanUtils.copyProperties(penDemographicsEntity, existingPenDemog, "createDate", "createUser", "studNo");
+      PenDemogStudentMapper.mapper.updatePenDemog(penDemographicsEntity, existingPenDemog);
+      log.debug("existing pen demog is :: {}", existingPenDemog);
       if (studentCreateSagaData.getPenDemogTransaction().getUpdateDemogDate() != null) {
         existingPenDemog.setUpdateDemogDate(studentCreateSagaData.getPenDemogTransaction().getUpdateDemogDate().toLocalDate());
       }

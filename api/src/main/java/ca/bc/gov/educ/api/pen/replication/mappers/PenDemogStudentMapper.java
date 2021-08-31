@@ -5,6 +5,7 @@ import ca.bc.gov.educ.api.pen.replication.struct.StudentCreate;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentUpdate;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
 /**
@@ -71,4 +72,8 @@ public interface PenDemogStudentMapper {
   @Mapping(source = "updateUser", target = "updateUser", defaultValue = "API")
   PenDemographicsEntity toPenDemog(StudentUpdate studentUpdate);
 
+  @Mapping(target = "studNo", ignore = true)
+  @Mapping(target = "createDate", ignore = true)
+  @Mapping(target = "createUser", ignore = true)
+  void updatePenDemog(PenDemographicsEntity penDemographicsEntity, @MappingTarget PenDemographicsEntity targetEntity);
 }
