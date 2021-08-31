@@ -29,6 +29,7 @@ public interface PenDemogStudentMapper {
   @Mapping(target = "mergeToUserName", ignore = true)
   @Mapping(target = "mergeToDate", ignore = true)
   @Mapping(target = "mergeToCode", ignore = true)
+  @Mapping(target = "gradeYear", ignore = true)
   @Mapping(source = "usualMiddleNames", target = "usualMiddle")
   @Mapping(source = "usualLastName", target = "usualSurname")
   @Mapping(source = "usualFirstName", target = "usualGiven")
@@ -51,6 +52,7 @@ public interface PenDemogStudentMapper {
    * @param studentUpdate the student update
    * @return the pen demographics entity
    */
+  @Mapping(target = "gradeYear", ignore = true)
   @Mapping(target = "updateDemogDate", ignore = true)
   @Mapping(target = "studentTrueNo", ignore = true)
   @Mapping(target = "mergeToUserName", ignore = true)
@@ -72,6 +74,7 @@ public interface PenDemogStudentMapper {
   @Mapping(source = "updateUser", target = "updateUser", defaultValue = "API")
   PenDemographicsEntity toPenDemog(StudentUpdate studentUpdate);
 
+  @Mapping(target = "gradeYear", ignore = true)
   @Mapping(target = "studNo", ignore = true)
   @Mapping(target = "createDate", ignore = true)
   @Mapping(target = "createUser", ignore = true)

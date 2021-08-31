@@ -132,6 +132,9 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
       if (studentUpdateSagaData.getPenDemogTransaction().getUpdateDemogDate() != null) {
         existingPenDemog.setUpdateDemogDate(studentUpdateSagaData.getPenDemogTransaction().getUpdateDemogDate().toLocalDate());
       }
+      if (StringUtils.isNotBlank(studentUpdateSagaData.getStudentUpdate().getGradeYear()) && StringUtils.isNumeric(studentUpdateSagaData.getStudentUpdate().getGradeYear())) {
+        existingPenDemog.setGradeYear(studentUpdateSagaData.getStudentUpdate().getGradeYear());
+      }
       this.penDemogService.savePenDemog(existingPenDemog);
       rowsUpdated = 1;
     } else {
@@ -141,6 +144,9 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
       penDemographicsEntity.setStudBirth(StringUtils.replace(penDemographicsEntity.getStudBirth(), "-", ""));
       if (studentUpdateSagaData.getPenDemogTransaction().getUpdateDemogDate() != null) {
         penDemographicsEntity.setUpdateDemogDate(studentUpdateSagaData.getPenDemogTransaction().getUpdateDemogDate().toLocalDate());
+      }
+      if (StringUtils.isNotBlank(studentUpdateSagaData.getStudentUpdate().getGradeYear()) && StringUtils.isNumeric(studentUpdateSagaData.getStudentUpdate().getGradeYear())) {
+        penDemographicsEntity.setGradeYear(studentUpdateSagaData.getStudentUpdate().getGradeYear());
       }
       this.penDemogService.savePenDemog(penDemographicsEntity);
       rowsUpdated = 1;

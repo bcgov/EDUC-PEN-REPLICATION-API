@@ -56,6 +56,9 @@ public class StudentCreateService extends BaseService<StudentCreate> {
       penDemographicsEntity.setCreateDate(LocalDateTime.now());
       penDemographicsEntity.setUpdateDate(LocalDateTime.now());
       penDemographicsEntity.setStudBirth(StringUtils.replace(penDemographicsEntity.getStudBirth(), "-", ""));
+      if (StringUtils.isNotBlank(request.getGradeYear()) && StringUtils.isNumeric(request.getGradeYear())) {
+        penDemographicsEntity.setGradeYear(request.getGradeYear());
+      }
       this.penDemogService.savePenDemog(penDemographicsEntity);
     }
     this.updateEvent(event);

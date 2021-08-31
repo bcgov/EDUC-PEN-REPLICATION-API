@@ -67,6 +67,9 @@ public class StudentUpdateService extends BaseService<StudentUpdate> {
       val existingPenDemog = existingPenDemogRecord.get();
       val penDemographicsEntity = PenReplicationHelper.getPenDemogFromStudentUpdate(studentUpdate, existingPenDemog, this.restUtils);
       PenDemogStudentMapper.mapper.updatePenDemog(penDemographicsEntity, existingPenDemog);
+      if (StringUtils.isNotBlank(studentUpdate.getGradeYear()) && StringUtils.isNumeric(studentUpdate.getGradeYear())) {
+        existingPenDemog.setGradeYear(studentUpdate.getGradeYear());
+      }
       log.debug("existing pen demog is :: {}", existingPenDemog);
       this.penDemogService.savePenDemog(existingPenDemog);
     }
