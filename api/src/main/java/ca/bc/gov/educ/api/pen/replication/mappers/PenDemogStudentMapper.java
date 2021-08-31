@@ -23,6 +23,7 @@ public interface PenDemogStudentMapper {
    * @param studentCreate the student create
    * @return the pen demographics entity
    */
+  @Mapping(target = "updateDemogDate", ignore = true)
   @Mapping(target = "studentTrueNo", ignore = true)
   @Mapping(target = "mergeToUserName", ignore = true)
   @Mapping(target = "mergeToDate", ignore = true)
@@ -49,6 +50,7 @@ public interface PenDemogStudentMapper {
    * @param studentUpdate the student update
    * @return the pen demographics entity
    */
+  @Mapping(target = "updateDemogDate", ignore = true)
   @Mapping(target = "studentTrueNo", ignore = true)
   @Mapping(target = "mergeToUserName", ignore = true)
   @Mapping(target = "mergeToDate", ignore = true)

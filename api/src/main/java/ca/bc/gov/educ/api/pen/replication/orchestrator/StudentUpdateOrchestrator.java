@@ -128,6 +128,9 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
       val existingPenDemog = existingPenDemogRecord.get();
       val penDemographicsEntity = PenReplicationHelper.getPenDemogFromStudentUpdate(studentUpdateSagaData.getStudentUpdate(), existingPenDemog, this.restUtils);
       BeanUtils.copyProperties(penDemographicsEntity, existingPenDemog, "createDate", "createUser", "studNo");
+      if (studentUpdateSagaData.getPenDemogTransaction().getUpdateDemogDate() != null) {
+        existingPenDemog.setUpdateDemogDate(studentUpdateSagaData.getPenDemogTransaction().getUpdateDemogDate().toLocalDate());
+      }
       this.penDemogService.savePenDemog(existingPenDemog);
       rowsUpdated = 1;
     } else {
@@ -135,6 +138,9 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
       penDemographicsEntity.setCreateDate(LocalDateTime.now());
       penDemographicsEntity.setUpdateDate(LocalDateTime.now());
       penDemographicsEntity.setStudBirth(StringUtils.replace(penDemographicsEntity.getStudBirth(), "-", ""));
+      if (studentUpdateSagaData.getPenDemogTransaction().getUpdateDemogDate() != null) {
+        penDemographicsEntity.setUpdateDemogDate(studentUpdateSagaData.getPenDemogTransaction().getUpdateDemogDate().toLocalDate());
+      }
       this.penDemogService.savePenDemog(penDemographicsEntity);
       rowsUpdated = 1;
     }

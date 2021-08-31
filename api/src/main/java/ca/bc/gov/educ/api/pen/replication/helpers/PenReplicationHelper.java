@@ -41,9 +41,9 @@ public final class PenReplicationHelper {
       penDemog.setMergeToDate(LocalDate.now());
       penDemog.setMergeToCode("MI");
     } else if (StringUtils.isBlank(studentUpdate.getTrueStudentID()) && StringUtils.isNotBlank(existingPenDemog.getStudentTrueNo())) {
-      penDemog.setStudentTrueNo(null);
+      penDemog.setStudentTrueNo(" ");
       penDemog.setMergeToDate(null);
-      penDemog.setMergeToCode(null);
+      penDemog.setMergeToCode(" ");
     }
     return penDemog;
   }
