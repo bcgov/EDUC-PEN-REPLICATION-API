@@ -1,6 +1,7 @@
 package ca.bc.gov.educ.api.pen.replication.mappers;
 
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -40,12 +41,14 @@ public class LocalDateTimeMapper {
    * @return the local date time
    */
   public LocalDateTime map(String dateTime) {
-    if (dateTime == null) {
+    if (StringUtils.isBlank(dateTime)) {
       return null;
     }
     dateTime = dateTime.replace("T", " ");
+    dateTime = dateTime.length() > 19 ? dateTime.substring(0, 19) : dateTime;
+    dateTime = dateTime.trim();
     val pattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    return LocalDateTime.parse(dateTime.substring(0, 19), pattern);
+    return LocalDateTime.parse(dateTime, pattern);
   }
 
 }
