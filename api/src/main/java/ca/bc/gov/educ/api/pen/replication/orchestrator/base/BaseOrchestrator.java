@@ -427,6 +427,12 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
     }
   }
 
+  @Override
+  @Async("subscriberExecutorTwinTrans")
+  public void handleTwinTransEvent(@NotNull final Event event) throws InterruptedException, IOException, TimeoutException {
+    this.handleEvent(event);
+  }
+
   /**
    * this method is called if there is a new message on this specific topic which this service is listening.
    *

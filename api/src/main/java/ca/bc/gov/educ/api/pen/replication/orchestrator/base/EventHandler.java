@@ -23,6 +23,16 @@ public interface EventHandler {
   void handleEvent(Event event) throws InterruptedException, IOException, TimeoutException;
 
   /**
+   * On event.
+   *
+   * @param event the event
+   * @throws InterruptedException the interrupted exception
+   * @throws IOException          the io exception
+   * @throws TimeoutException     the timeout exception
+   */
+  void handleTwinTransEvent(Event event) throws InterruptedException, IOException, TimeoutException;
+
+  /**
    * Get message topic to subscribe the handler to MessageSubscriber
    *
    * @return the topic to subscribe
