@@ -1,6 +1,7 @@
 package ca.bc.gov.educ.api.pen.replication.service;
 
 import ca.bc.gov.educ.api.pen.replication.constants.EventType;
+import ca.bc.gov.educ.api.pen.replication.constants.SagaEnum;
 import ca.bc.gov.educ.api.pen.replication.constants.SagaStatusEnum;
 import ca.bc.gov.educ.api.pen.replication.model.Saga;
 import ca.bc.gov.educ.api.pen.replication.model.SagaEvent;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -180,5 +182,25 @@ public class SagaService {
 
   public void deleteSagaEvent(SagaEvent sagaEventFromDB) {
     this.sagaEventRepository.delete(sagaEventFromDB);
+  }
+
+  public long findInProgressDemogSagaCount() {
+    List<String> sagaNames = new ArrayList<>();
+    List<String> sagaStatuses = new ArrayList<>();
+    sagaNames.add(SagaEnum.PEN_REPLICATION_STUDENT_CREATE_SAGA.getCode());
+    sagaNames.add(SagaEnum.PEN_REPLICATION_STUDENT_UPDATE_SAGA.getCode());
+    sagaStatuses.add(SagaStatusEnum.STARTED.toString());
+    sagaStatuses.add(SagaStatusEnum.IN_PROGRESS.toString());
+    return this.sagaRepository.countSagasBySagaNameInAndStatusIn(sagaNames, sagaStatuses);
+  }
+
+  public long findInProgressTwinSagaCount() {
+    List<String> sagaNames = new ArrayList<>();
+    List<String> sagaStatuses = new ArrayList<>();
+    sagaNames.add(SagaEnum.PEN_REPLICATION_POSSIBLE_MATCH_CREATE_SAGA.getCode());
+    sagaNames.add(SagaEnum.PEN_REPLICATION_POSSIBLE_MATCH_DELETE_SAGA.getCode());
+    sagaStatuses.add(SagaStatusEnum.STARTED.toString());
+    sagaStatuses.add(SagaStatusEnum.IN_PROGRESS.toString());
+    return this.sagaRepository.countSagasBySagaNameInAndStatusIn(sagaNames, sagaStatuses);
   }
 }

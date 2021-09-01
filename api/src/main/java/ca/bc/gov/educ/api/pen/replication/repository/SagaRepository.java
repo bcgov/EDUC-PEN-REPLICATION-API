@@ -30,4 +30,6 @@ public interface SagaRepository extends JpaRepository<Saga, UUID>, JpaSpecificat
    * @return the list
    */
   List<Saga> findAllByCreateDateBefore(LocalDateTime createDate);
+
+  long countSagasBySagaNameInAndStatusIn(List<String> sagaNames, List<String> statuses);
 }

@@ -1,5 +1,6 @@
 package ca.bc.gov.educ.api.pen.replication.messaging;
 
+import ca.bc.gov.educ.api.pen.replication.constants.SagaTopicsEnum;
 import ca.bc.gov.educ.api.pen.replication.helpers.LogHelper;
 import ca.bc.gov.educ.api.pen.replication.orchestrator.base.EventHandler;
 import ca.bc.gov.educ.api.pen.replication.struct.Event;
@@ -62,7 +63,7 @@ public class MessageSubscriber {
   }
 
   /**
-   * On message message handler.
+   * On message handler.
    *
    * @param eventHandler the event handler
    * @return the message handler
@@ -74,7 +75,13 @@ public class MessageSubscriber {
           final var eventString = new String(message.getData());
           LogHelper.logMessagingEventDetails(eventString);
           val event = JsonUtil.getJsonObjectFromString(Event.class, eventString);
-          eventHandler.handleEvent(event);
+          if (SagaTopicsEnum.PEN_REPLICATION_STUDENT_CREATE_SAGA_TOPIC.getCode().equals(message.getSubject())
+            || SagaTopicsEnum.PEN_REPLICATION_STUDENT_UPDATE_SAGA_TOPIC.getCode().equals(message.getSubject())) {
+            eventHandler.handleEvent(event);
+          } else {
+            eventHandler.handleTwinTransEvent(event);
+          }
+
         } catch (final Exception e) {
           log.error("Exception ", e);
         }

@@ -11,6 +11,7 @@ import ca.bc.gov.educ.api.pen.replication.repository.PenDemogTransactionReposito
 import ca.bc.gov.educ.api.pen.replication.repository.PenTwinTransactionRepository;
 import ca.bc.gov.educ.api.pen.replication.service.PenDemogTransactionService;
 import ca.bc.gov.educ.api.pen.replication.service.PenTwinTransactionService;
+import ca.bc.gov.educ.api.pen.replication.service.SagaService;
 import ca.bc.gov.educ.api.pen.replication.struct.saga.PossibleMatchSagaData;
 import ca.bc.gov.educ.api.pen.replication.struct.saga.StudentCreateSagaData;
 import ca.bc.gov.educ.api.pen.replication.struct.saga.StudentUpdateSagaData;
@@ -21,6 +22,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -49,6 +51,13 @@ public class TransactionTableRecordsProcessor {
   private final StringRedisTemplate stringRedisTemplate;
   private final PenDemogTransactionService penDemogTransactionService;
   private final PenTwinTransactionService penTwinTransactionService;
+  private final SagaService sagaService;
+
+  /**
+   * The Min parallel saga.
+   */
+  @Value("${max.parallel.saga}")
+  Integer maxParallelSaga;
 
   /**
    * Instantiates a new Transaction table records processor.
@@ -59,13 +68,15 @@ public class TransactionTableRecordsProcessor {
    * @param stringRedisTemplate           the string redis template
    * @param penDemogTransactionService    the pen demog transaction service
    * @param penTwinTransactionService     the pen twin transaction service
+   * @param sagaService                   the saga service
    */
-  public TransactionTableRecordsProcessor(final PenTwinTransactionRepository penTwinTransactionRepository, final PenDemogTransactionRepository penDemogTransactionRepository, final List<Orchestrator> orchestrators, final StringRedisTemplate stringRedisTemplate, final PenDemogTransactionService penDemogTransactionService, final PenTwinTransactionService penTwinTransactionService) {
+  public TransactionTableRecordsProcessor(final PenTwinTransactionRepository penTwinTransactionRepository, final PenDemogTransactionRepository penDemogTransactionRepository, final List<Orchestrator> orchestrators, final StringRedisTemplate stringRedisTemplate, final PenDemogTransactionService penDemogTransactionService, final PenTwinTransactionService penTwinTransactionService, SagaService sagaService) {
     this.penTwinTransactionRepository = penTwinTransactionRepository;
     this.penDemogTransactionRepository = penDemogTransactionRepository;
     this.stringRedisTemplate = stringRedisTemplate;
     this.penDemogTransactionService = penDemogTransactionService;
     this.penTwinTransactionService = penTwinTransactionService;
+    this.sagaService = sagaService;
     orchestrators.forEach(el -> this.sagaEnumOrchestratorMap.put(el.getSagaName(), el));
   }
 
@@ -77,13 +88,22 @@ public class TransactionTableRecordsProcessor {
     val redisKey = "pen-replication-api::extractPendingRecordsFromTransactionTables";
     val valueFromRedis = this.stringRedisTemplate.opsForValue().get(redisKey);
     if (StringUtils.isBlank(valueFromRedis)) {
-      this.stringRedisTemplate.opsForValue().set(redisKey, "true", 1, TimeUnit.MINUTES); // add timeout of one minute so that it self-expires in case delete operation was not successful.
-      val penTwinTransactions = this.penTwinTransactionRepository.findFirst100ByTransactionStatusAndTransactionTypeInOrderByTransactionInsertDateTime(TransactionStatus.PENDING.getCode(), Arrays.asList(CREATE_TWINS.getCode(), DELETE_TWINS.getCode()));
-      val penDemogTransactions = this.penDemogTransactionRepository.findFirst100ByTransactionStatusAndTransactionTypeInOrderByTransactionInsertDateTime(TransactionStatus.PENDING.getCode(), Arrays.asList(CREATE_STUDENT.getCode(), UPDATE_STUDENT.getCode()));
-      if (!penTwinTransactions.isEmpty()) {
+      this.stringRedisTemplate.opsForValue().set(redisKey, "true", 5, TimeUnit.SECONDS); // add timeout of one minute so that it self-expires in case delete operation was not successful.
+      List<PenDemogTransaction> penDemogTransactions = null;
+      List<PenTwinTransaction> penTwinTransactions = null;
+      long inProgressDemogSagaCount = this.sagaService.findInProgressDemogSagaCount();
+      long inProgressTwinSagaCount = this.sagaService.findInProgressTwinSagaCount();
+      if (inProgressDemogSagaCount < maxParallelSaga) {
+        penDemogTransactions = this.penDemogTransactionRepository.findFirst10ByTransactionStatusAndTransactionTypeInOrderByTransactionInsertDateTime(TransactionStatus.PENDING.getCode(), Arrays.asList(CREATE_STUDENT.getCode(), UPDATE_STUDENT.getCode()));
+      }
+      if (inProgressTwinSagaCount < maxParallelSaga) {
+        penTwinTransactions = this.penTwinTransactionRepository.findFirst10ByTransactionStatusAndTransactionTypeInOrderByTransactionInsertDateTime(TransactionStatus.PENDING.getCode(), Arrays.asList(CREATE_TWINS.getCode(), DELETE_TWINS.getCode()));
+      }
+
+      if (penTwinTransactions != null && !penTwinTransactions.isEmpty()) {
         this.processTwinTransactions(penTwinTransactions);
       }
-      if (!penDemogTransactions.isEmpty()) {
+      if (penDemogTransactions != null && !penDemogTransactions.isEmpty()) {
         this.processDemogTransactions(penDemogTransactions);
       }
       this.stringRedisTemplate.delete(redisKey);// delete the key from redis after it processed.

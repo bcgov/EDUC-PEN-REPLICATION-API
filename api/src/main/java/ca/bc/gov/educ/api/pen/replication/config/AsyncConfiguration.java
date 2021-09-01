@@ -31,6 +31,13 @@ public class AsyncConfiguration {
       .setCorePoolSize(4).setMaximumPoolSize(4).setKeepAliveTime(Duration.ofSeconds(60)).build();
   }
 
+  @Bean(name = "subscriberExecutorTwinTrans")
+  public Executor threadPoolTaskExecutorTwinTrans() {
+    return new EnhancedQueueExecutor.Builder()
+      .setThreadFactory(new ThreadFactoryBuilder().setNameFormat("message-subscriber-twin-transaction-%d").build())
+      .setCorePoolSize(2).setMaximumPoolSize(2).setKeepAliveTime(Duration.ofSeconds(60)).build();
+  }
+
   /**
    * Controller task executor executor.
    *

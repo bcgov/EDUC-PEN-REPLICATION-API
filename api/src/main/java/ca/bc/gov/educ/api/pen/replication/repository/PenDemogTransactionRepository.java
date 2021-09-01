@@ -27,5 +27,5 @@ public interface PenDemogTransactionRepository extends JpaRepository<PenDemogTra
    * @param transactionStatus the transaction status
    * @return the list
    */
-  List<PenDemogTransaction> findFirst100ByTransactionStatusAndTransactionTypeInOrderByTransactionInsertDateTime(String transactionStatus, List<String> transactionTypes);
+  List<PenDemogTransaction> findFirst10ByTransactionStatusAndTransactionTypeInOrderByTransactionInsertDateTime(String transactionStatus, List<String> transactionTypes);
 }
