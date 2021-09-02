@@ -125,6 +125,7 @@ public class TransactionTableRecordsProcessor {
         if (error.isPresent()) {
           log.error(error.get());
           this.updatePenTwinTransactionToErrorState(penTwinTransaction);
+          this.stringRedisTemplate.delete(redisKey);// delete the key from redis after it processed.
           return;
         }
         if (CREATE_TWINS.getCode().equals(txType)) {
@@ -160,6 +161,7 @@ public class TransactionTableRecordsProcessor {
           if (error.isPresent()) {
             log.error(error.get());
             this.updatePenDemogTransactionToErrorState(penDemogTransaction);
+            this.stringRedisTemplate.delete(redisKey);// delete the key from redis after it processed.
             return;
           }
           val student = StudentMapper.mapper.toStudentCreate(penDemogTransaction);
@@ -178,6 +180,7 @@ public class TransactionTableRecordsProcessor {
           if (error.isPresent()) {
             log.error(error.get());
             this.updatePenDemogTransactionToErrorState(penDemogTransaction);
+            this.stringRedisTemplate.delete(redisKey);// delete the key from redis after it processed.
             return;
           }
           val student = StudentMapper.mapper.toStudent(penDemogTransaction);
