@@ -88,7 +88,7 @@ public class TransactionTableRecordsProcessor {
     val redisKey = "pen-replication-api::extractPendingRecordsFromTransactionTables";
     val valueFromRedis = this.stringRedisTemplate.opsForValue().get(redisKey);
     if (StringUtils.isBlank(valueFromRedis)) {
-      this.stringRedisTemplate.opsForValue().set(redisKey, "true", 5, TimeUnit.SECONDS); // add timeout of one minute so that it self-expires in case delete operation was not successful.
+      this.stringRedisTemplate.opsForValue().set(redisKey, "true", 2, TimeUnit.SECONDS); // add timeout of 2 seconds so that it self-expires in case delete operation was not successful.
       List<PenDemogTransaction> penDemogTransactions = null;
       List<PenTwinTransaction> penTwinTransactions = null;
       long inProgressDemogSagaCount = this.sagaService.findInProgressDemogSagaCount();
