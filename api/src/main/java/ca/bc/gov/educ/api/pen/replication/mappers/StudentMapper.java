@@ -11,7 +11,7 @@ import org.mapstruct.factory.Mappers;
 /**
  * The interface Student mapper.
  */
-@Mapper(uses = {UUIDMapper.class, LocalDateTimeMapper.class, StringMapper.class})
+@Mapper(uses = {UUIDMapper.class, LocalDateTimeMapper.class, StringMapperOracle.class})
 @DecoratedWith(StudentDecorator.class)
 public interface StudentMapper {
   /**
