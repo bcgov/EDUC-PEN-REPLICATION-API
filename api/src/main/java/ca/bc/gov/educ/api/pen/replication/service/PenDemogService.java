@@ -19,7 +19,7 @@ public class PenDemogService {
   }
 
   // it is saved in a new transaction to make sure commit happens in DB.
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Transactional(propagation = Propagation.REQUIRES_NEW, timeout = 10)
   public void savePenDemog(final PenDemographicsEntity entity) {
     try {
       this.penDemogRepository.saveAndFlush(entity);
@@ -28,7 +28,7 @@ public class PenDemogService {
     }
   }
 
-  @Transactional(propagation = Propagation.SUPPORTS)
+  @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
   public Optional<PenDemographicsEntity> findPenDemogByPen(final String pen) {
     return this.penDemogRepository.findById(pen);
   }

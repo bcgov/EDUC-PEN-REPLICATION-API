@@ -640,7 +640,7 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
         .eventPayload(JsonUtil.getJsonStringFromObject(penDemogTxUpdated))
         .build();
       this.postMessageToTopic(this.getTopicToSubscribe().getCode(), nextEvent); // this will make it async and use pub/sub flow even though it is sending message to itself
-      log.info("responded via NATS to {} for {} Event. :: {}", this.getTopicToSubscribe(), ADD_PEN_DEMOG, saga.getSagaId());
+      log.info("responded via NATS to {} for {} Event. :: {}", this.getTopicToSubscribe(), UPDATE_PEN_DEMOG_TRANSACTION, saga.getSagaId());
     } else {
       log.error("This should not have happened as it is not expected to have a saga running without a transaction in Pen Demog Transaction. Transaction ID :: {}", penDemogTx.getTransactionID());
     }
