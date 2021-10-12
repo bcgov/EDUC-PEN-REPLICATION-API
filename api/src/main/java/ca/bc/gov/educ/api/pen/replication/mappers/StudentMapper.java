@@ -77,6 +77,8 @@ public interface StudentMapper {
    * @param penDemogTransaction the pen demog transaction
    * @return the student update
    */
+  @Mapping(target = "documentTypeCode", ignore = true)
+  @Mapping(target = "dateOfConfirmation", ignore = true)
   @Mapping(target = "usualMiddleNames", source = "usualMiddleName")
   @Mapping(target = "usualLastName", source = "usualSurname")
   @Mapping(target = "usualFirstName", source = "usualGivenName")
