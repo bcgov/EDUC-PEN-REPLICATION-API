@@ -5,6 +5,8 @@ import ca.bc.gov.educ.api.pen.replication.constants.TransactionStatus;
 import ca.bc.gov.educ.api.pen.replication.constants.TransactionType;
 import ca.bc.gov.educ.api.pen.replication.model.PenDemogTransaction;
 import ca.bc.gov.educ.api.pen.replication.model.PenTwinTransaction;
+import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
+import ca.bc.gov.educ.api.pen.replication.struct.Student;
 import lombok.val;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,8 +15,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 /**
  * The type Transaction table records processor test.
@@ -24,6 +31,8 @@ public class TransactionTableRecordsProcessorTest extends BasePenReplicationAPIT
   private final String pen1 = "120164447";
   private final String pen2 = "120146667";
 
+  @Autowired
+  RestUtils restUtils;
   @Autowired
   private TransactionTableRecordsProcessor transactionTableRecordsProcessor;
 
@@ -45,6 +54,7 @@ public class TransactionTableRecordsProcessorTest extends BasePenReplicationAPIT
    */
   @Test
   public void testProcessUnprocessedRecords_givenPendingRecordsInDB_shouldStartProcessingAndMarkThemInProgress() {
+    when(restUtils.createStudentMapFromPenNumbers(any(), any())).thenReturn(mockStudentsMap());
     this.transactionTableRecordsProcessor.processUnprocessedRecords();
     val results = this.penReplicationTestUtils.getSagaRepository().findAll();
     assertThat(results).isNotEmpty();
@@ -56,6 +66,13 @@ public class TransactionTableRecordsProcessorTest extends BasePenReplicationAPIT
     assertThat(penTwinTr).isPresent();
     assertThat(penTwinTr.get().getTransactionStatus()).isEqualTo(TransactionStatus.IN_PROGRESS.getCode());
 
+  }
+
+  private Map<String, Student> mockStudentsMap() {
+    Map<String, Student> studentMap = new HashMap<>();
+    studentMap.put(this.pen1, Student.builder().studentID(UUID.randomUUID().toString()).build());
+    studentMap.put(this.pen2, Student.builder().studentID(UUID.randomUUID().toString()).build());
+    return studentMap;
   }
 
   private PenTwinTransaction createMockPenTwinTransaction() {
