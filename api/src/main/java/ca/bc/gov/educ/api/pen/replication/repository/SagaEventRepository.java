@@ -3,8 +3,12 @@ package ca.bc.gov.educ.api.pen.replication.repository;
 import ca.bc.gov.educ.api.pen.replication.model.Saga;
 import ca.bc.gov.educ.api.pen.replication.model.SagaEvent;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,4 +36,10 @@ public interface SagaEventRepository extends JpaRepository<SagaEvent, UUID> {
    * @return the optional
    */
   Optional<SagaEvent> findBySagaAndSagaEventOutcomeAndSagaEventStateAndSagaStepNumber(Saga saga, String eventOutcome, String eventState, int stepNumber);
+
+
+  @Transactional
+  @Modifying
+  @Query(value = "delete from PEN_REPLICATION_SAGA_EVENT_STATES e where exists(select 1 from PEN_REPLICATION_SAGA s where s.SAGA_ID = e.SAGA_ID and s.CREATE_DATE <= :createDate)", nativeQuery = true)
+  void deleteBySagaCreateDateBefore(LocalDateTime createDate);
 }
