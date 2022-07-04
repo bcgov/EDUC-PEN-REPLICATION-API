@@ -19,7 +19,7 @@ public class PenDemogService {
   }
 
   // it is saved in a new transaction to make sure commit happens in DB.
-  @Transactional(propagation = Propagation.REQUIRES_NEW, timeout = 25)
+  @Transactional(propagation = Propagation.REQUIRES_NEW, timeout = 60)
   public void savePenDemog(final PenDemographicsEntity entity) {
     try {
       this.penDemogRepository.saveAndFlush(entity);
