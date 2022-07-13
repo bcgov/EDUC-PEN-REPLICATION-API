@@ -161,7 +161,16 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
     saga.setSagaState(UPDATE_STUDENT.toString()); // set current event as saga state.
     val studentDataFromEventResponse = JsonUtil.getJsonObjectFromString(StudentUpdate.class, event.getEventPayload());
     val studentUpdate = StudentMapper.mapper.toStudent(studentUpdateSagaData.getPenDemogTransaction());
-    BeanUtils.copyProperties(studentUpdate, studentDataFromEventResponse, "createDate", "createUser", "studentID", "email", "emailVerified", "trueStudentID", "documentTypeCode", "dateOfConfirmation");
+
+    studentUpdate.setUsualFirstName(StringUtils.trimToNull(studentDataFromEventResponse.getUsualFirstName()));
+    studentUpdate.setUsualLastName(StringUtils.trimToNull(studentDataFromEventResponse.getUsualLastName()));
+    studentUpdate.setUsualMiddleNames(StringUtils.trimToNull(studentDataFromEventResponse.getUsualMiddleNames()));
+    studentUpdate.setMincode(StringUtils.trimToNull(studentDataFromEventResponse.getMincode()));
+    studentUpdate.setLocalID(StringUtils.trimToNull(studentDataFromEventResponse.getLocalID()));
+    studentUpdate.setGradeCode(StringUtils.trimToNull(studentDataFromEventResponse.getGradeCode()));
+    studentUpdate.setGradeYear(StringUtils.trimToNull(studentDataFromEventResponse.getGradeYear()));
+    studentUpdate.setPostalCode(StringUtils.strip(studentDataFromEventResponse.getPostalCode(), " "));
+
     studentUpdateSagaData.getStudentUpdate().setStudentID(studentDataFromEventResponse.getStudentID());
     this.getSagaService().updateAttachedSagaWithEvents(saga, eventStates);
 
