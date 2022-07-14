@@ -162,15 +162,15 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
     val studentDataFromEventResponse = JsonUtil.getJsonObjectFromString(StudentUpdate.class, event.getEventPayload());
     val studentUpdate = StudentMapper.mapper.toStudent(studentUpdateSagaData.getPenDemogTransaction());
 
-    studentUpdate.setUsualFirstName(StringUtils.trimToNull(studentDataFromEventResponse.getUsualFirstName()));
-    studentUpdate.setUsualLastName(StringUtils.trimToNull(studentDataFromEventResponse.getUsualLastName()));
-    studentUpdate.setUsualMiddleNames(StringUtils.trimToNull(studentDataFromEventResponse.getUsualMiddleNames()));
-    studentUpdate.setMincode(StringUtils.trimToNull(studentDataFromEventResponse.getMincode()));
-    studentUpdate.setLocalID(StringUtils.trimToNull(studentDataFromEventResponse.getLocalID()));
-    studentUpdate.setGradeCode(StringUtils.trimToNull(studentDataFromEventResponse.getGradeCode()));
-    studentUpdate.setGradeYear(StringUtils.trimToNull(studentDataFromEventResponse.getGradeYear()));
-    studentUpdate.setPostalCode(StringUtils.strip(studentDataFromEventResponse.getPostalCode(), " "));
-    studentUpdate.setHistoryActivityCode("SLD");
+    studentDataFromEventResponse.setUsualFirstName(StringUtils.trimToNull(studentUpdate.getUsualFirstName()));
+    studentDataFromEventResponse.setUsualLastName(StringUtils.trimToNull(studentUpdate.getUsualLastName()));
+    studentDataFromEventResponse.setUsualMiddleNames(StringUtils.trimToNull(studentUpdate.getUsualMiddleNames()));
+    studentDataFromEventResponse.setMincode(StringUtils.trimToNull(studentUpdate.getMincode()));
+    studentDataFromEventResponse.setLocalID(StringUtils.trimToNull(studentUpdate.getLocalID()));
+    studentDataFromEventResponse.setGradeCode(StringUtils.trimToNull(studentUpdate.getGradeCode()));
+    studentDataFromEventResponse.setGradeYear(StringUtils.trimToNull(studentUpdate.getGradeYear()));
+    studentDataFromEventResponse.setPostalCode(StringUtils.strip(studentUpdate.getPostalCode(), " "));
+    studentDataFromEventResponse.setHistoryActivityCode("SLD");
 
     studentUpdateSagaData.getStudentUpdate().setStudentID(studentDataFromEventResponse.getStudentID());
     this.getSagaService().updateAttachedSagaWithEvents(saga, eventStates);
