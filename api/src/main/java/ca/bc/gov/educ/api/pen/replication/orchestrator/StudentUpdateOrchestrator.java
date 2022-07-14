@@ -170,6 +170,7 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
     studentUpdate.setGradeCode(StringUtils.trimToNull(studentDataFromEventResponse.getGradeCode()));
     studentUpdate.setGradeYear(StringUtils.trimToNull(studentDataFromEventResponse.getGradeYear()));
     studentUpdate.setPostalCode(StringUtils.strip(studentDataFromEventResponse.getPostalCode(), " "));
+    studentUpdate.setHistoryActivityCode("SLD");
 
     studentUpdateSagaData.getStudentUpdate().setStudentID(studentDataFromEventResponse.getStudentID());
     this.getSagaService().updateAttachedSagaWithEvents(saga, eventStates);
