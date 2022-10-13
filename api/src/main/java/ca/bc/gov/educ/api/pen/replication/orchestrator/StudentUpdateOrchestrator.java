@@ -21,7 +21,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManagerFactory;
@@ -106,11 +105,12 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
     this.updatePenDemogTransaction(event, saga, penDemogTx, this.penDemogTransactionRepository);
   }
 
-  private void updatePenDemog(final Event event, final Saga saga, final StudentUpdateSagaData studentUpdateSagaData) {
+  private void updatePenDemog(final Event event, final Saga saga, final StudentUpdateSagaData studentUpdateSagaData) throws JsonProcessingException {
     saga.setSagaState(UPDATE_PEN_DEMOG.toString());
     final SagaEvent eventStates = this.createEventState(saga, event.getEventType(), event.getEventOutcome(), event.getEventPayload());
     this.getSagaService().updateAttachedSagaWithEvents(saga, eventStates);
-    final int rowsUpdated = this.createOrUpdatePenDemog(studentUpdateSagaData);
+    val studentDataFromEventResponse = JsonUtil.getJsonObjectFromString(StudentUpdate.class, event.getEventPayload());
+    final int rowsUpdated = this.createOrUpdatePenDemog(studentUpdateSagaData, studentDataFromEventResponse);
     val nextEvent = Event.builder().sagaId(saga.getSagaId())
       .eventType(UPDATE_PEN_DEMOG)
       .eventOutcome(PEN_DEMOG_UPDATED)
@@ -121,32 +121,33 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
   }
 
   // this uses jdbc template for the update part due to issues with underlying vms system. otherwise, it raises ORA-02047: cannot join the distributed transaction in progress
-  private int createOrUpdatePenDemog(final StudentUpdateSagaData studentUpdateSagaData) {
+  private int createOrUpdatePenDemog(final StudentUpdateSagaData studentUpdateSagaData, final StudentUpdate studentDataFromEventResponse) {
     final int rowsUpdated;
-    val existingPenDemogRecord = this.penDemogService.findPenDemogByPen(StringUtils.rightPad(studentUpdateSagaData.getStudentUpdate().getPen(), 10));
+    val existingPenDemogRecord = this.penDemogService.findPenDemogByPen(studentDataFromEventResponse.getPen());
     if (existingPenDemogRecord.isPresent()) {
       val existingPenDemog = existingPenDemogRecord.get();
-      val penDemographicsEntity = PenReplicationHelper.getPenDemogFromStudentUpdate(studentUpdateSagaData.getStudentUpdate(), existingPenDemog, this.restUtils);
+
+      val penDemographicsEntity = PenReplicationHelper.getPenDemogFromStudentUpdate(studentDataFromEventResponse, existingPenDemog, this.restUtils);
       PenDemogStudentMapper.mapper.updatePenDemog(penDemographicsEntity, existingPenDemog);
       log.debug("existing pen demog is :: {}", existingPenDemog);
       if (studentUpdateSagaData.getPenDemogTransaction().getUpdateDemogDate() != null) {
         existingPenDemog.setUpdateDemogDate(studentUpdateSagaData.getPenDemogTransaction().getUpdateDemogDate().toLocalDate());
       }
-      if (StringUtils.isNotBlank(studentUpdateSagaData.getStudentUpdate().getGradeYear()) && StringUtils.isNumeric(studentUpdateSagaData.getStudentUpdate().getGradeYear())) {
-        existingPenDemog.setGradeYear(studentUpdateSagaData.getStudentUpdate().getGradeYear());
+      if (StringUtils.isNotBlank(studentDataFromEventResponse.getGradeYear()) && StringUtils.isNumeric(studentDataFromEventResponse.getGradeYear())) {
+        existingPenDemog.setGradeYear(studentDataFromEventResponse.getGradeYear());
       }
       this.penDemogService.savePenDemog(existingPenDemog);
       rowsUpdated = 1;
     } else {
-      val penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(StudentMapper.mapper.toStudentCreate(studentUpdateSagaData.getStudentUpdate()));
+      val penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(StudentMapper.mapper.toStudentCreate(studentDataFromEventResponse));
       penDemographicsEntity.setCreateDate(LocalDateTime.now());
       penDemographicsEntity.setUpdateDate(LocalDateTime.now());
       penDemographicsEntity.setStudBirth(StringUtils.replace(penDemographicsEntity.getStudBirth(), "-", ""));
       if (studentUpdateSagaData.getPenDemogTransaction().getUpdateDemogDate() != null) {
         penDemographicsEntity.setUpdateDemogDate(studentUpdateSagaData.getPenDemogTransaction().getUpdateDemogDate().toLocalDate());
       }
-      if (StringUtils.isNotBlank(studentUpdateSagaData.getStudentUpdate().getGradeYear()) && StringUtils.isNumeric(studentUpdateSagaData.getStudentUpdate().getGradeYear())) {
-        penDemographicsEntity.setGradeYear(studentUpdateSagaData.getStudentUpdate().getGradeYear());
+      if (StringUtils.isNotBlank(studentDataFromEventResponse.getGradeYear()) && StringUtils.isNumeric(studentDataFromEventResponse.getGradeYear())) {
+        penDemographicsEntity.setGradeYear(studentDataFromEventResponse.getGradeYear());
       }
       this.penDemogService.savePenDemog(penDemographicsEntity);
       rowsUpdated = 1;
@@ -171,6 +172,9 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
     studentDataFromEventResponse.setGradeYear(StringUtils.trimToNull(studentUpdate.getGradeYear()));
     studentDataFromEventResponse.setPostalCode(StringUtils.strip(studentUpdate.getPostalCode(), " "));
     studentDataFromEventResponse.setHistoryActivityCode("SLD");
+
+    String updateUser = StringUtils.trimToNull(studentUpdate.getUpdateUser());
+    studentDataFromEventResponse.setUpdateUser(updateUser != null ? updateUser : "REPLICATION_API");
 
     studentUpdateSagaData.getStudentUpdate().setStudentID(studentDataFromEventResponse.getStudentID());
     this.getSagaService().updateAttachedSagaWithEvents(saga, eventStates);
