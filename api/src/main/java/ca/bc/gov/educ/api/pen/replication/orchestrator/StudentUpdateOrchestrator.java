@@ -6,6 +6,7 @@ import ca.bc.gov.educ.api.pen.replication.helpers.PenReplicationHelper;
 import ca.bc.gov.educ.api.pen.replication.mappers.PenDemogStudentMapper;
 import ca.bc.gov.educ.api.pen.replication.mappers.StudentMapper;
 import ca.bc.gov.educ.api.pen.replication.messaging.MessagePublisher;
+import ca.bc.gov.educ.api.pen.replication.model.PenDemographicsEntity;
 import ca.bc.gov.educ.api.pen.replication.model.Saga;
 import ca.bc.gov.educ.api.pen.replication.model.SagaEvent;
 import ca.bc.gov.educ.api.pen.replication.orchestrator.base.BaseOrchestrator;
@@ -110,19 +111,18 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
     final SagaEvent eventStates = this.createEventState(saga, event.getEventType(), event.getEventOutcome(), event.getEventPayload());
     this.getSagaService().updateAttachedSagaWithEvents(saga, eventStates);
     val studentDataFromEventResponse = JsonUtil.getJsonObjectFromString(StudentUpdate.class, event.getEventPayload());
-    final int rowsUpdated = this.createOrUpdatePenDemog(studentUpdateSagaData, studentDataFromEventResponse);
+    final PenDemographicsEntity entity = this.createOrUpdatePenDemog(studentUpdateSagaData, studentDataFromEventResponse);
     val nextEvent = Event.builder().sagaId(saga.getSagaId())
       .eventType(UPDATE_PEN_DEMOG)
       .eventOutcome(PEN_DEMOG_UPDATED)
-      .eventPayload(rowsUpdated + "")
+      .eventPayload(JsonUtil.getJsonStringFromObject(entity))
       .build();
     this.postMessageToTopic(this.getTopicToSubscribe().getCode(), nextEvent); // this will make it async and use pub/sub flow even though it is sending message to itself
     log.info("responded via NATS to {} for {} Event. :: {}", this.getTopicToSubscribe(), UPDATE_PEN_DEMOG, saga.getSagaId());
   }
 
   // this uses jdbc template for the update part due to issues with underlying vms system. otherwise, it raises ORA-02047: cannot join the distributed transaction in progress
-  private int createOrUpdatePenDemog(final StudentUpdateSagaData studentUpdateSagaData, final StudentUpdate studentDataFromEventResponse) {
-    final int rowsUpdated;
+  private PenDemographicsEntity createOrUpdatePenDemog(final StudentUpdateSagaData studentUpdateSagaData, final StudentUpdate studentDataFromEventResponse) {
     val existingPenDemogRecord = this.penDemogService.findPenDemogByPen(studentDataFromEventResponse.getPen());
     if (existingPenDemogRecord.isPresent()) {
       val existingPenDemog = existingPenDemogRecord.get();
@@ -136,8 +136,7 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
       if (StringUtils.isNotBlank(studentDataFromEventResponse.getGradeYear()) && StringUtils.isNumeric(studentDataFromEventResponse.getGradeYear())) {
         existingPenDemog.setGradeYear(studentDataFromEventResponse.getGradeYear());
       }
-      this.penDemogService.savePenDemog(existingPenDemog);
-      rowsUpdated = 1;
+      return this.penDemogService.savePenDemog(existingPenDemog);
     } else {
       val penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(StudentMapper.mapper.toStudentCreate(studentDataFromEventResponse));
       penDemographicsEntity.setCreateDate(LocalDateTime.now());
@@ -149,11 +148,8 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
       if (StringUtils.isNotBlank(studentDataFromEventResponse.getGradeYear()) && StringUtils.isNumeric(studentDataFromEventResponse.getGradeYear())) {
         penDemographicsEntity.setGradeYear(studentDataFromEventResponse.getGradeYear());
       }
-      this.penDemogService.savePenDemog(penDemographicsEntity);
-      rowsUpdated = 1;
+      return this.penDemogService.savePenDemog(penDemographicsEntity);
     }
-    log.debug("{} rows were inserted/updated in pen demog", rowsUpdated);
-    return rowsUpdated;
   }
 
 
