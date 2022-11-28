@@ -47,7 +47,7 @@ public class StudentCreateService extends BaseService<StudentCreate> {
   public void processEvent(final StudentCreate request, final Event event) {
     if (this.isEventPartOfOrchestratorSaga(this.penDemogTransactionRepository, StringUtils.trim(request.getPen()))) {
       this.updateEvent(event);
-      log.info("This event is part of orchestrator flow, marking it processed.");
+      log.info("Create event with ID " + event.getEventId() + " is part of a SAGA and has been updated to processed with no action taken.");
       return;
     }
     final var existingPenDemogRecord = this.penDemogService.findPenDemogByPen(StringUtils.rightPad(request.getPen(), 10));
@@ -59,6 +59,7 @@ public class StudentCreateService extends BaseService<StudentCreate> {
       if (StringUtils.isNotBlank(request.getGradeYear()) && StringUtils.isNumeric(request.getGradeYear())) {
         penDemographicsEntity.setGradeYear(request.getGradeYear());
       }
+      log.info("Processing choreography create event with ID {} :: payload is: {}", event.getEventId(), penDemographicsEntity);
       this.penDemogService.savePenDemog(penDemographicsEntity);
     }
     this.updateEvent(event);

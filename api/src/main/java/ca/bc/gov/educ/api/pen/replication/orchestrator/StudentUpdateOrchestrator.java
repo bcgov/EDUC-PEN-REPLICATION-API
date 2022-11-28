@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManagerFactory;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventOutcome.*;
 import static ca.bc.gov.educ.api.pen.replication.constants.EventType.*;
@@ -111,7 +112,7 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
     final SagaEvent eventStates = this.createEventState(saga, event.getEventType(), event.getEventOutcome(), event.getEventPayload());
     this.getSagaService().updateAttachedSagaWithEvents(saga, eventStates);
     val studentDataFromEventResponse = JsonUtil.getJsonObjectFromString(StudentUpdate.class, event.getEventPayload());
-    final PenDemographicsEntity entity = this.createOrUpdatePenDemog(studentUpdateSagaData, studentDataFromEventResponse);
+    final PenDemographicsEntity entity = this.createOrUpdatePenDemog(studentUpdateSagaData, studentDataFromEventResponse, saga.getSagaId());
     val nextEvent = Event.builder().sagaId(saga.getSagaId())
       .eventType(UPDATE_PEN_DEMOG)
       .eventOutcome(PEN_DEMOG_UPDATED)
@@ -122,7 +123,7 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
   }
 
   // this uses jdbc template for the update part due to issues with underlying vms system. otherwise, it raises ORA-02047: cannot join the distributed transaction in progress
-  private PenDemographicsEntity createOrUpdatePenDemog(final StudentUpdateSagaData studentUpdateSagaData, final StudentUpdate studentDataFromEventResponse) {
+  private PenDemographicsEntity createOrUpdatePenDemog(final StudentUpdateSagaData studentUpdateSagaData, final StudentUpdate studentDataFromEventResponse, UUID sagaID) {
     val existingPenDemogRecord = this.penDemogService.findPenDemogByPen(studentDataFromEventResponse.getPen());
     if (existingPenDemogRecord.isPresent()) {
       val existingPenDemog = existingPenDemogRecord.get();
@@ -136,6 +137,7 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
       if (StringUtils.isNotBlank(studentDataFromEventResponse.getGradeYear()) && StringUtils.isNumeric(studentDataFromEventResponse.getGradeYear())) {
         existingPenDemog.setGradeYear(studentDataFromEventResponse.getGradeYear());
       }
+      log.info("Update Orchestrator - Saving PEN Demog update as part of SAGA ID {} :: {}", sagaID.toString(), existingPenDemog);
       return this.penDemogService.savePenDemog(existingPenDemog);
     } else {
       val penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(StudentMapper.mapper.toStudentCreate(studentDataFromEventResponse));
@@ -148,6 +150,7 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
       if (StringUtils.isNotBlank(studentDataFromEventResponse.getGradeYear()) && StringUtils.isNumeric(studentDataFromEventResponse.getGradeYear())) {
         penDemographicsEntity.setGradeYear(studentDataFromEventResponse.getGradeYear());
       }
+      log.info("Update Orchestrator - saving PEN Demog create as part of SAGA ID {} :: {}", sagaID.toString(), penDemographicsEntity);
       return this.penDemogService.savePenDemog(penDemographicsEntity);
     }
   }

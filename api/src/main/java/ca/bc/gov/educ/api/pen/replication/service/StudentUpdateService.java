@@ -59,7 +59,7 @@ public class StudentUpdateService extends BaseService<StudentUpdate> {
   public void processEvent(final StudentUpdate studentUpdate, final Event event) {
     if (this.isEventPartOfOrchestratorSaga(this.penDemogTransactionRepository, StringUtils.trim(studentUpdate.getPen()))) {
       this.updateEvent(event);
-      log.info("This event is part of orchestrator flow, marking it processed.");
+      log.info("Update event with ID " + event.getEventId() + " is part of a SAGA and has been updated to processed with no action taken.");
       return;
     }
     val existingPenDemogRecord = this.penDemogService.findPenDemogByPen(StringUtils.rightPad(studentUpdate.getPen(), 10));
@@ -70,7 +70,7 @@ public class StudentUpdateService extends BaseService<StudentUpdate> {
       if (StringUtils.isNotBlank(studentUpdate.getGradeYear()) && StringUtils.isNumeric(studentUpdate.getGradeYear())) {
         existingPenDemog.setGradeYear(studentUpdate.getGradeYear());
       }
-      log.debug("existing pen demog is :: {}", existingPenDemog);
+      log.info("Processing choreography update event with ID {} :: payload is: {}", event.getEventId(), penDemographicsEntity);
       this.penDemogService.savePenDemog(existingPenDemog);
     }
     this.updateEvent(event);

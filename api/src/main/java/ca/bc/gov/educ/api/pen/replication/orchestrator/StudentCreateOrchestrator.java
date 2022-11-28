@@ -7,6 +7,7 @@ import ca.bc.gov.educ.api.pen.replication.helpers.PenReplicationHelper;
 import ca.bc.gov.educ.api.pen.replication.mappers.PenDemogStudentMapper;
 import ca.bc.gov.educ.api.pen.replication.mappers.StudentMapper;
 import ca.bc.gov.educ.api.pen.replication.messaging.MessagePublisher;
+import ca.bc.gov.educ.api.pen.replication.model.PenDemographicsEntity;
 import ca.bc.gov.educ.api.pen.replication.model.Saga;
 import ca.bc.gov.educ.api.pen.replication.model.SagaEvent;
 import ca.bc.gov.educ.api.pen.replication.orchestrator.base.BaseOrchestrator;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManagerFactory;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventOutcome.*;
 import static ca.bc.gov.educ.api.pen.replication.constants.EventType.*;
@@ -80,24 +82,22 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
   }
 
 
-  private void addPenDemog(final Event event, final Saga saga, final StudentCreateSagaData studentCreateSagaData) {
+  private void addPenDemog(final Event event, final Saga saga, final StudentCreateSagaData studentCreateSagaData) throws JsonProcessingException {
     saga.setSagaState(ADD_PEN_DEMOG.toString());
     final SagaEvent eventStates = this.createEventState(saga, event.getEventType(), event.getEventOutcome(), event.getEventPayload());
     this.getSagaService().updateAttachedSagaWithEvents(saga, eventStates);
-    final int rowsUpdated = this.createOrUpdatePenDemog(studentCreateSagaData);
-    log.debug("{} rows were inserted to pen demog", rowsUpdated);
+    final PenDemographicsEntity demographicsEntity = this.createOrUpdatePenDemog(studentCreateSagaData, saga.getSagaId());
 
     val nextEvent = Event.builder().sagaId(saga.getSagaId())
       .eventType(ADD_PEN_DEMOG)
       .eventOutcome(PEN_DEMOG_ADDED)
-      .eventPayload(rowsUpdated + "")
+      .eventPayload(JsonUtil.getJsonStringFromObject(demographicsEntity))
       .build();
     this.postMessageToTopic(this.getTopicToSubscribe().getCode(), nextEvent); // this will make it async and use pub/sub flow even though it is sending message to itself
     log.info("responded via NATS to {} for {} Event. :: {}", this.getTopicToSubscribe(), ADD_PEN_DEMOG, saga.getSagaId());
   }
 
-  private int createOrUpdatePenDemog(final StudentCreateSagaData studentCreateSagaData) {
-    final int rowsUpdated;
+  private PenDemographicsEntity createOrUpdatePenDemog(final StudentCreateSagaData studentCreateSagaData, UUID sagaID) {
     val penDemogTxFromDBOptional = this.penDemogTransactionService.getPenDemogTransaction(studentCreateSagaData.getPenDemogTransaction().getTransactionID());
     if (penDemogTxFromDBOptional.isEmpty() || StringUtils.isBlank(penDemogTxFromDBOptional.get().getPen())) {
       throw new PenReplicationAPIRuntimeException("Pen number is null for transaction id ::" + studentCreateSagaData.getPenDemogTransaction().getTransactionID() + " this is not expected.");
@@ -114,8 +114,8 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
       if (StringUtils.isNotBlank(studentCreateSagaData.getStudentCreate().getGradeYear()) && StringUtils.isNumeric(studentCreateSagaData.getStudentCreate().getGradeYear())) {
         existingPenDemog.setGradeYear(studentCreateSagaData.getStudentCreate().getGradeYear());
       }
-      this.penDemogService.savePenDemog(existingPenDemog);
-      rowsUpdated = 1;
+      log.info("Create Orchestrator - saving PEN Demog update as part of SAGA ID {} :: {}", sagaID.toString(), penDemographicsEntity);
+      return this.penDemogService.savePenDemog(existingPenDemog);
     } else {
       val penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(studentCreateSagaData.getStudentCreate());
       penDemographicsEntity.setStudNo(penDemogTxFromDBOptional.get().getPen());
@@ -128,11 +128,9 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
       if (StringUtils.isNotBlank(studentCreateSagaData.getStudentCreate().getGradeYear()) && StringUtils.isNumeric(studentCreateSagaData.getStudentCreate().getGradeYear())) {
         penDemographicsEntity.setGradeYear(studentCreateSagaData.getStudentCreate().getGradeYear());
       }
-      this.penDemogService.savePenDemog(penDemographicsEntity);
-      rowsUpdated = 1;
+      log.info("Create Orchestrator - saving PEN Demog create as part of SAGA ID {} :: {}", sagaID.toString(), penDemographicsEntity);
+      return this.penDemogService.savePenDemog(penDemographicsEntity);
     }
-    log.debug("{} rows were inserted/updated in pen demog", rowsUpdated);
-    return rowsUpdated;
   }
 
   private void createStudent(final Event event, final Saga saga, final StudentCreateSagaData studentCreateSagaData) throws JsonProcessingException {
