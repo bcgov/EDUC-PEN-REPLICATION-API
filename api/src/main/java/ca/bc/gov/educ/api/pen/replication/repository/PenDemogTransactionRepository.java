@@ -4,6 +4,7 @@ import ca.bc.gov.educ.api.pen.replication.model.PenDemogTransaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -19,7 +20,7 @@ public interface PenDemogTransactionRepository extends JpaRepository<PenDemogTra
    * @param transactionStatus the transaction status
    * @return the long
    */
-  long countPenDemogTransactionByPenAndTransactionStatus(String pen, String transactionStatus);
+  long countPenDemogTransactionByPenAndTransactionStatusInAndUpdateDateGreaterThan(String pen, List<String> transactionStatus, LocalDateTime dateTime);
 
   /**
    * Find all by transaction status order by transaction insert date time list.

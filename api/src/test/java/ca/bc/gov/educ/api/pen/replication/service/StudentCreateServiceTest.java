@@ -9,6 +9,8 @@ import lombok.val;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDateTime;
+
 import static ca.bc.gov.educ.api.pen.replication.constants.EventStatus.PROCESSED;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -45,7 +47,7 @@ public class StudentCreateServiceTest extends BasePenReplicationAPITest {
    */
   @Test
   public void testProcessEvent_givenCREATE_STUDENT_EventAndTransactionPartOfSaga_shouldNotSaveInDB() throws JsonProcessingException {
-    final PenDemogTransaction penDemogTransaction = PenDemogTransaction.builder().pen("987654321").transactionStatus(TransactionStatus.IN_PROGRESS.getCode()).transactionID("1234567890").build();
+    final PenDemogTransaction penDemogTransaction = PenDemogTransaction.builder().pen("987654321").updateDate(LocalDateTime.now()).transactionStatus(TransactionStatus.IN_PROGRESS.getCode()).transactionID("1234567890").build();
     this.penReplicationTestUtils.getPenDemogTransactionRepository().save(penDemogTransaction);
     final var request = TestUtils.createStudentCreateRequest(null);
     final var event = TestUtils.createEvent("CREATE_STUDENT", request, this.penReplicationTestUtils.getEventRepository());

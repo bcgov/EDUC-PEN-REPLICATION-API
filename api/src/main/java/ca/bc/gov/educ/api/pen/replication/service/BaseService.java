@@ -14,6 +14,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceException;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 
 
 /**
@@ -107,7 +109,8 @@ public abstract class BaseService<T> implements EventService<T> {
    * @return true if there is a running orchestrator saga for this one.
    */
   protected boolean isEventPartOfOrchestratorSaga(final PenDemogTransactionRepository penDemogTransactionRepository, final String pen) {
-    return penDemogTransactionRepository.countPenDemogTransactionByPenAndTransactionStatus(pen, TransactionStatus.IN_PROGRESS.getCode()) > 0;
+    var dateTime = LocalDateTime.now().minus(10, ChronoUnit.SECONDS);
+    return penDemogTransactionRepository.countPenDemogTransactionByPenAndTransactionStatusInAndUpdateDateGreaterThan(pen, Arrays.asList(TransactionStatus.IN_PROGRESS.getCode(), TransactionStatus.COMPLETE.getCode()),dateTime) > 0;
   }
 
   /**
