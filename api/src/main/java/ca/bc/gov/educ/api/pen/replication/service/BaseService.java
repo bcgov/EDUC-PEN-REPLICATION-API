@@ -110,7 +110,7 @@ public abstract class BaseService<T> implements EventService<T> {
    */
   protected boolean isEventPartOfOrchestratorSaga(final PenDemogTransactionRepository penDemogTransactionRepository, final String pen) {
     var dateTime = LocalDateTime.now().minus(10, ChronoUnit.SECONDS);
-    return penDemogTransactionRepository.countPenDemogTransactionByPenAndTransactionStatusInAndUpdateDateGreaterThan(pen, Arrays.asList(TransactionStatus.IN_PROGRESS.getCode(), TransactionStatus.COMPLETE.getCode()),dateTime) > 0;
+    return penDemogTransactionRepository.countPenDemogTransactionByPen(pen, Arrays.asList(TransactionStatus.IN_PROGRESS.getCode(), TransactionStatus.COMPLETE.getCode()),dateTime) > 0;
   }
 
   /**
