@@ -65,9 +65,12 @@ public class Subscriber {
     penMatchEventsTopics.add("PEN_MATCH_EVENTS_TOPIC");
     final List<String> studentEventsTopics = new ArrayList<>();
     studentEventsTopics.add("STUDENT_EVENTS_TOPIC");
+    final List<String> instituteEventsTopics = new ArrayList<>();
+    instituteEventsTopics.add("INSTITUTE_EVENTS_TOPIC");
     this.streamTopicsMap.put("PEN_SERVICES_EVENTS", penServicesEventsTopics);
     this.streamTopicsMap.put("STUDENT_EVENTS", studentEventsTopics);
     this.streamTopicsMap.put("PEN_MATCH_EVENTS", penMatchEventsTopics);
+    this.streamTopicsMap.put("INSTITUTE_EVENTS", instituteEventsTopics);
   }
 
 

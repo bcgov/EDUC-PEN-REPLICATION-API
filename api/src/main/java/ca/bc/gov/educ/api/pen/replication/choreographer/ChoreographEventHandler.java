@@ -4,10 +4,7 @@ import ca.bc.gov.educ.api.pen.replication.constants.EventStatus;
 import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.service.EventService;
-import ca.bc.gov.educ.api.pen.replication.struct.PossibleMatch;
-import ca.bc.gov.educ.api.pen.replication.struct.StudentCreate;
-import ca.bc.gov.educ.api.pen.replication.struct.StudentMerge;
-import ca.bc.gov.educ.api.pen.replication.struct.StudentUpdate;
+import ca.bc.gov.educ.api.pen.replication.struct.*;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -99,6 +96,12 @@ public class ChoreographEventHandler {
                 });
                 final EventService<List<StudentMerge>> deleteMergeService = (EventService<List<StudentMerge>>) this.eventServiceMap.get(DELETE_MERGE.toString());
                 deleteMergeService.processEvent(deleteStudentMergeList, event);
+                break;
+              case "UPDATE_SCHOOL":
+                log.info("Processing UPDATE_SCHOOL event record :: {} ", event);
+                val school = JsonUtil.getJsonObjectFromString(School.class, event.getEventPayload());
+                final EventService<School> schoolEventService = (EventService<School>) this.eventServiceMap.get(UPDATE_SCHOOL.toString());
+                schoolEventService.processEvent(school, event);
                 break;
               default:
                 log.warn("Silently ignoring event: {}", event);

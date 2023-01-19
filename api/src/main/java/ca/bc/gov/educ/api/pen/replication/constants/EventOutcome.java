@@ -84,6 +84,18 @@ public enum EventOutcome {
   /**
    * Pen twins deleted event outcome.
    */
-  PEN_TWINS_DELETED
+  PEN_TWINS_DELETED,
+  /**
+   * School updated event outcome.
+   */
+  SCHOOL_UPDATED,
+  /**
+   * Authority found event outcome.
+   */
+  AUTHORITY_FOUND,
+  /**
+   * Authority not found event outcome.
+   */
+  AUTHORITY_NOT_FOUND
 
 }

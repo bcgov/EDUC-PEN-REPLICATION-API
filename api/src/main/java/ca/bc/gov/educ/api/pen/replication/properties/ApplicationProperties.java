@@ -1,9 +1,14 @@
 package ca.bc.gov.educ.api.pen.replication.properties;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.Getter;
 import lombok.Setter;
+import org.jboss.threads.EnhancedQueueExecutor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.time.Duration;
+import java.util.concurrent.Executor;
 
 /**
  * Class holds all application properties
@@ -14,6 +19,10 @@ import org.springframework.stereotype.Component;
 @Getter
 @Setter
 public class ApplicationProperties {
+
+  public static final Executor bgTask = new EnhancedQueueExecutor.Builder()
+    .setThreadFactory(new ThreadFactoryBuilder().setNameFormat("bg-task-executor-%d").build())
+    .setCorePoolSize(1).setMaximumPoolSize(1).setKeepAliveTime(Duration.ofSeconds(60)).build();
   /**
    * The constant API_NAME.
    */
@@ -53,4 +62,7 @@ public class ApplicationProperties {
    */
   @Value("${url.api.student}")
   private String studentApiURL;
+
+  @Value("${url.api.institute}")
+  private String instituteApiURL;
 }

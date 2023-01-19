@@ -76,5 +76,13 @@ public enum EventType {
   /**
    * Delete pen twins event type.
    */
-  DELETE_PEN_TWINS
+  DELETE_PEN_TWINS,
+  /**
+   * Update school event type.
+   */
+  UPDATE_SCHOOL,
+  /**
+   * Get authority event type.
+   */
+  GET_AUTHORITY
 }
