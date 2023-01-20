@@ -1,6 +1,6 @@
 package ca.bc.gov.educ.api.pen.replication.service;
 
-import ca.bc.gov.educ.api.pen.replication.model.PenDemographicsEntity;
+import ca.bc.gov.educ.api.pen.replication.model.Mincode;
 import ca.bc.gov.educ.api.pen.replication.model.SchoolMasterEntity;
 import ca.bc.gov.educ.api.pen.replication.repository.SchoolMasterRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +31,7 @@ public class SchoolMasterService {
   }
 
   @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-  public Optional<SchoolMasterEntity> findSchoolByStudNoAndDistNo(final String distNo, final String schlNo) {
-    return this.schoolMasterRepository.findByDistNoAndSchlNo(distNo, schlNo);
+  public Optional<SchoolMasterEntity> findSchoolByID(final Mincode mincode) {
+    return this.schoolMasterRepository.findById(mincode);
   }
 }

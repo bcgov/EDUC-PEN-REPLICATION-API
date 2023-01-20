@@ -2,6 +2,7 @@ package ca.bc.gov.educ.api.pen.replication.service;
 
 import ca.bc.gov.educ.api.pen.replication.mappers.SchoolMapper;
 import ca.bc.gov.educ.api.pen.replication.model.Event;
+import ca.bc.gov.educ.api.pen.replication.model.Mincode;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.SchoolMasterRepository;
 import ca.bc.gov.educ.api.pen.replication.struct.School;
@@ -46,7 +47,10 @@ public class SchoolUpdateService extends BaseService<School> {
   public void processEvent(final School school, final Event event) {
     log.info("Received and processing event: " + event.getEventId());
 
-    val existingSchoolMasterRecord = this.schoolMasterRepository.findByDistNoAndSchlNo(school.getMincode().substring(0,3), school.getSchoolNumber());
+    var mincode = new Mincode();
+    mincode.setSchlNo(school.getSchoolNumber());
+    mincode.setDistNo(school.getMincode().substring(0,3));
+    val existingSchoolMasterRecord = this.schoolMasterRepository.findById(mincode);
     if (existingSchoolMasterRecord.isPresent()) {
       val existingSchoolMaster = existingSchoolMasterRecord.get();
       val newSchoolMaster = schoolMapper.toSchoolMaster(school);

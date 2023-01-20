@@ -4,6 +4,7 @@ import ca.bc.gov.educ.api.pen.replication.model.SchoolMasterEntity;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.*;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -15,8 +16,13 @@ import java.util.stream.Collectors;
  */
 public abstract class SchoolDecorator implements SchoolMapper {
 
-  private final RestUtils restUtils;
-  private final SchoolMapper delegate;
+  @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+  @Autowired
+  protected RestUtils restUtils;
+
+  @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+  @Autowired
+  protected SchoolMapper delegate;
 
   private static final String MAILING_ADDRESS_TYPE = "MAILING";
   private static final String PHYSICAL_ADDRESS_TYPE = "PHYSICAL";
@@ -27,10 +33,6 @@ public abstract class SchoolDecorator implements SchoolMapper {
 
   private LocalDateTimeMapper dateTimeMapper = new LocalDateTimeMapper();
 
-  protected SchoolDecorator(RestUtils restUtils, final SchoolMapper delegate) {
-    this.restUtils = restUtils;
-    this.delegate = delegate;
-  }
 
   @Override
   public SchoolMasterEntity toSchoolMaster(School s) {
@@ -61,16 +63,16 @@ public abstract class SchoolDecorator implements SchoolMapper {
     }
 
     if(StringUtils.isNotEmpty(s.getOpenedDate())) {
-      schoolMasterEntity.setOpenedDate(s.getOpenedDate().substring(0, 10).replaceAll("-", ""));
+      schoolMasterEntity.setOpenedDate(s.getOpenedDate().substring(0, 10).replace("-", ""));
       schoolMasterEntity.setDateOpened(dateTimeMapper.map(s.getOpenedDate()));
     }
     if(StringUtils.isNotEmpty(s.getClosedDate())) {
-      schoolMasterEntity.setClosedDate(s.getClosedDate().substring(0, 10).replaceAll("-", ""));
+      schoolMasterEntity.setClosedDate(s.getClosedDate().substring(0, 10).replace("-", ""));
       schoolMasterEntity.setDateClosed(dateTimeMapper.map(s.getClosedDate()));
     }
 
-    schoolMasterEntity.setEditDate(Long.valueOf(s.getUpdateDate().substring(0,10).replaceAll("-","")));
-    schoolMasterEntity.setEditTime(?????);
+    schoolMasterEntity.setEditDate(Long.valueOf(s.getUpdateDate().substring(0,10).replace("-","")));
+    schoolMasterEntity.setEditTime(Long.valueOf(s.getUpdateDate().substring(10,19).replace(":","")));
     schoolMasterEntity.setEditUsername(StringUtils.substring(s.getUpdateUser(), 0, 12));
 
     // These can be ignored
@@ -177,7 +179,7 @@ public abstract class SchoolDecorator implements SchoolMapper {
   private Optional<SchoolContact> getPrincipalIfExists(School school){
     if(school.getContacts() != null){
       var principals = school.getContacts().stream().filter(schoolContact -> schoolContact.getSchoolContactTypeCode().equals(PRINCIPAL_TYPE)).collect(Collectors.toList());
-      if(principals.size() > 0){
+      if(!principals.isEmpty()){
         return Optional.of(principals.get(0));
       }
     }
@@ -187,7 +189,7 @@ public abstract class SchoolDecorator implements SchoolMapper {
   private Optional<SchoolAddress> getAddressValueIfExists(School school, String addressTypeCode){
     if(school.getAddresses() != null){
       var addresses = school.getAddresses().stream().filter(schoolAddress -> schoolAddress.getAddressTypeCode().equals(addressTypeCode)).collect(Collectors.toList());
-      if(addresses.size() > 0){
+      if(!addresses.isEmpty()){
         return Optional.of(addresses.get(0));
       }
     }
@@ -196,8 +198,8 @@ public abstract class SchoolDecorator implements SchoolMapper {
 
   private String getNLCValueFlag(School school, String nlcTypeCode){
     if(school.getNeighborhoodLearning() != null){
-      var addresses = school.getNeighborhoodLearning().stream().filter(neighborhoodLearning -> neighborhoodLearning.getNeighborhoodLearningTypeCode().equals(nlcTypeCode)).collect(Collectors.toList());
-      if(addresses.size() > 0){
+      var nlcs = school.getNeighborhoodLearning().stream().filter(neighborhoodLearning -> neighborhoodLearning.getNeighborhoodLearningTypeCode().equals(nlcTypeCode)).collect(Collectors.toList());
+      if(!nlcs.isEmpty()){
         return BOOLEAN_YES;
       }
     }
@@ -206,8 +208,8 @@ public abstract class SchoolDecorator implements SchoolMapper {
 
   private String getGradeValueFlag(School school, String gradeTypeCode){
     if(school.getGrades() != null){
-      var addresses = school.getGrades().stream().filter(schoolGrade -> schoolGrade.getSchoolGradeCode().equals(gradeTypeCode)).collect(Collectors.toList());
-      if(addresses.size() > 0){
+      var grades = school.getGrades().stream().filter(schoolGrade -> schoolGrade.getSchoolGradeCode().equals(gradeTypeCode)).collect(Collectors.toList());
+      if(!grades.isEmpty()){
         return BOOLEAN_YES;
       }
     }
