@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 public class RestUtils {
   private static final String CONTENT_TYPE = "Content-Type";
   private static final String STUDENT_NOT_FOUND_FOR = "Student not found for , ";
-  private static final String UNABLE_TO_LOAD = "Unable to load map cache facility type codes {}";
+
   private static final String AUTHORITY_NOT_FOUND_FOR = "Authority not found for , ";
   private static final String STUDENT_API_TOPIC = "STUDENT_API_TOPIC";
   private static final String INSTITUTE_API_TOPIC = "INSTITUTE_API_TOPIC";
@@ -241,7 +241,7 @@ public class RestUtils {
       }
     }
     catch (Exception ex) {
-      log.error(UNABLE_TO_LOAD, ex);
+      log.error("Unable to load map cache facility type codes {}", ex);
     }
     finally {
       writeLock.unlock();
@@ -266,7 +266,7 @@ public class RestUtils {
       }
     }
     catch (Exception ex) {
-      log.error(UNABLE_TO_LOAD, ex);
+      log.error("Unable to load map cache province type codes {}", ex);
     }
     finally {
       writeLock.unlock();
@@ -291,7 +291,7 @@ public class RestUtils {
       }
     }
     catch (Exception ex) {
-      log.error(UNABLE_TO_LOAD, ex);
+      log.error("Unable to load map cache country type codes {}", ex);
     }
     finally {
       writeLock.unlock();
