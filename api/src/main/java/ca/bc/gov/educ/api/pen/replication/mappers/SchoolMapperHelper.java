@@ -1,28 +1,19 @@
 package ca.bc.gov.educ.api.pen.replication.mappers;
 
+import ca.bc.gov.educ.api.pen.replication.model.Mincode;
 import ca.bc.gov.educ.api.pen.replication.model.SchoolMasterEntity;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.*;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * The type Student decorator.
- */
-public abstract class SchoolDecorator implements SchoolMapper {
-
-  @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-  @Autowired
-  protected RestUtils restUtils;
-
-  @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-  @Autowired
-  protected SchoolMapper delegate;
+@Component
+public class SchoolMapperHelper  {
 
   private static final String MAILING_ADDRESS_TYPE = "MAILING";
   private static final String PHYSICAL_ADDRESS_TYPE = "PHYSICAL";
@@ -31,15 +22,20 @@ public abstract class SchoolDecorator implements SchoolMapper {
 
   private static final String BOOLEAN_NO = "N";
 
+  private RestUtils restUtils;
   private LocalDateTimeMapper dateTimeMapper = new LocalDateTimeMapper();
 
+  public SchoolMapperHelper(final RestUtils restUtils){
+    this.restUtils = restUtils;
+  }
 
-  @Override
   public SchoolMasterEntity toSchoolMaster(School s) {
     Map<String,FacilityTypeCode> facilityTypeCodeMap = restUtils.getFacilityTypeCodes();
     Map<String,SchoolOrganizationCode> schoolOrganizationCodes = restUtils.getSchoolOrganizationCodes();
     Map<String,SchoolCategoryCode> schoolCategoryCodes = restUtils.getSchoolCategoryCodes();
-    final var schoolMasterEntity = this.delegate.toSchoolMaster(s);
+    Map<String,ProvinceCode> provinceCodes = restUtils.getProvinceCodes();
+    Map<String,CountryCode> countryCodes = restUtils.getCountryCodes();
+    final var schoolMasterEntity = new SchoolMasterEntity();
 
     schoolMasterEntity.setScFaxNumber(StringUtils.substring(s.getFaxNumber(), 0, 10));
     schoolMasterEntity.setScPhoneNumber(StringUtils.substring(s.getPhoneNumber(), 0, 10));
@@ -50,10 +46,14 @@ public abstract class SchoolDecorator implements SchoolMapper {
     schoolMasterEntity.setSchoolOrganizationCode(schoolOrganizationCodes.get(s.getSchoolOrganizationCode()).getLegacyCode());
     schoolMasterEntity.setSchoolCategoryCode(schoolCategoryCodes.get(s.getSchoolCategoryCode()).getLegacyCode());
 
-    schoolMasterEntity.getMincode().setDistNo(s.getMincode().substring(0,3));
-    schoolMasterEntity.getMincode().setSchlNo(s.getSchoolNumber());
+    Mincode mincode = new Mincode();
+    mincode.setDistNo(s.getMincode().substring(0,3));
+    mincode.setSchlNo(s.getSchoolNumber());
+    schoolMasterEntity.setMincode(mincode);
     if(StringUtils.isNotEmpty(s.getIndependentAuthorityId())) {
       schoolMasterEntity.setAuthNumber(restUtils.getIndependentAuthorityByID(s.getIndependentAuthorityId()).getAuthorityNumber());
+    }else{
+      schoolMasterEntity.setAuthNumber(null);
     }
 
     if(StringUtils.isNotEmpty(s.getClosedDate()) && dateTimeMapper.map(s.getClosedDate()).isBefore(LocalDateTime.now())){
@@ -65,52 +65,20 @@ public abstract class SchoolDecorator implements SchoolMapper {
     if(StringUtils.isNotEmpty(s.getOpenedDate())) {
       schoolMasterEntity.setOpenedDate(s.getOpenedDate().substring(0, 10).replace("-", ""));
       schoolMasterEntity.setDateOpened(dateTimeMapper.map(s.getOpenedDate()));
+    }else{
+      schoolMasterEntity.setDateOpened(null);
     }
+
     if(StringUtils.isNotEmpty(s.getClosedDate())) {
       schoolMasterEntity.setClosedDate(s.getClosedDate().substring(0, 10).replace("-", ""));
       schoolMasterEntity.setDateClosed(dateTimeMapper.map(s.getClosedDate()));
+    }else{
+      schoolMasterEntity.setDateClosed(null);
     }
 
     schoolMasterEntity.setEditDate(Long.valueOf(s.getUpdateDate().substring(0,10).replace("-","")));
-    schoolMasterEntity.setEditTime(Long.valueOf(s.getUpdateDate().substring(10,19).replace(":","")));
+    schoolMasterEntity.setEditTime(Long.valueOf(s.getUpdateDate().substring(11,19).replace(":","")));
     schoolMasterEntity.setEditUsername(StringUtils.substring(s.getUpdateUser(), 0, 12));
-
-    // These can be ignored
-//    schoolMasterEntity.setSchoolTypeCode();
-//    schoolMasterEntity.setAssetAssignedBy();
-//    schoolMasterEntity.setNewDistno();
-//    schoolMasterEntity.setNewSchlno();
-//    schoolMasterEntity.setAssetNumber();
-//    schoolMasterEntity.setAssetAssignedBy();
-//    schoolMasterEntity.setAssetAssignedDate();
-//    schoolMasterEntity.setAssetChangedBy();
-//    schoolMasterEntity.setAssetChangedDate();
-//    schoolMasterEntity.setGrade79Ind(getGradeValueFlag(s, "GRADE01"));
-//    schoolMasterEntity.setGrade89Ind(getGradeValueFlag(s, "GRADE01"));
-//    schoolMasterEntity.setGrade29Ind(getGradeValueFlag(s, "GRADE01"));
-//    schoolMasterEntity.setCreateTime();
-//    schoolMasterEntity.setCreateUsername();
-//    schoolMasterEntity.setCreateDate();
-//    schoolMasterEntity.setNumberOfDivisions();
-//    schoolMasterEntity.setNumberOfSecFteTeachers();
-//    schoolMasterEntity.setNumberOfElmFteTeachers();
-//    schoolMasterEntity.setTtblElemInstrMinutes();
-//    schoolMasterEntity.setEnrolHeadcount1523();
-//    schoolMasterEntity.setEnrolHeadcount1701();
-//    schoolMasterEntity.setElemFteClassroom();
-//    schoolMasterEntity.setElemFteSupport();
-//    schoolMasterEntity.setElemFteAdmin();
-//    schoolMasterEntity.setSecFteClassroom();
-//    schoolMasterEntity.setSecFteSupport();
-//    schoolMasterEntity.setSecFteAdmin();
-//    schoolMasterEntity.setEducMethodClassCnt();
-//    schoolMasterEntity.setEducMethodDelCnt();
-//    schoolMasterEntity.setEducMethodBothCnt();
-//    schoolMasterEntity.setElemTeachersHc();
-//    schoolMasterEntity.setSecTeachersHc();
-//    schoolMasterEntity.setRestrictFunding();
-//    schoolMasterEntity.setContedFundFlag();
-
 
     schoolMasterEntity.setGrade01Ind(getGradeValueFlag(s, "GRADE01"));
     schoolMasterEntity.setGrade02Ind(getGradeValueFlag(s, "GRADE02"));
@@ -147,9 +115,16 @@ public abstract class SchoolDecorator implements SchoolMapper {
       schoolMasterEntity.setScAddressLine1(StringUtils.substring(addy.getAddressLine1(),0,40));
       schoolMasterEntity.setScAddressLine2(StringUtils.substring(addy.getAddressLine2(),0,40));
       schoolMasterEntity.setScCity(StringUtils.substring(addy.getCity(),0,30));
-      schoolMasterEntity.setScProvinceCode(addy.getProvinceCode());
-      schoolMasterEntity.setScCountryCode(addy.getCountryCode());
+      schoolMasterEntity.setScProvinceCode(provinceCodes.get(addy.getProvinceCode()).getLegacyCode());
+      schoolMasterEntity.setScCountryCode(countryCodes.get(addy.getCountryCode()).getLegacyCode());
       schoolMasterEntity.setScPostalCode(StringUtils.substring(StringUtils.deleteWhitespace(addy.getPostal()),0,6));
+    } else {
+      schoolMasterEntity.setScAddressLine1(null);
+      schoolMasterEntity.setScAddressLine2(null);
+      schoolMasterEntity.setScCity(null);
+      schoolMasterEntity.setScProvinceCode(null);
+      schoolMasterEntity.setScCountryCode(null);
+      schoolMasterEntity.setScPostalCode(null);
     }
 
     var physAddress = getAddressValueIfExists(s, PHYSICAL_ADDRESS_TYPE);
@@ -158,9 +133,16 @@ public abstract class SchoolDecorator implements SchoolMapper {
       schoolMasterEntity.setPhysAddressLine1(StringUtils.substring(addy.getAddressLine1(),0,40));
       schoolMasterEntity.setPhysAddressLine2(StringUtils.substring(addy.getAddressLine2(),0,40));
       schoolMasterEntity.setPhysCity(StringUtils.substring(addy.getCity(),0,30));
-      schoolMasterEntity.setPhysProvinceCode(addy.getProvinceCode());
-      schoolMasterEntity.setPhysCountryCode(addy.getCountryCode());
+      schoolMasterEntity.setPhysProvinceCode(provinceCodes.get(addy.getProvinceCode()).getLegacyCode());
+      schoolMasterEntity.setPhysCountryCode(countryCodes.get(addy.getCountryCode()).getLegacyCode());
       schoolMasterEntity.setPhysPostalCode(StringUtils.substring(StringUtils.deleteWhitespace(addy.getPostal()),0,6));
+    } else {
+      schoolMasterEntity.setPhysAddressLine1(null);
+      schoolMasterEntity.setPhysAddressLine2(null);
+      schoolMasterEntity.setPhysCity(null);
+      schoolMasterEntity.setPhysProvinceCode(null);
+      schoolMasterEntity.setPhysCountryCode(null);
+      schoolMasterEntity.setPhysPostalCode(null);
     }
 
     //Principal
@@ -169,6 +151,11 @@ public abstract class SchoolDecorator implements SchoolMapper {
       var prince = principal.get();
       schoolMasterEntity.setPrGivenName(StringUtils.substring(prince.getFirstName(),0,25));
       schoolMasterEntity.setPrSurname(StringUtils.substring(prince.getLastName(),0,25));
+      schoolMasterEntity.setPrMiddleName(null);
+      schoolMasterEntity.setPrTitleCode(null);
+    } else {
+      schoolMasterEntity.setPrGivenName(null);
+      schoolMasterEntity.setPrSurname(null);
       schoolMasterEntity.setPrMiddleName(null);
       schoolMasterEntity.setPrTitleCode(null);
     }

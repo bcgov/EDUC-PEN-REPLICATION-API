@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "SCHOOL")
+@Table(name = "SCHOOL_MAST")
 public class SchoolMasterEntity {
   @EmbeddedId
   private Mincode mincode;
@@ -299,4 +299,7 @@ public class SchoolMasterEntity {
 
   @Column(name = "NLC_INTEGRATED_SERVICES_FLAG")
   private String nlcIntegratedServicesFlag;
+
+  @Column(name = "OL_SCHOOL_TYPE")
+  private String onlineSchoolType;
 }

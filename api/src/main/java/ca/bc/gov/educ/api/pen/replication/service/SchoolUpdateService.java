@@ -1,6 +1,7 @@
 package ca.bc.gov.educ.api.pen.replication.service;
 
 import ca.bc.gov.educ.api.pen.replication.mappers.SchoolMapper;
+import ca.bc.gov.educ.api.pen.replication.mappers.SchoolMapperHelper;
 import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.model.Mincode;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
@@ -22,6 +23,7 @@ import static ca.bc.gov.educ.api.pen.replication.constants.EventType.UPDATE_SCHO
 @Slf4j
 public class SchoolUpdateService extends BaseService<School> {
 
+  private final SchoolMapperHelper schoolMapperHelper;
   private final SchoolMasterRepository schoolMasterRepository;
 
   private static final SchoolMapper schoolMapper = SchoolMapper.mapper;
@@ -31,10 +33,12 @@ public class SchoolUpdateService extends BaseService<School> {
    *
    * @param emf                    the emf
    * @param eventRepository        the event repository
+   * @param schoolMapperHelper
    * @param schoolMasterRepository
    */
-  public SchoolUpdateService(final EntityManagerFactory emf, final EventRepository eventRepository, SchoolMasterRepository schoolMasterRepository) {
+  public SchoolUpdateService(final EntityManagerFactory emf, final EventRepository eventRepository, final SchoolMapperHelper schoolMapperHelper, SchoolMasterRepository schoolMasterRepository) {
     super(eventRepository, emf);
+    this.schoolMapperHelper = schoolMapperHelper;
     this.schoolMasterRepository = schoolMasterRepository;
   }
 
@@ -53,7 +57,7 @@ public class SchoolUpdateService extends BaseService<School> {
     val existingSchoolMasterRecord = this.schoolMasterRepository.findById(mincode);
     if (existingSchoolMasterRecord.isPresent()) {
       val existingSchoolMaster = existingSchoolMasterRecord.get();
-      val newSchoolMaster = schoolMapper.toSchoolMaster(school);
+      val newSchoolMaster = schoolMapperHelper.toSchoolMaster(school);
       schoolMapper.updateSchoolMaster(newSchoolMaster, existingSchoolMaster);
       log.info("Processing choreography update event with ID {} :: payload is: {}", event.getEventId(), newSchoolMaster);
       schoolMasterRepository.save(existingSchoolMaster);

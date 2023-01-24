@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 public class RestUtils {
   private static final String CONTENT_TYPE = "Content-Type";
   private static final String STUDENT_NOT_FOUND_FOR = "Student not found for , ";
-
+  private static final String UNABLE_TO_LOAD = "Unable to load map cache facility type codes {}";
   private static final String AUTHORITY_NOT_FOUND_FOR = "Authority not found for , ";
   private static final String STUDENT_API_TOPIC = "STUDENT_API_TOPIC";
   private static final String INSTITUTE_API_TOPIC = "INSTITUTE_API_TOPIC";
@@ -53,6 +53,10 @@ public class RestUtils {
   private final ReadWriteLock schoolOrganizationLock = new ReentrantReadWriteLock();
   private final Map<String, FacilityTypeCode> facilityTypeCodesMap = new ConcurrentHashMap<>();
   private final ReadWriteLock facilityTypeLock = new ReentrantReadWriteLock();
+  private final Map<String, ProvinceCode> provinceCodesMap = new ConcurrentHashMap<>();
+  private final ReadWriteLock provinceLock = new ReentrantReadWriteLock();
+  private final Map<String, CountryCode> countryCodesMap = new ConcurrentHashMap<>();
+  private final ReadWriteLock countryLock = new ReentrantReadWriteLock();
   private final WebClient webClient;
   @Getter
   private final ApplicationProperties props;
@@ -84,9 +88,13 @@ public class RestUtils {
     this.setOrganizationCodesMap();
     this.setFacilityTypeCodesMap();
     this.setCategoryCodesMap();
+    this.setProvinceCodesMap();
+    this.setCountryCodesMap();
     log.info("Called institute api and loaded {} category codes", this.schoolCategoryCodesMap.values().size());
     log.info("Called institute api and loaded {} facility codes", this.facilityTypeCodesMap.values().size());
     log.info("Called institute api and loaded {} organization codes", this.schoolOrganizationCodesMap.values().size());
+    log.info("Called institute api and loaded {} province codes", this.provinceCodesMap.values().size());
+    log.info("Called institute api and loaded {} country codes", this.countryCodesMap.values().size());
   }
 
   /**
@@ -178,7 +186,9 @@ public class RestUtils {
       writeLock.lock();
       this.schoolOrganizationCodesMap.clear();
       final List<SchoolOrganizationCode> organizationCodes = this.webClient.get().uri(this.props.getInstituteApiURL(), uri -> uri.path("/organization-codes").build()).header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).retrieve().bodyToFlux(SchoolOrganizationCode.class).collectList().block();
-      this.schoolOrganizationCodesMap.putAll(organizationCodes.stream().collect(Collectors.toMap(SchoolOrganizationCode::getSchoolOrganizationCode, Function.identity())));
+      if(organizationCodes != null) {
+        this.schoolOrganizationCodesMap.putAll(organizationCodes.stream().collect(Collectors.toMap(SchoolOrganizationCode::getSchoolOrganizationCode, Function.identity())));
+      }
     }
     catch (Exception ex) {
       log.error("Unable to load map cache organization codes {}", ex);
@@ -201,7 +211,9 @@ public class RestUtils {
       writeLock.lock();
       this.schoolCategoryCodesMap.clear();
       final List<SchoolCategoryCode> categoryCodes = this.webClient.get().uri(this.props.getInstituteApiURL(), uri -> uri.path("/category-codes").build()).header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).retrieve().bodyToFlux(SchoolCategoryCode.class).collectList().block();
-      this.schoolCategoryCodesMap.putAll(categoryCodes.stream().collect(Collectors.toMap(SchoolCategoryCode::getSchoolCategoryCode, Function.identity())));
+      if(categoryCodes != null) {
+        this.schoolCategoryCodesMap.putAll(categoryCodes.stream().collect(Collectors.toMap(SchoolCategoryCode::getSchoolCategoryCode, Function.identity())));
+      }
     }
     catch (Exception ex) {
       log.error("Unable to load map cache category codes {}", ex);
@@ -224,10 +236,12 @@ public class RestUtils {
       writeLock.lock();
       this.facilityTypeCodesMap.clear();
       final List<FacilityTypeCode> facilityTypeCodes = this.webClient.get().uri(this.props.getInstituteApiURL(), uri -> uri.path("/facility-codes").build()).header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).retrieve().bodyToFlux(FacilityTypeCode.class).collectList().block();
-      this.facilityTypeCodesMap.putAll(facilityTypeCodes.stream().collect(Collectors.toMap(FacilityTypeCode::getFacilityTypeCode, Function.identity())));
+      if(facilityTypeCodes != null) {
+        this.facilityTypeCodesMap.putAll(facilityTypeCodes.stream().collect(Collectors.toMap(FacilityTypeCode::getFacilityTypeCode, Function.identity())));
+      }
     }
     catch (Exception ex) {
-      log.error("Unable to load map cache facility type codes {}", ex);
+      log.error(UNABLE_TO_LOAD, ex);
     }
     finally {
       writeLock.unlock();
@@ -241,6 +255,55 @@ public class RestUtils {
     return this.facilityTypeCodesMap;
   }
 
+  public void setProvinceCodesMap() {
+    val writeLock = this.provinceLock.writeLock();
+    try {
+      writeLock.lock();
+      this.provinceCodesMap.clear();
+      final List<ProvinceCode> provinceCodes = this.webClient.get().uri(this.props.getInstituteApiURL(), uri -> uri.path("/province-codes").build()).header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).retrieve().bodyToFlux(ProvinceCode.class).collectList().block();
+      if(provinceCodes != null) {
+        this.provinceCodesMap.putAll(provinceCodes.stream().collect(Collectors.toMap(ProvinceCode::getProvinceCode, Function.identity())));
+      }
+    }
+    catch (Exception ex) {
+      log.error(UNABLE_TO_LOAD, ex);
+    }
+    finally {
+      writeLock.unlock();
+    }
+  }
+
+  public Map<String,ProvinceCode> getProvinceCodes() {
+    if(this.provinceCodesMap.isEmpty()) {
+      setFacilityTypeCodesMap();
+    }
+    return this.provinceCodesMap;
+  }
+
+  public void setCountryCodesMap() {
+    val writeLock = this.countryLock.writeLock();
+    try {
+      writeLock.lock();
+      this.countryCodesMap.clear();
+      final List<CountryCode> countryCodes = this.webClient.get().uri(this.props.getInstituteApiURL(), uri -> uri.path("/country-codes").build()).header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).retrieve().bodyToFlux(CountryCode.class).collectList().block();
+      if(countryCodes != null) {
+        this.countryCodesMap.putAll(countryCodes.stream().collect(Collectors.toMap(CountryCode::getCountryCode, Function.identity())));
+      }
+    }
+    catch (Exception ex) {
+      log.error(UNABLE_TO_LOAD, ex);
+    }
+    finally {
+      writeLock.unlock();
+    }
+  }
+
+  public Map<String,CountryCode> getCountryCodes() {
+    if(this.countryCodesMap.isEmpty()) {
+      setFacilityTypeCodesMap();
+    }
+    return this.countryCodesMap;
+  }
 
   /**
    * Create student map from pen numbers map.
