@@ -1,6 +1,5 @@
 package ca.bc.gov.educ.api.pen.replication.service;
 
-import ca.bc.gov.educ.api.pen.replication.mappers.SchoolMapper;
 import ca.bc.gov.educ.api.pen.replication.mappers.SchoolMapperHelper;
 import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.model.Mincode;
@@ -14,19 +13,17 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
-import static ca.bc.gov.educ.api.pen.replication.constants.EventType.UPDATE_SCHOOL;
+import static ca.bc.gov.educ.api.pen.replication.constants.EventType.CREATE_SCHOOL;
 
 /**
  * The type School update service.
  */
 @Service
 @Slf4j
-public class SchoolUpdateService extends BaseService<School> {
+public class SchoolCreateService extends BaseService<School> {
 
   private final SchoolMapperHelper schoolMapperHelper;
   private final SchoolMasterRepository schoolMasterRepository;
-
-  private static final SchoolMapper schoolMapper = SchoolMapper.mapper;
 
   /**
    * Instantiates a new Student update service.
@@ -36,7 +33,7 @@ public class SchoolUpdateService extends BaseService<School> {
    * @param schoolMapperHelper
    * @param schoolMasterRepository
    */
-  public SchoolUpdateService(final EntityManagerFactory emf, final EventRepository eventRepository, final SchoolMapperHelper schoolMapperHelper, SchoolMasterRepository schoolMasterRepository) {
+  public SchoolCreateService(final EntityManagerFactory emf, final EventRepository eventRepository, final SchoolMapperHelper schoolMapperHelper, SchoolMasterRepository schoolMasterRepository) {
     super(eventRepository, emf);
     this.schoolMapperHelper = schoolMapperHelper;
     this.schoolMasterRepository = schoolMasterRepository;
@@ -55,12 +52,10 @@ public class SchoolUpdateService extends BaseService<School> {
     mincode.setSchlNo(school.getSchoolNumber());
     mincode.setDistNo(school.getMincode().substring(0,3));
     val existingSchoolMasterRecord = this.schoolMasterRepository.findById(mincode);
-    if (existingSchoolMasterRecord.isPresent()) {
-      val existingSchoolMaster = existingSchoolMasterRecord.get();
-      val newSchoolMaster = schoolMapperHelper.toSchoolMaster(school, false);
-      schoolMapper.updateSchoolMaster(newSchoolMaster, existingSchoolMaster);
+    if (!existingSchoolMasterRecord.isPresent()) {
+      val newSchoolMaster = schoolMapperHelper.toSchoolMaster(school, true);
       log.info("Processing choreography update event with ID {} :: payload is: {}", event.getEventId(), newSchoolMaster);
-      schoolMasterRepository.save(existingSchoolMaster);
+      schoolMasterRepository.save(newSchoolMaster);
     }
     this.updateEvent(event);
   }
@@ -73,7 +68,7 @@ public class SchoolUpdateService extends BaseService<School> {
    */
   @Override
   public String getEventType() {
-    return UPDATE_SCHOOL.toString();
+    return CREATE_SCHOOL.toString();
   }
 
   @Override

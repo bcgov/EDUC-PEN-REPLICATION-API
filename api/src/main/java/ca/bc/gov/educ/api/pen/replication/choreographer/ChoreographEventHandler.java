@@ -14,6 +14,7 @@ import org.jboss.threads.EnhancedQueueExecutor;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +80,6 @@ public class ChoreographEventHandler {
                 addPossibleMatchService.processEvent(possibleMatchList, event);
                 break;
               case "DELETE_POSSIBLE_MATCH":
-
                 final List<PossibleMatch> deletePossibleMatchList = JsonUtil.objectMapper.readValue(event.getEventPayload(), new TypeReference<>() {
                 });
                 final EventService<List<PossibleMatch>> deletePossibleMatchService = (EventService<List<PossibleMatch>>) this.eventServiceMap.get(DELETE_POSSIBLE_MATCH.toString());
@@ -103,10 +103,20 @@ public class ChoreographEventHandler {
                 final EventService<School> schoolEventService = (EventService<School>) this.eventServiceMap.get(UPDATE_SCHOOL.toString());
                 schoolEventService.processEvent(school, event);
                 break;
+              case "CREATE_SCHOOL":
+                log.info("Processing CREATE_SCHOOL event record :: {} ", event);
+                val createSchool = JsonUtil.getJsonObjectFromString(School.class, event.getEventPayload());
+                final EventService<School> schoolEventServiceCreate = (EventService<School>) this.eventServiceMap.get(CREATE_SCHOOL.toString());
+                schoolEventServiceCreate.processEvent(createSchool, event);
+                break;
               default:
                 log.warn("Silently ignoring event: {}", event);
+                this.eventRepository.findByEventId(event.getEventId()).ifPresent(existingEvent -> {
+                  existingEvent.setEventStatus(EventStatus.PROCESSED.toString());
+                  existingEvent.setUpdateDate(LocalDateTime.now());
+                  this.eventRepository.save(existingEvent);
+                });
                 break;
-
             }
             log.info("Replication Event was processed, ID :: {}", event.getPenReplicationEventId());
           } catch (final Exception exception) {

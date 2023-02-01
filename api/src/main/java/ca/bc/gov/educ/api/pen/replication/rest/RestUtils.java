@@ -129,7 +129,7 @@ public class RestUtils {
     }
   }
 
-  @SneakyThrows({IOException.class, InterruptedException.class})
+  @SneakyThrows({IOException.class})
   @Retryable(value = {Exception.class}, exclude = {PenReplicationAPIRuntimeException.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
   public IndependentAuthority getIndependentAuthorityByID(final String authorityID) {
     log.info("Called INSTITUTE_API to get authority :: {}", authorityID);
@@ -140,17 +140,16 @@ public class RestUtils {
         log.error("Authority not found :: {}, this should not have happened", authorityID);
         throw new PenReplicationAPIRuntimeException(AUTHORITY_NOT_FOUND_FOR + authorityID);
       }
-      val responseEvent = JsonUtil.getJsonObjectFromByteArray(ca.bc.gov.educ.api.pen.replication.struct.Event.class, response.getData());
-      log.info("got response from INSTITUTE_API  :: {}", responseEvent);
-      if (responseEvent.getEventOutcome() == EventOutcome.AUTHORITY_NOT_FOUND) {
+      log.info("Response data is :: {}", response);
+      val authority = JsonUtil.getJsonObjectFromByteArray(ca.bc.gov.educ.api.pen.replication.struct.IndependentAuthority.class, response.getData());
+      log.info("Received response from INSTITUTE_API  :: {}", authority);
+      if (authority == null) {
         log.error("Authority not found :: {}, this should not have happened", authorityID);
         throw new PenReplicationAPIRuntimeException(AUTHORITY_NOT_FOUND_FOR + authorityID);
       }
-      final IndependentAuthority authority = this.objectMapper.readValue(responseEvent.getEventPayload(), new TypeReference<>() {
-      });
-      log.info("Got response from INSTITUTE_API found authority :: ", authority.getIndependentAuthorityId());
+      log.info("Got response from INSTITUTE_API found authority :: {}", authority.getIndependentAuthorityId());
       return authority;
-    } catch (final ExecutionException e) {
+    } catch (final Exception e) {
       throw new PenReplicationAPIRuntimeException(AUTHORITY_NOT_FOUND_FOR + authorityID + " :: " + e.getMessage());
     }
   }

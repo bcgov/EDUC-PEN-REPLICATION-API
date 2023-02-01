@@ -29,13 +29,19 @@ public class SchoolMapperHelper  {
     this.restUtils = restUtils;
   }
 
-  public SchoolMasterEntity toSchoolMaster(School s) {
+  public SchoolMasterEntity toSchoolMaster(School s, boolean isCreate) {
     Map<String,FacilityTypeCode> facilityTypeCodeMap = restUtils.getFacilityTypeCodes();
     Map<String,SchoolOrganizationCode> schoolOrganizationCodes = restUtils.getSchoolOrganizationCodes();
     Map<String,SchoolCategoryCode> schoolCategoryCodes = restUtils.getSchoolCategoryCodes();
     Map<String,ProvinceCode> provinceCodes = restUtils.getProvinceCodes();
     Map<String,CountryCode> countryCodes = restUtils.getCountryCodes();
     final var schoolMasterEntity = new SchoolMasterEntity();
+
+    if(isCreate){
+      schoolMasterEntity.setCreateDate(Long.valueOf(s.getUpdateDate().substring(0,10).replace("-","")));
+      schoolMasterEntity.setCreateTime(Long.valueOf(s.getUpdateDate().substring(11,19).replace(":","")));
+      schoolMasterEntity.setCreateUsername(StringUtils.substring(s.getUpdateUser(), 0, 12));
+    }
 
     schoolMasterEntity.setScFaxNumber(StringUtils.substring(s.getFaxNumber(), 0, 10));
     schoolMasterEntity.setScPhoneNumber(StringUtils.substring(s.getPhoneNumber(), 0, 10));
@@ -117,7 +123,7 @@ public class SchoolMapperHelper  {
       schoolMasterEntity.setScCity(StringUtils.substring(addy.getCity(),0,30));
       schoolMasterEntity.setScProvinceCode(provinceCodes.get(addy.getProvinceCode()).getLegacyCode());
       schoolMasterEntity.setScCountryCode(countryCodes.get(addy.getCountryCode()).getLegacyCode());
-      schoolMasterEntity.setScPostalCode(StringUtils.substring(StringUtils.deleteWhitespace(addy.getPostal()),0,6));
+      schoolMasterEntity.setScPostalCode(StringUtils.upperCase(StringUtils.substring(StringUtils.deleteWhitespace(addy.getPostal()),0,6)));
     } else {
       schoolMasterEntity.setScAddressLine1(null);
       schoolMasterEntity.setScAddressLine2(null);
@@ -135,7 +141,7 @@ public class SchoolMapperHelper  {
       schoolMasterEntity.setPhysCity(StringUtils.substring(addy.getCity(),0,30));
       schoolMasterEntity.setPhysProvinceCode(provinceCodes.get(addy.getProvinceCode()).getLegacyCode());
       schoolMasterEntity.setPhysCountryCode(countryCodes.get(addy.getCountryCode()).getLegacyCode());
-      schoolMasterEntity.setPhysPostalCode(StringUtils.substring(StringUtils.deleteWhitespace(addy.getPostal()),0,6));
+      schoolMasterEntity.setPhysPostalCode(StringUtils.upperCase(StringUtils.substring(StringUtils.deleteWhitespace(addy.getPostal()),0,6)));
     } else {
       schoolMasterEntity.setPhysAddressLine1(null);
       schoolMasterEntity.setPhysAddressLine2(null);
