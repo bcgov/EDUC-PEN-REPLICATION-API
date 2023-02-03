@@ -149,6 +149,9 @@ public class RestUtils {
       }
       log.info("Got response from INSTITUTE_API found authority :: {}", authority.getIndependentAuthorityId());
       return authority;
+    }  catch (final InterruptedException e){
+      Thread.currentThread().interrupt();
+      throw new PenReplicationAPIRuntimeException(AUTHORITY_NOT_FOUND_FOR + authorityID + " :: " + e.getMessage());
     } catch (final Exception e) {
       throw new PenReplicationAPIRuntimeException(AUTHORITY_NOT_FOUND_FOR + authorityID + " :: " + e.getMessage());
     }
