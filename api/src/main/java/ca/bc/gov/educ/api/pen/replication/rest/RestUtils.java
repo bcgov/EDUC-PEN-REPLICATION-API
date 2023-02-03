@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -82,6 +83,11 @@ public class RestUtils {
     if (this.isBackgroundInitializationEnabled != null && this.isBackgroundInitializationEnabled) {
       ApplicationProperties.bgTask.execute(this::initialize);
     }
+  }
+
+  @Scheduled(cron = "${schedule.jobs.load.codes.cron}")
+  public void scheduled() {
+    this.init();
   }
 
   private void initialize() {
