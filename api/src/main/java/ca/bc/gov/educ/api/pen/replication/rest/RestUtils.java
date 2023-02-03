@@ -87,6 +87,7 @@ public class RestUtils {
 
   @Scheduled(cron = "${schedule.jobs.load.codes.cron}")
   public void scheduled() {
+    log.info("Reloading code table values");
     this.init();
   }
 
