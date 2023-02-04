@@ -109,6 +109,12 @@ public class ChoreographEventHandler {
                 final EventService<School> schoolEventServiceCreate = (EventService<School>) this.eventServiceMap.get(CREATE_SCHOOL.toString());
                 schoolEventServiceCreate.processEvent(createSchool, event);
                 break;
+              case "UPDATE_DISTRICT":
+                log.info("Processing UPDATE_DISTRICT event record :: {} ", event);
+                val updateDistrict = JsonUtil.getJsonObjectFromString(District.class, event.getEventPayload());
+                final EventService<District> districtEventServiceUpdate = (EventService<District>) this.eventServiceMap.get(UPDATE_DISTRICT.toString());
+                districtEventServiceUpdate.processEvent(updateDistrict, event);
+                break;
               default:
                 log.warn("Silently ignoring event: {}", event);
                 this.eventRepository.findByEventId(event.getEventId()).ifPresent(existingEvent -> {
