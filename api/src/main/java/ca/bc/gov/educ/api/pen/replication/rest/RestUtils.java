@@ -338,7 +338,7 @@ public class RestUtils {
 
   public Map<String,DistrictRegionCode> getDistrictRegionCodes() {
     if(this.districtRegionCodesMap.isEmpty()) {
-      setFacilityTypeCodesMap();
+      setDistrictRegionCodesMap();
     }
     return this.districtRegionCodesMap;
   }
