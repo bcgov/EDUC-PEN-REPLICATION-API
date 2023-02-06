@@ -27,7 +27,7 @@ env:
   ARTIFACTORY_REPO: artifacts.developer.gov.bc.ca
 
   APP_NAME: 'pen-replication-api'
-  REPO_NAME: "educ-replication-api"
+  REPO_NAME: "educ-pen-replication-api"
   BRANCH: "main"
   APP_NAME_FULL: "pen-replication-api-main"
   NAMESPACE: ${{ secrets.APP_NAMESPACE_NO_ENV }}
