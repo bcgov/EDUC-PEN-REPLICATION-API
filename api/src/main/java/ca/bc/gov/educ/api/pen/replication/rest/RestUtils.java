@@ -58,6 +58,8 @@ public class RestUtils {
   private final ReadWriteLock provinceLock = new ReentrantReadWriteLock();
   private final Map<String, CountryCode> countryCodesMap = new ConcurrentHashMap<>();
   private final ReadWriteLock countryLock = new ReentrantReadWriteLock();
+  private final Map<String, DistrictRegionCode> districtRegionCodesMap = new ConcurrentHashMap<>();
+  private final ReadWriteLock districtRegionLock = new ReentrantReadWriteLock();
   private final WebClient webClient;
   @Getter
   private final ApplicationProperties props;
@@ -97,11 +99,13 @@ public class RestUtils {
     this.setCategoryCodesMap();
     this.setProvinceCodesMap();
     this.setCountryCodesMap();
+    this.setDistrictRegionCodesMap();
     log.info("Called institute api and loaded {} category codes", this.schoolCategoryCodesMap.values().size());
     log.info("Called institute api and loaded {} facility codes", this.facilityTypeCodesMap.values().size());
     log.info("Called institute api and loaded {} organization codes", this.schoolOrganizationCodesMap.values().size());
     log.info("Called institute api and loaded {} province codes", this.provinceCodesMap.values().size());
     log.info("Called institute api and loaded {} country codes", this.countryCodesMap.values().size());
+    log.info("Called institute api and loaded {} district region codes", this.districtRegionCodesMap.values().size());
   }
 
   /**
@@ -312,6 +316,31 @@ public class RestUtils {
       setFacilityTypeCodesMap();
     }
     return this.countryCodesMap;
+  }
+
+  public void setDistrictRegionCodesMap() {
+    val writeLock = this.districtRegionLock.writeLock();
+    try {
+      writeLock.lock();
+      this.districtRegionCodesMap.clear();
+      final List<DistrictRegionCode> districtRegionCodes = this.webClient.get().uri(this.props.getInstituteApiURL(), uri -> uri.path("/district-region-codes").build()).header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).retrieve().bodyToFlux(DistrictRegionCode.class).collectList().block();
+      if(districtRegionCodes != null) {
+        this.districtRegionCodesMap.putAll(districtRegionCodes.stream().collect(Collectors.toMap(DistrictRegionCode::getDistrictRegionCode, Function.identity())));
+      }
+    }
+    catch (Exception ex) {
+      log.error("Unable to load map cache district region codes {}", ex);
+    }
+    finally {
+      writeLock.unlock();
+    }
+  }
+
+  public Map<String,DistrictRegionCode> getDistrictRegionCodes() {
+    if(this.districtRegionCodesMap.isEmpty()) {
+      setDistrictRegionCodesMap();
+    }
+    return this.districtRegionCodesMap;
   }
 
   /**
