@@ -23,8 +23,6 @@ public class DistrictMapperHelper {
 
   public DistrictMasterEntity toDistrictMaster(District d) {
     Map<String,DistrictRegionCode> districtRegionCodeMap = restUtils.getDistrictRegionCodes();
-    Map<String,ProvinceCode> provinceCodes = restUtils.getProvinceCodes();
-    Map<String,CountryCode> countryCodes = restUtils.getCountryCodes();
     final var districtMasterEntity = new DistrictMasterEntity();
 
     districtMasterEntity.setEmail(StringUtils.substring(d.getEmail(), 0, 100));
@@ -35,12 +33,12 @@ public class DistrictMapperHelper {
 
     if(StringUtils.isNotEmpty(d.getPhoneNumber())) {
       districtMasterEntity.setPhoneAreaCode(StringUtils.substring(d.getPhoneNumber(), 0, 3));
-      districtMasterEntity.setPhoneNumberNoArea(StringUtils.substring(d.getPhoneNumber(), 4, 11));
+      districtMasterEntity.setPhoneNumberNoArea(StringUtils.substring(d.getPhoneNumber(), 3, 10));
     }
 
     if(StringUtils.isNotEmpty(d.getFaxNumber())) {
       districtMasterEntity.setFaxAreaCode(StringUtils.substring(d.getFaxNumber(), 0, 3));
-      districtMasterEntity.setFaxNumberNoArea(StringUtils.substring(d.getFaxNumber(), 4, 11));
+      districtMasterEntity.setFaxNumberNoArea(StringUtils.substring(d.getFaxNumber(), 3, 10));
     }
 
     if(d.getDistrictStatusCode().equals("ACTIVE")){
@@ -53,11 +51,11 @@ public class DistrictMapperHelper {
     var mailAddress = getAddressValueIfExists(d, MAILING_ADDRESS_TYPE);
     if(mailAddress.isPresent()) {
       var addy = mailAddress.get();
-      districtMasterEntity.setMailAddressLine1(StringUtils.substring(addy.getAddressLine1(),0,40));
-      districtMasterEntity.setMailAddressLine2(StringUtils.substring(addy.getAddressLine2(),0,40));
+      districtMasterEntity.setMailAddressLine1(StringUtils.substring(addy.getAddressLine1(),0,50));
+      districtMasterEntity.setMailAddressLine2(StringUtils.substring(addy.getAddressLine2(),0,50));
       districtMasterEntity.setMailCity(StringUtils.substring(addy.getCity(),0,30));
-      districtMasterEntity.setMailProvinceCode(provinceCodes.get(addy.getProvinceCode()).getLegacyCode());
-      districtMasterEntity.setMailCountryCode(countryCodes.get(addy.getCountryCode()).getLegacyCode().substring(1,3));
+      districtMasterEntity.setMailProvinceCode(addy.getProvinceCode());
+      districtMasterEntity.setMailCountryCode(addy.getCountryCode());
       districtMasterEntity.setMailPostalCode(StringUtils.upperCase(StringUtils.substring(StringUtils.deleteWhitespace(addy.getPostal()),0,6)));
     } else {
       districtMasterEntity.setMailAddressLine1(null);
@@ -71,11 +69,11 @@ public class DistrictMapperHelper {
     var physAddress = getAddressValueIfExists(d, PHYSICAL_ADDRESS_TYPE);
     if(physAddress.isPresent()) {
       var addy = physAddress.get();
-      districtMasterEntity.setPhysAddressLine1(StringUtils.substring(addy.getAddressLine1(),0,40));
-      districtMasterEntity.setPhysAddressLine2(StringUtils.substring(addy.getAddressLine2(),0,40));
+      districtMasterEntity.setPhysAddressLine1(StringUtils.substring(addy.getAddressLine1(),0,50));
+      districtMasterEntity.setPhysAddressLine2(StringUtils.substring(addy.getAddressLine2(),0,50));
       districtMasterEntity.setPhysCity(StringUtils.substring(addy.getCity(),0,30));
-      districtMasterEntity.setPhysProvinceCode(provinceCodes.get(addy.getProvinceCode()).getLegacyCode());
-      districtMasterEntity.setPhysCountryCode(countryCodes.get(addy.getCountryCode()).getLegacyCode().substring(1,3));
+      districtMasterEntity.setPhysProvinceCode(addy.getProvinceCode());
+      districtMasterEntity.setPhysCountryCode(addy.getCountryCode());
       districtMasterEntity.setPhysPostalCode(StringUtils.upperCase(StringUtils.substring(StringUtils.deleteWhitespace(addy.getPostal()),0,6)));
     } else {
       districtMasterEntity.setPhysAddressLine1(null);
