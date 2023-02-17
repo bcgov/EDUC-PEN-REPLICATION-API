@@ -50,5 +50,7 @@ public enum EventType {
 
   CREATE_AUTHORITY,
 
-  GET_AUTHORITY
+  GET_AUTHORITY,
+
+  GET_PAGINATED_SCHOOLS
 }
