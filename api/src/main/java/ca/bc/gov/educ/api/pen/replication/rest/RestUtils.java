@@ -200,6 +200,7 @@ public class RestUtils {
       }
 
     } catch (final Exception ex) {
+      Thread.currentThread().interrupt();
       throw new PenReplicationAPIRuntimeException("Either NATS timed out or the response is null , correlationID :: " + correlationID + ex.getMessage());
     }
   }
