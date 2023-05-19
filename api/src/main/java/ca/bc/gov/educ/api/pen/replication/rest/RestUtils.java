@@ -45,6 +45,8 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class RestUtils {
+
+  private static final String NATS_TIMED_OUT = "Either NATS timed out or the response is null , correlationID :: ";
   private static final String CONTENT_TYPE = "Content-Type";
   private static final String STUDENT_NOT_FOUND_FOR = "Student not found for , ";
   public static final String SEARCH_CRITERIA_LIST = "searchCriteriaList";
@@ -196,12 +198,41 @@ public class RestUtils {
       if (null != responseMessage) {
         return JsonUtil.objectMapper.readValue(responseMessage.getData(), ref);
       } else {
-        throw new PenReplicationAPIRuntimeException("Either NATS timed out or the response is null , correlationID :: " + correlationID);
+        throw new PenReplicationAPIRuntimeException(NATS_TIMED_OUT + correlationID);
       }
 
     } catch (final Exception ex) {
       Thread.currentThread().interrupt();
-      throw new PenReplicationAPIRuntimeException("Either NATS timed out or the response is null , correlationID :: " + correlationID + ex.getMessage());
+      throw new PenReplicationAPIRuntimeException(NATS_TIMED_OUT + correlationID + ex.getMessage());
+    }
+  }
+
+    @Retryable(value = {Exception.class}, exclude = {PenReplicationAPIRuntimeException.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
+  public List<IndependentAuthority> getAuthoritiesForOpeningAndClosing(UUID correlationID) {
+    try {
+      var currentDate = LocalDateTime.now();
+      var currentDateMinus3Days = LocalDateTime.now().minusDays(3);
+      final SearchCriteria openDateCriteria = this.getCriteria(OPEN_DATE, FilterOperation.BETWEEN, StringUtils.substring(currentDateMinus3Days.toString(),0,19) + "," + StringUtils.substring(currentDate.toString(),0,19) , ValueType.DATE_TIME);
+      final SearchCriteria closeDateCriteria = this.getCriteria(CLOSE_DATE, FilterOperation.BETWEEN, StringUtils.substring(currentDateMinus3Days.toString(),0,19) + "," + StringUtils.substring(currentDate.toString(),0,19) , ValueType.DATE_TIME);
+      final List<SearchCriteria> criteriaListOpenDate = new LinkedList<>(Collections.singletonList(openDateCriteria));
+      final List<SearchCriteria> criteriaListCloseDate = new LinkedList<>(Collections.singletonList(closeDateCriteria));
+      final List<Search> searches = new LinkedList<>();
+      searches.add(Search.builder().searchCriteriaList(criteriaListOpenDate).build());
+      searches.add(Search.builder().condition(Condition.OR).searchCriteriaList(criteriaListCloseDate).build());
+      log.debug("Sys Criteria: {}", searches);
+      final TypeReference<List<IndependentAuthority>> ref = new TypeReference<>() {
+      };
+      val event = Event.builder().sagaId(correlationID).eventType(EventType.GET_PAGINATED_AUTHORITIES).eventPayload(SEARCH_CRITERIA_LIST.concat("=").concat(URLEncoder.encode(this.objectMapper.writeValueAsString(searches), StandardCharsets.UTF_8)).concat("&").concat(PAGE_SIZE).concat("=").concat("100000")).build();
+      val responseMessage = this.messagePublisher.requestMessage(INSTITUTE_API_TOPIC, JsonUtil.getJsonBytesFromObject(event)).completeOnTimeout(null, 60, TimeUnit.SECONDS).get();
+      if (null != responseMessage) {
+        return JsonUtil.objectMapper.readValue(responseMessage.getData(), ref);
+      } else {
+        throw new PenReplicationAPIRuntimeException(NATS_TIMED_OUT + correlationID);
+      }
+
+    } catch (final Exception ex) {
+      Thread.currentThread().interrupt();
+      throw new PenReplicationAPIRuntimeException(NATS_TIMED_OUT + correlationID + ex.getMessage());
     }
   }
 
