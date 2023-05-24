@@ -589,6 +589,7 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
    * @param query the query
    * @return the int
    */
+  @SuppressWarnings("java:S2095")
   protected int persistData(final String query) {
     val em = this.emf.createEntityManager();
     val tx = em.getTransaction();
