@@ -1,6 +1,7 @@
 package ca.bc.gov.educ.api.pen.replication.exception;
 
 import ca.bc.gov.educ.api.pen.replication.exception.errors.ApiError;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.val;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +9,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -15,9 +17,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
-import javax.persistence.EntityNotFoundException;
-
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -43,7 +42,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
    * @return the response entity
    */
   @Override
-  protected ResponseEntity<Object> handleHttpMessageNotReadable(final HttpMessageNotReadableException ex, final HttpHeaders headers, final HttpStatus status, final WebRequest request) {
+  protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
     val error = "Malformed JSON request";
     log.error("{} ", error, ex);
     return this.buildResponseEntity(new ApiError(BAD_REQUEST, error, ex));
@@ -60,7 +59,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
   }
 
   /**
-   * Handles EntityNotFoundException. Created to encapsulate errors with more detail than javax.persistence.EntityNotFoundException.
+   * Handles EntityNotFoundException. Created to encapsulate errors with more detail than jakarta.persistence.EntityNotFoundException.
    *
    * @param ex the EntityNotFoundException
    * @return the ApiError object
@@ -112,11 +111,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
    * @return the ApiError object
    */
   @Override
-  protected ResponseEntity<Object> handleMethodArgumentNotValid(
-    final MethodArgumentNotValidException ex,
-    final HttpHeaders headers,
-    final HttpStatus status,
-    final WebRequest request) {
+  protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
     final ApiError apiError = new ApiError(BAD_REQUEST);
     apiError.setMessage("Validation error");
     apiError.addValidationErrors(ex.getBindingResult().getFieldErrors());

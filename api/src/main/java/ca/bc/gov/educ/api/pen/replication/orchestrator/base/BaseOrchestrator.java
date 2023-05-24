@@ -13,6 +13,9 @@ import ca.bc.gov.educ.api.pen.replication.struct.Event;
 import ca.bc.gov.educ.api.pen.replication.struct.NotificationEvent;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceException;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -20,9 +23,6 @@ import lombok.val;
 import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Async;
 
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceException;
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -595,7 +595,7 @@ public abstract class BaseOrchestrator<T> implements EventHandler, Orchestrator 
     var rowsAffected = 0;
     try {
       tx.begin();
-      rowsAffected = em.createNativeQuery(query).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
+      rowsAffected = em.createNativeQuery(query).setHint("jakarta.persistence.query.timeout", 10000).executeUpdate();
       tx.commit();
     } catch (final Exception e) {
       log.error("Error occurred saving entity " + e.getMessage());

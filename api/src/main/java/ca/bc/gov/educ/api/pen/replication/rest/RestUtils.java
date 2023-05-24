@@ -10,6 +10,7 @@ import ca.bc.gov.educ.api.pen.replication.struct.*;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +26,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -125,7 +125,7 @@ public class RestUtils {
    * @return the students by id
    */
   @SneakyThrows({IOException.class, InterruptedException.class})
-  @Retryable(value = {Exception.class}, exclude = {PenReplicationAPIRuntimeException.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
+  @Retryable(retryFor = {Exception.class}, noRetryFor = {PenReplicationAPIRuntimeException.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
   public Map<String, Student> getStudentsByID(final List<String> studentIDs) {
     log.info("called STUDENT_API to get students :: {}", studentIDs);
     final var event = ca.bc.gov.educ.api.pen.replication.struct.Event.builder().sagaId(UUID.randomUUID()).eventType(EventType.GET_STUDENTS).eventPayload(JsonUtil.getJsonStringFromObject(studentIDs)).build();
@@ -151,7 +151,7 @@ public class RestUtils {
   }
 
   @SneakyThrows({IOException.class})
-  @Retryable(value = {Exception.class}, exclude = {PenReplicationAPIRuntimeException.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
+  @Retryable(retryFor = {Exception.class}, noRetryFor = {PenReplicationAPIRuntimeException.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
   public IndependentAuthority getIndependentAuthorityByID(final String authorityID) {
     log.info("Called INSTITUTE_API to get authority :: {}", authorityID);
     final var event = ca.bc.gov.educ.api.pen.replication.struct.Event.builder().sagaId(UUID.randomUUID()).eventType(EventType.GET_AUTHORITY).eventPayload(JsonUtil.getJsonStringFromObject(authorityID)).build();
@@ -178,7 +178,7 @@ public class RestUtils {
     }
   }
 
-  @Retryable(value = {Exception.class}, exclude = {PenReplicationAPIRuntimeException.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
+  @Retryable(retryFor = {Exception.class}, noRetryFor = {PenReplicationAPIRuntimeException.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
   public List<School> getSchoolsForOpeningAndClosing(UUID correlationID) {
     try {
       var currentDate = LocalDateTime.now();
@@ -207,7 +207,7 @@ public class RestUtils {
     }
   }
 
-    @Retryable(value = {Exception.class}, exclude = {PenReplicationAPIRuntimeException.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
+  @Retryable(retryFor = {Exception.class}, noRetryFor = {PenReplicationAPIRuntimeException.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
   public List<IndependentAuthority> getAuthoritiesForOpeningAndClosing(UUID correlationID) {
     try {
       var currentDate = LocalDateTime.now();
@@ -423,7 +423,7 @@ public class RestUtils {
    * @return the map
    */
   @SneakyThrows
-  @Retryable(value = {Exception.class}, exclude = {PenReplicationAPIRuntimeException.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
+  @Retryable(retryFor = {Exception.class}, noRetryFor = {PenReplicationAPIRuntimeException.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
   public Map<String, Student> createStudentMapFromPenNumbers(@NonNull final List<String> pens, final UUID sagaId) {
     final Map<String, Student> penStudentMap = new HashMap<>();
     for (val pen : pens) {

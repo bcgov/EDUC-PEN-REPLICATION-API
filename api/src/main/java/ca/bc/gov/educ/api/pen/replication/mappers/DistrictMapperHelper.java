@@ -2,13 +2,14 @@ package ca.bc.gov.educ.api.pen.replication.mappers;
 
 import ca.bc.gov.educ.api.pen.replication.model.DistrictMasterEntity;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
-import ca.bc.gov.educ.api.pen.replication.struct.*;
+import ca.bc.gov.educ.api.pen.replication.struct.District;
+import ca.bc.gov.educ.api.pen.replication.struct.DistrictAddress;
+import ca.bc.gov.educ.api.pen.replication.struct.DistrictRegionCode;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component
 public class DistrictMapperHelper {
@@ -89,7 +90,7 @@ public class DistrictMapperHelper {
 
   private Optional<DistrictAddress> getAddressValueIfExists(District district, String addressTypeCode){
     if(district.getAddresses() != null){
-      var addresses = district.getAddresses().stream().filter(districtAddress -> districtAddress.getAddressTypeCode().equals(addressTypeCode)).collect(Collectors.toList());
+      var addresses = district.getAddresses().stream().filter(districtAddress -> districtAddress.getAddressTypeCode().equals(addressTypeCode)).toList();
       if(!addresses.isEmpty()){
         return Optional.of(addresses.get(0));
       }

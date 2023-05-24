@@ -1,9 +1,8 @@
 package ca.bc.gov.educ.api.pen.replication.struct;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
-
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
 /**
  * The type Base address.

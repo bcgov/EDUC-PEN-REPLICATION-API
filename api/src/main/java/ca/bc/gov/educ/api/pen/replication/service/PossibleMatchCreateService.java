@@ -7,12 +7,12 @@ import ca.bc.gov.educ.api.pen.replication.repository.PenTwinTransactionRepositor
 import ca.bc.gov.educ.api.pen.replication.repository.PenTwinsRepository;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.PossibleMatch;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import java.util.List;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventType.ADD_POSSIBLE_MATCH;
@@ -56,7 +56,7 @@ public class PossibleMatchCreateService extends BasePossibleMatchService {
   @Override
   protected void buildAndExecutePreparedStatements(final EntityManager em, final List<PossibleMatch> possibleMatches) {
     for (final PossibleMatch possibleMatch : possibleMatches) {
-      em.createNativeQuery(PenReplicationHelper.buildPenTwinInsert(possibleMatch, this.restUtils)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
+      em.createNativeQuery(PenReplicationHelper.buildPenTwinInsert(possibleMatch, this.restUtils)).setHint("jakarta.persistence.query.timeout", 10000).executeUpdate();
     }
   }
 }

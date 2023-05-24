@@ -12,6 +12,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -21,6 +25,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 /**
@@ -30,7 +36,6 @@ public class TransactionTableRecordsProcessorTest extends BasePenReplicationAPIT
   private final String transactionID = "1234567890";
   private final String pen1 = "120164447";
   private final String pen2 = "120146667";
-
   @Autowired
   RestUtils restUtils;
   @Autowired
@@ -55,6 +60,7 @@ public class TransactionTableRecordsProcessorTest extends BasePenReplicationAPIT
   @Test
   public void testProcessUnprocessedRecords_givenPendingRecordsInDB_shouldStartProcessingAndMarkThemInProgress() {
     when(restUtils.createStudentMapFromPenNumbers(any(), any())).thenReturn(mockStudentsMap());
+
     this.transactionTableRecordsProcessor.processUnprocessedRecords();
     val results = this.penReplicationTestUtils.getSagaRepository().findAll();
     assertThat(results).isNotEmpty();
@@ -65,7 +71,6 @@ public class TransactionTableRecordsProcessorTest extends BasePenReplicationAPIT
     val penTwinTr = this.penReplicationTestUtils.getPenTwinTransactionRepository().findById(this.transactionID);
     assertThat(penTwinTr).isPresent();
     assertThat(penTwinTr.get().getTransactionStatus()).isEqualTo(TransactionStatus.IN_PROGRESS.getCode());
-
   }
 
   private Map<String, Student> mockStudentsMap() {
