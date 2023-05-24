@@ -2,9 +2,7 @@ package ca.bc.gov.educ.api.pen.replication.support;
 
 import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
-import ca.bc.gov.educ.api.pen.replication.struct.BaseStudent;
-import ca.bc.gov.educ.api.pen.replication.struct.IndependentAuthority;
-import ca.bc.gov.educ.api.pen.replication.struct.StudentCreate;
+import ca.bc.gov.educ.api.pen.replication.struct.*;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -62,6 +60,51 @@ public class TestUtils {
     auth.setCreateUser("ABC");
     auth.setUpdateUser("ABC");
     return auth;
+  }
+
+  public static School createSchoolData() {
+    var school = School
+      .builder()
+      .mincode("09812345")
+      .schoolNumber("12345")
+      .displayName("School Name")
+      .openedDate(LocalDateTime.now().minusDays(1).withNano(0).toString())
+      .schoolCategoryCode("PUBLIC")
+      .schoolOrganizationCode("TWO_SEM")
+      .facilityTypeCode("DISTONLINE")
+      .website("abc@sd99.edu")
+      .build();
+    school.setCreateDate(LocalDateTime.now().toString());
+    school.setUpdateDate(LocalDateTime.now().toString());
+    school.setCreateUser("ABC");
+    school.setUpdateUser("ABC");
+    return school;
+  }
+
+  public static FacilityTypeCode createFacilityTypeCodeData() {
+    var fac = FacilityTypeCode.builder().facilityTypeCode("DISTONLINE").description("Standard School").legacyCode("08")
+        .effectiveDate(LocalDateTime.now().toString()).expiryDate(LocalDateTime.MAX.toString()).displayOrder(1).label("Standard School").build();
+    return fac;
+  }
+
+  public static SchoolOrganizationCode createSchoolOrganizationCodeData() {
+    return SchoolOrganizationCode.builder().schoolOrganizationCode("TWO_SEM").description("Two Semesters").legacyCode("01")
+      .effectiveDate(LocalDateTime.now().toString()).expiryDate(LocalDateTime.MAX.toString()).displayOrder(1).label("Two Semesters").build();
+  }
+
+  public static SchoolCategoryCode createSchoolCategoryCodeData() {
+    return SchoolCategoryCode.builder().schoolCategoryCode("PUBLIC").description("Public School").legacyCode("01")
+      .effectiveDate(LocalDateTime.now().toString()).expiryDate(LocalDateTime.MAX.toString()).displayOrder(1).label("Public School").build();
+  }
+
+  public static ProvinceCode createProvinceCodeData() {
+    return ProvinceCode.builder().provinceCode("BC").description("British Columbia").legacyCode("BC")
+      .effectiveDate(LocalDateTime.now().toString()).expiryDate(LocalDateTime.MAX.toString()).displayOrder(1).label("British Columbia").build();
+  }
+
+  public static CountryCode createCountryCodeData() {
+    return CountryCode.builder().countryCode("CA").description("Canada").legacyCode("CA")
+      .effectiveDate(LocalDateTime.now().toString()).expiryDate(LocalDateTime.MAX.toString()).displayOrder(1).label("Canada").build();
   }
 
   /**

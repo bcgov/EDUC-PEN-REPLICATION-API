@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Getter
 public class PenReplicationTestUtils {
   private final AuthorityMasterRepository authorityMasterRepository;
+  private final SchoolMasterRepository schoolMasterRepository;
   private final PenDemogRepository penDemogRepository;
   private final EventRepository eventRepository;
   private final PenDemogTransactionRepository penDemogTransactionRepository;
@@ -27,6 +28,7 @@ public class PenReplicationTestUtils {
    * Instantiates a new Pen replication test utils.
    *
    * @param authorityMasterRepository
+   * @param schoolMasterRepository
    * @param penDemogRepository            the pen demog repository
    * @param eventRepository               the event repository
    * @param penDemogTransactionRepository the pen demog transaction repository
@@ -35,8 +37,9 @@ public class PenReplicationTestUtils {
    * @param sagaEventRepository           the saga event repository
    * @param penTwinsRepository            the pen twins repository
    */
-  public PenReplicationTestUtils(AuthorityMasterRepository authorityMasterRepository, final PenDemogRepository penDemogRepository, final EventRepository eventRepository, final PenDemogTransactionRepository penDemogTransactionRepository, final PenTwinTransactionRepository penTwinTransactionRepository, final SagaRepository sagaRepository, final SagaEventRepository sagaEventRepository, final PenTwinsRepository penTwinsRepository) {
+  public PenReplicationTestUtils(AuthorityMasterRepository authorityMasterRepository, SchoolMasterRepository schoolMasterRepository, final PenDemogRepository penDemogRepository, final EventRepository eventRepository, final PenDemogTransactionRepository penDemogTransactionRepository, final PenTwinTransactionRepository penTwinTransactionRepository, final SagaRepository sagaRepository, final SagaEventRepository sagaEventRepository, final PenTwinsRepository penTwinsRepository) {
     this.authorityMasterRepository = authorityMasterRepository;
+    this.schoolMasterRepository = schoolMasterRepository;
     this.penDemogRepository = penDemogRepository;
     this.eventRepository = eventRepository;
     this.penDemogTransactionRepository = penDemogTransactionRepository;
