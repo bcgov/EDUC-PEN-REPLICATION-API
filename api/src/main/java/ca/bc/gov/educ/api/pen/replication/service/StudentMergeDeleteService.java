@@ -4,13 +4,13 @@ import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentMerge;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,7 +64,7 @@ public class StudentMergeDeleteService extends BaseService<List<StudentMerge>> {
   @Override
   protected void buildAndExecutePreparedStatements(final EntityManager em, final List<StudentMerge> studentMerges) {
     for (final StudentMerge studentMerge : studentMerges) {
-      em.createNativeQuery(this.buildInsert(studentMerge)).setHint("javax.persistence.query.timeout", 10000).executeUpdate();
+      em.createNativeQuery(this.buildInsert(studentMerge)).setHint("jakarta.persistence.query.timeout", 10000).executeUpdate();
     }
   }
 }

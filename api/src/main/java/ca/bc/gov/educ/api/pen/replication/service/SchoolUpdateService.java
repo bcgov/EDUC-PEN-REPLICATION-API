@@ -9,13 +9,13 @@ import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.SchoolMasterRepository;
 import ca.bc.gov.educ.api.pen.replication.struct.School;
 import ca.bc.gov.educ.api.pen.replication.util.ReplicationUtils;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import java.time.LocalDateTime;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventType.UPDATE_SCHOOL;

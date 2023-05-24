@@ -1,9 +1,9 @@
 package ca.bc.gov.educ.api.pen.replication.struct;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**

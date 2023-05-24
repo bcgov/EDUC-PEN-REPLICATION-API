@@ -3,6 +3,7 @@ package ca.bc.gov.educ.api.pen.replication.support;
 import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.struct.BaseStudent;
+import ca.bc.gov.educ.api.pen.replication.struct.IndependentAuthority;
 import ca.bc.gov.educ.api.pen.replication.struct.StudentCreate;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -51,6 +52,16 @@ public class TestUtils {
     student.setPostalCode(postalCode);
     student.setHistoryActivityCode("USERNEW");
     return student;
+  }
+
+  public static IndependentAuthority createIndependentAuthority() {
+    var auth = IndependentAuthority.builder().authorityNumber("003").displayName("IndependentAuthority Name").openedDate(LocalDateTime.now().minusDays(1).toString())
+      .authorityTypeCode("INDEPEND").build();
+    auth.setCreateDate(LocalDateTime.now().toString());
+    auth.setUpdateDate(LocalDateTime.now().toString());
+    auth.setCreateUser("ABC");
+    auth.setUpdateUser("ABC");
+    return auth;
   }
 
   /**

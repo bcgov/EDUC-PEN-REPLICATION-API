@@ -6,13 +6,12 @@ import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.PenDemogTransactionRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.PenTwinTransactionRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceException;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.apache.commons.lang3.StringUtils;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.PersistenceException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -40,23 +39,6 @@ public abstract class BaseService<T> implements EventService<T> {
   }
 
   /**
-   * Format date time string.
-   *
-   * @param activityDate the activity date
-   * @return the string
-   */
-  protected String formatDateTime(String activityDate) {
-    if (StringUtils.isBlank(activityDate)) {
-      return activityDate;
-    }
-    activityDate = activityDate.replace("T", " ");
-    if (activityDate.length() > 19) {
-      activityDate = activityDate.substring(0, 19);
-    }
-    return activityDate;
-  }
-
-  /**
    * Update event.
    *
    * @param event the event
@@ -75,6 +57,7 @@ public abstract class BaseService<T> implements EventService<T> {
    * @param event the event
    * @param t     the t
    */
+  @SuppressWarnings("java:S2095")
   protected void persistData(final Event event, final T t) {
     val em = this.emf.createEntityManager();
     val tx = em.getTransaction();

@@ -1,7 +1,9 @@
 package ca.bc.gov.educ.api.pen.replication.util;
 
 import ca.bc.gov.educ.api.pen.replication.mappers.LocalDateTimeMapper;
+import ca.bc.gov.educ.api.pen.replication.model.AuthorityMasterEntity;
 import ca.bc.gov.educ.api.pen.replication.model.SchoolMasterEntity;
+import ca.bc.gov.educ.api.pen.replication.struct.IndependentAuthority;
 import ca.bc.gov.educ.api.pen.replication.struct.School;
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,6 +38,16 @@ public final class ReplicationUtils {
         school.setClosedDate(entity.getClosedDate());
       }else{
         school.setClosedDate(null);
+      }
+    }
+  }
+
+  public static void setCloseDateIfRequired(IndependentAuthority authority, AuthorityMasterEntity entity){
+    if (StringUtils.isNotEmpty(authority.getClosedDate()) && dateTimeMapper.map(authority.getClosedDate()).isAfter(LocalDateTime.now())){
+      if(entity != null) {
+        authority.setClosedDate(entity.getClosedDate());
+      }else{
+        authority.setClosedDate(null);
       }
     }
   }
