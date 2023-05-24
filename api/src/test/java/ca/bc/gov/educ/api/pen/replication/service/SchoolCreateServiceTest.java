@@ -51,4 +51,61 @@ public class SchoolCreateServiceTest extends BasePenReplicationAPITest {
     assertThat(schoolMaster).isPresent();
   }
 
+  @Test
+  public void testProcessEvent_givenCREATE_SCHOOL_Event_Dist_learn_shouldSaveInDB() throws JsonProcessingException {
+    Map<String, FacilityTypeCode> facilityTypes = new HashMap<>();
+    facilityTypes.put("DIST_LEARN", TestUtils.createFacilityTypeCodeData());
+    when(this.restUtils.getFacilityTypeCodes()).thenReturn(facilityTypes);
+    Map<String, SchoolOrganizationCode> organizationCodes = new HashMap<>();
+    organizationCodes.put("TWO_SEM", TestUtils.createSchoolOrganizationCodeData());
+    when(this.restUtils.getSchoolOrganizationCodes()).thenReturn(organizationCodes);
+    Map<String, SchoolCategoryCode> categoryCodes = new HashMap<>();
+    categoryCodes.put("PUBLIC", TestUtils.createSchoolCategoryCodeData());
+    when(this.restUtils.getSchoolCategoryCodes()).thenReturn(categoryCodes);
+    Map<String, ProvinceCode> provinceCodes = new HashMap<>();
+    provinceCodes.put("BC", TestUtils.createProvinceCodeData());
+    when(this.restUtils.getProvinceCodes()).thenReturn(provinceCodes);
+    Map<String, CountryCode> countryCodes = new HashMap<>();
+    countryCodes.put("CA", TestUtils.createCountryCodeData());
+    when(this.restUtils.getCountryCodes()).thenReturn(countryCodes);
+    final var request = TestUtils.createSchoolData();
+    request.setFacilityTypeCode("DIST_LEARN");
+    final var event = TestUtils.createEvent("CREATE_SCHOOL", request, this.penReplicationTestUtils.getEventRepository());
+    this.penReplicationTestUtils.getEventRepository().save(event);
+    this.schoolCreateService.processEvent(request, event);
+    Mincode mincode = new Mincode();
+    mincode.setDistNo("098");
+    mincode.setSchlNo("12345");
+    final var schoolMaster = this.penReplicationTestUtils.getSchoolMasterRepository().findById(mincode);
+    assertThat(schoolMaster).isPresent();
+  }
+
+  @Test
+  public void testProcessEvent_givenCREATE_SCHOOL_Event_Dist_learn__shouldSaveInDB() throws JsonProcessingException {
+    Map<String, FacilityTypeCode> facilityTypes = new HashMap<>();
+    facilityTypes.put("DIST_LEARN", TestUtils.createFacilityTypeCodeData());
+    when(this.restUtils.getFacilityTypeCodes()).thenReturn(facilityTypes);
+    Map<String, SchoolOrganizationCode> organizationCodes = new HashMap<>();
+    organizationCodes.put("TWO_SEM", TestUtils.createSchoolOrganizationCodeData());
+    when(this.restUtils.getSchoolOrganizationCodes()).thenReturn(organizationCodes);
+    Map<String, SchoolCategoryCode> categoryCodes = new HashMap<>();
+    categoryCodes.put("INDEPEND", TestUtils.createSchoolCategoryCodeData());
+    when(this.restUtils.getSchoolCategoryCodes()).thenReturn(categoryCodes);
+    Map<String, ProvinceCode> provinceCodes = new HashMap<>();
+    provinceCodes.put("BC", TestUtils.createProvinceCodeData());
+    when(this.restUtils.getProvinceCodes()).thenReturn(provinceCodes);
+    Map<String, CountryCode> countryCodes = new HashMap<>();
+    countryCodes.put("CA", TestUtils.createCountryCodeData());
+    when(this.restUtils.getCountryCodes()).thenReturn(countryCodes);
+    final var request = TestUtils.createSchoolData();
+    request.setFacilityTypeCode("DIST_LEARN");
+    final var event = TestUtils.createEvent("CREATE_SCHOOL", request, this.penReplicationTestUtils.getEventRepository());
+    this.penReplicationTestUtils.getEventRepository().save(event);
+    this.schoolCreateService.processEvent(request, event);
+    Mincode mincode = new Mincode();
+    mincode.setDistNo("098");
+    mincode.setSchlNo("12345");
+    final var schoolMaster = this.penReplicationTestUtils.getSchoolMasterRepository().findById(mincode);
+    assertThat(schoolMaster).isPresent();
+  }
 }
