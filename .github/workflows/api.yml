@@ -38,7 +38,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Run unit tests
-        run: mvn clean package
+        run: mvn -f pom.xml clean package
       - name: Cache SonarCloud packages
         uses: actions/cache@v1
         with:
