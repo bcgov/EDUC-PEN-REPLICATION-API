@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component
 public class SchoolMapperHelper  {
@@ -51,6 +50,24 @@ public class SchoolMapperHelper  {
     schoolMasterEntity.setFacilityTypeCode(facilityTypeCodeMap.get(s.getFacilityTypeCode()).getLegacyCode());
     schoolMasterEntity.setSchoolOrganizationCode(schoolOrganizationCodes.get(s.getSchoolOrganizationCode()).getLegacyCode());
     schoolMasterEntity.setSchoolCategoryCode(schoolCategoryCodes.get(s.getSchoolCategoryCode()).getLegacyCode());
+
+    switch (s.getFacilityTypeCode()){
+      case "DIST_LEARN":
+        if(s.getSchoolCategoryCode().equalsIgnoreCase("PUBLIC") || s.getSchoolCategoryCode().equalsIgnoreCase("YUKON")){
+          schoolMasterEntity.setOnlineSchoolType("POLSP");
+        }else if(s.getSchoolCategoryCode().equalsIgnoreCase("INDEPEND")){
+          schoolMasterEntity.setOnlineSchoolType("POLSI");
+        }
+        break;
+      case "DISTONLINE":
+        if(s.getSchoolCategoryCode().equalsIgnoreCase("PUBLIC")) {
+          schoolMasterEntity.setOnlineSchoolType("DOLS");
+        }
+        break;
+      default:
+        schoolMasterEntity.setOnlineSchoolType(null);
+        break;
+    }
 
     Mincode mincode = new Mincode();
     mincode.setDistNo(s.getMincode().substring(0,3));
@@ -171,7 +188,7 @@ public class SchoolMapperHelper  {
 
   private Optional<SchoolContact> getPrincipalIfExists(School school){
     if(school.getContacts() != null){
-      var principals = school.getContacts().stream().filter(schoolContact -> schoolContact.getSchoolContactTypeCode().equals(PRINCIPAL_TYPE)).collect(Collectors.toList());
+      var principals = school.getContacts().stream().filter(schoolContact -> schoolContact.getSchoolContactTypeCode().equals(PRINCIPAL_TYPE)).toList();
       if(!principals.isEmpty()){
         return Optional.of(principals.get(0));
       }
@@ -181,7 +198,7 @@ public class SchoolMapperHelper  {
 
   private Optional<SchoolAddress> getAddressValueIfExists(School school, String addressTypeCode){
     if(school.getAddresses() != null){
-      var addresses = school.getAddresses().stream().filter(schoolAddress -> schoolAddress.getAddressTypeCode().equals(addressTypeCode)).collect(Collectors.toList());
+      var addresses = school.getAddresses().stream().filter(schoolAddress -> schoolAddress.getAddressTypeCode().equals(addressTypeCode)).toList();
       if(!addresses.isEmpty()){
         return Optional.of(addresses.get(0));
       }
@@ -191,7 +208,7 @@ public class SchoolMapperHelper  {
 
   private String getNLCValueFlag(School school, String nlcTypeCode){
     if(school.getNeighborhoodLearning() != null){
-      var nlcs = school.getNeighborhoodLearning().stream().filter(neighborhoodLearning -> neighborhoodLearning.getNeighborhoodLearningTypeCode().equals(nlcTypeCode)).collect(Collectors.toList());
+      var nlcs = school.getNeighborhoodLearning().stream().filter(neighborhoodLearning -> neighborhoodLearning.getNeighborhoodLearningTypeCode().equals(nlcTypeCode)).toList();
       if(!nlcs.isEmpty()){
         return BOOLEAN_YES;
       }
@@ -201,7 +218,7 @@ public class SchoolMapperHelper  {
 
   private String getGradeValueFlag(School school, String gradeTypeCode){
     if(school.getGrades() != null){
-      var grades = school.getGrades().stream().filter(schoolGrade -> schoolGrade.getSchoolGradeCode().equals(gradeTypeCode)).collect(Collectors.toList());
+      var grades = school.getGrades().stream().filter(schoolGrade -> schoolGrade.getSchoolGradeCode().equals(gradeTypeCode)).toList();
       if(!grades.isEmpty()){
         return BOOLEAN_YES;
       }
