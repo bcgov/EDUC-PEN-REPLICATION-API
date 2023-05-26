@@ -36,9 +36,6 @@ public class PenReplicationAPICustomHealthCheckTest {
   @MockBean
   RedissonClient redissonClient;
 
-  @MockBean
-  StringRedisTemplate stringRedisTemplate;
-
   @Autowired
   private PenReplicationAPICustomHealthCheck healthCheck;
 

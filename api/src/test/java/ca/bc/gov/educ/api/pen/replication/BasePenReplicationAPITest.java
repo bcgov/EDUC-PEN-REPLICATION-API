@@ -24,11 +24,6 @@ import static org.mockito.Mockito.when;
 @AutoConfigureMockMvc
 public abstract class BasePenReplicationAPITest {
 
-  @MockBean
-  private ValueOperations valueOperations;
-  @MockBean
-  private StringRedisTemplate stringRedisTemplate;
-
   /**
    * The Pen replication test utils.
    */
@@ -40,7 +35,6 @@ public abstract class BasePenReplicationAPITest {
    */
   @Before
   public void resetState() {
-    when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
     this.penReplicationTestUtils.cleanDB();
   }
 }
