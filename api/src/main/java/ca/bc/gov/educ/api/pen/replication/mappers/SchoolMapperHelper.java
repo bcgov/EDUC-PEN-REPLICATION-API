@@ -53,34 +53,24 @@ public class SchoolMapperHelper  {
     schoolMasterEntity.setSchoolOrganizationCode(schoolOrganizationCodes.get(s.getSchoolOrganizationCode()).getLegacyCode());
     schoolMasterEntity.setSchoolCategoryCode(schoolCategoryCodes.get(s.getSchoolCategoryCode()).getLegacyCode());
 
-    log.info("Facility Type Code is: " + s.getFacilityTypeCode());
-    log.info("School Category Code is: " + s.getSchoolCategoryCode());
     switch (s.getFacilityTypeCode()){
       case "DIST_LEARN":
-        log.info("Step 1");
         if(s.getSchoolCategoryCode().equalsIgnoreCase("PUBLIC") || s.getSchoolCategoryCode().equalsIgnoreCase("YUKON")){
-          log.info("Step 2");
           schoolMasterEntity.setOnlineSchoolType("POLSP");
         }else if(s.getSchoolCategoryCode().equalsIgnoreCase("INDEPEND")){
-          log.info("Step 3");
           schoolMasterEntity.setOnlineSchoolType("POLSI");
         }else{
-          log.info("Step 4");
           schoolMasterEntity.setOnlineSchoolType(null);
         }
         break;
       case "DISTONLINE":
-        log.info("Step 5");
         if(s.getSchoolCategoryCode().equalsIgnoreCase("PUBLIC")) {
-          log.info("Step 6");
           schoolMasterEntity.setOnlineSchoolType("DOLS");
         }else{
-          log.info("Step 7");
           schoolMasterEntity.setOnlineSchoolType(null);
         }
         break;
       default:
-        log.info("Step 8");
         schoolMasterEntity.setOnlineSchoolType(null);
         break;
     }

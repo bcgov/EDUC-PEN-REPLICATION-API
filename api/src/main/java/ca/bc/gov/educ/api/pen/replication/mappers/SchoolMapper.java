@@ -41,6 +41,5 @@ public interface SchoolMapper {
   @Mapping(target = "assetChangedBy", ignore = true)
   @Mapping(target = "assetChangedDate", ignore = true)
   @Mapping(target = "restrictFunding", ignore = true)
-  @Mapping(target = "onlineSchoolType", ignore = true)
   void updateSchoolMaster(SchoolMasterEntity schoolMasterEntity, @MappingTarget SchoolMasterEntity targetEntity);
 }
