@@ -48,7 +48,11 @@ public class SchoolMapperHelper  {
     schoolMasterEntity.setScPhoneNumber(StringUtils.substring(s.getPhoneNumber(), 0, 10));
     schoolMasterEntity.setScEMailId(StringUtils.substring(s.getEmail(), 0, 100));
 
-    schoolMasterEntity.setSchoolName(StringUtils.substring(s.getDisplayName(), 0, 40));
+    if(StringUtils.isNotEmpty(s.getDisplayNameNoSpecialChars())) {
+      schoolMasterEntity.setSchoolName(StringUtils.substring(s.getDisplayNameNoSpecialChars(), 0, 40));
+    }else{
+      schoolMasterEntity.setSchoolName(StringUtils.substring(s.getDisplayName(), 0, 40));
+    }
     schoolMasterEntity.setFacilityTypeCode(facilityTypeCodeMap.get(s.getFacilityTypeCode()).getLegacyCode());
     schoolMasterEntity.setSchoolOrganizationCode(schoolOrganizationCodes.get(s.getSchoolOrganizationCode()).getLegacyCode());
     schoolMasterEntity.setSchoolCategoryCode(schoolCategoryCodes.get(s.getSchoolCategoryCode()).getLegacyCode());

@@ -25,6 +25,7 @@ public class SchoolCreateServiceTest extends BasePenReplicationAPITest {
 
   @Test
   public void testProcessEvent_givenCREATE_SCHOOL_Event_shouldSaveInDB() throws JsonProcessingException {
+    this.penReplicationTestUtils.getSchoolMasterRepository().deleteAll();
     Map<String, FacilityTypeCode> facilityTypes = new HashMap<>();
     facilityTypes.put("DISTONLINE", TestUtils.createFacilityTypeCodeData());
     when(this.restUtils.getFacilityTypeCodes()).thenReturn(facilityTypes);
@@ -53,6 +54,7 @@ public class SchoolCreateServiceTest extends BasePenReplicationAPITest {
 
   @Test
   public void testProcessEvent_givenCREATE_SCHOOL_Event_Dist_learn_shouldSaveInDB() throws JsonProcessingException {
+    this.penReplicationTestUtils.getSchoolMasterRepository().deleteAll();
     Map<String, FacilityTypeCode> facilityTypes = new HashMap<>();
     facilityTypes.put("DIST_LEARN", TestUtils.createFacilityTypeCodeData());
     when(this.restUtils.getFacilityTypeCodes()).thenReturn(facilityTypes);
@@ -82,6 +84,7 @@ public class SchoolCreateServiceTest extends BasePenReplicationAPITest {
 
   @Test
   public void testProcessEvent_givenCREATE_SCHOOL_Event_Dist_learn__shouldSaveInDB() throws JsonProcessingException {
+    this.penReplicationTestUtils.getSchoolMasterRepository().deleteAll();
     Map<String, FacilityTypeCode> facilityTypes = new HashMap<>();
     facilityTypes.put("DIST_LEARN", TestUtils.createFacilityTypeCodeData());
     when(this.restUtils.getFacilityTypeCodes()).thenReturn(facilityTypes);
@@ -89,7 +92,7 @@ public class SchoolCreateServiceTest extends BasePenReplicationAPITest {
     organizationCodes.put("TWO_SEM", TestUtils.createSchoolOrganizationCodeData());
     when(this.restUtils.getSchoolOrganizationCodes()).thenReturn(organizationCodes);
     Map<String, SchoolCategoryCode> categoryCodes = new HashMap<>();
-    categoryCodes.put("INDEPEND", TestUtils.createSchoolCategoryCodeData());
+    categoryCodes.put("PUBLIC", TestUtils.createSchoolCategoryCodeData());
     when(this.restUtils.getSchoolCategoryCodes()).thenReturn(categoryCodes);
     Map<String, ProvinceCode> provinceCodes = new HashMap<>();
     provinceCodes.put("BC", TestUtils.createProvinceCodeData());
@@ -98,6 +101,7 @@ public class SchoolCreateServiceTest extends BasePenReplicationAPITest {
     countryCodes.put("CA", TestUtils.createCountryCodeData());
     when(this.restUtils.getCountryCodes()).thenReturn(countryCodes);
     final var request = TestUtils.createSchoolData();
+    request.setDisplayNameNoSpecialChars("NO SPEC CHARS");
     request.setFacilityTypeCode("DIST_LEARN");
     final var event = TestUtils.createEvent("CREATE_SCHOOL", request, this.penReplicationTestUtils.getEventRepository());
     this.penReplicationTestUtils.getEventRepository().save(event);
@@ -107,5 +111,6 @@ public class SchoolCreateServiceTest extends BasePenReplicationAPITest {
     mincode.setSchlNo("12345");
     final var schoolMaster = this.penReplicationTestUtils.getSchoolMasterRepository().findById(mincode);
     assertThat(schoolMaster).isPresent();
+    assertThat(schoolMaster.get().getSchoolName()).isEqualTo(request.getDisplayNameNoSpecialChars());
   }
 }
