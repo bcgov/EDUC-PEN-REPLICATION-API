@@ -99,6 +99,7 @@ public class SchoolMapperHelper  {
       schoolMasterEntity.setOpenedDate(s.getOpenedDate().substring(0, 10).replace("-", ""));
       schoolMasterEntity.setDateOpened(dateTimeMapper.map(s.getOpenedDate()));
     }else{
+      schoolMasterEntity.setOpenedDate(null);
       schoolMasterEntity.setDateOpened(null);
     }
 
@@ -106,6 +107,7 @@ public class SchoolMapperHelper  {
       schoolMasterEntity.setClosedDate(s.getClosedDate().substring(0, 10).replace("-", ""));
       schoolMasterEntity.setDateClosed(dateTimeMapper.map(s.getClosedDate()));
     }else{
+      schoolMasterEntity.setClosedDate(null);
       schoolMasterEntity.setDateClosed(null);
     }
 
