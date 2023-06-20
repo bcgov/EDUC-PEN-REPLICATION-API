@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component
 public class AuthorityMapperHelper {
@@ -49,6 +48,7 @@ public class AuthorityMapperHelper {
       authorityMasterEntity.setOpenedDate(ia.getOpenedDate().substring(0, 10).replace("-", ""));
       authorityMasterEntity.setDateOpened(dateTimeMapper.map(ia.getOpenedDate()));
     }else{
+      authorityMasterEntity.setOpenedDate(null);
       authorityMasterEntity.setDateOpened(null);
     }
 
@@ -56,6 +56,7 @@ public class AuthorityMapperHelper {
       authorityMasterEntity.setClosedDate(ia.getClosedDate().substring(0, 10).replace("-", ""));
       authorityMasterEntity.setDateClosed(dateTimeMapper.map(ia.getClosedDate()));
     }else{
+      authorityMasterEntity.setClosedDate(null);
       authorityMasterEntity.setDateClosed(null);
     }
 
@@ -102,7 +103,7 @@ public class AuthorityMapperHelper {
 
   private Optional<AuthorityContact> getAuthorityContactIfExists(IndependentAuthority authority){
     if(authority.getContacts() != null){
-      var principals = authority.getContacts().stream().filter(authorityContact -> authorityContact.getAuthorityContactTypeCode().equals(INDAUTHREP)).collect(Collectors.toList());
+      var principals = authority.getContacts().stream().filter(authorityContact -> authorityContact.getAuthorityContactTypeCode().equals(INDAUTHREP)).toList();
       if(!principals.isEmpty()){
         return Optional.of(principals.get(0));
       }
@@ -112,7 +113,7 @@ public class AuthorityMapperHelper {
 
   private Optional<AuthorityAddress> getAddressValueIfExists(IndependentAuthority ia, String addressTypeCode){
     if(ia.getAddresses() != null){
-      var addresses = ia.getAddresses().stream().filter(schoolAddress -> schoolAddress.getAddressTypeCode().equals(addressTypeCode)).collect(Collectors.toList());
+      var addresses = ia.getAddresses().stream().filter(schoolAddress -> schoolAddress.getAddressTypeCode().equals(addressTypeCode)).toList();
       if(!addresses.isEmpty()){
         return Optional.of(addresses.get(0));
       }
