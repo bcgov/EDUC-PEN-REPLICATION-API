@@ -115,26 +115,6 @@ public class SchoolMapperHelper  {
     schoolMasterEntity.setEditTime(Long.valueOf(s.getUpdateDate().substring(11,19).replace(":","")));
     schoolMasterEntity.setEditUsername(StringUtils.substring(s.getUpdateUser(), 0, 12));
 
-    schoolMasterEntity.setGrade01Ind(getGradeValueFlag(s, "GRADE01"));
-    schoolMasterEntity.setGrade02Ind(getGradeValueFlag(s, "GRADE02"));
-    schoolMasterEntity.setGrade03Ind(getGradeValueFlag(s, "GRADE03"));
-    schoolMasterEntity.setGrade04Ind(getGradeValueFlag(s, "GRADE04"));
-    schoolMasterEntity.setGrade05Ind(getGradeValueFlag(s, "GRADE05"));
-    schoolMasterEntity.setGrade06Ind(getGradeValueFlag(s, "GRADE06"));
-    schoolMasterEntity.setGrade07Ind(getGradeValueFlag(s, "GRADE07"));
-    schoolMasterEntity.setGrade08Ind(getGradeValueFlag(s, "GRADE08"));
-    schoolMasterEntity.setGrade09Ind(getGradeValueFlag(s, "GRADE09"));
-    schoolMasterEntity.setGrade10Ind(getGradeValueFlag(s, "GRADE10"));
-    schoolMasterEntity.setGrade11Ind(getGradeValueFlag(s, "GRADE11"));
-    schoolMasterEntity.setGrade12Ind(getGradeValueFlag(s, "GRADE12"));
-
-    schoolMasterEntity.setGradeKhInd(getGradeValueFlag(s, "KINDHALF"));
-    schoolMasterEntity.setGradeKfInd(getGradeValueFlag(s, "KINDFULL"));
-    schoolMasterEntity.setGradeEuInd(getGradeValueFlag(s, "ELEMUNGR"));
-    schoolMasterEntity.setGradeSuInd(getGradeValueFlag(s, "SECUNGR"));
-    schoolMasterEntity.setGradeHsInd(getGradeValueFlag(s, "HOMESCHL"));
-    schoolMasterEntity.setGradeGaInd(getGradeValueFlag(s, "GRADADULT"));
-
     schoolMasterEntity.setNlcEarlyLearningFlag(getNLCValueFlag(s,"EARLYLEARN"));
     schoolMasterEntity.setNlcAfterSchoolProgramFlag(getNLCValueFlag(s,"AFTERSCHL"));
     schoolMasterEntity.setNlcContinuingEdFlag(getNLCValueFlag(s,"CONTINEDUC"));
@@ -227,15 +207,4 @@ public class SchoolMapperHelper  {
     }
     return BOOLEAN_NO;
   }
-
-  private String getGradeValueFlag(School school, String gradeTypeCode){
-    if(school.getGrades() != null){
-      var grades = school.getGrades().stream().filter(schoolGrade -> schoolGrade.getSchoolGradeCode().equals(gradeTypeCode)).toList();
-      if(!grades.isEmpty()){
-        return BOOLEAN_YES;
-      }
-    }
-    return BOOLEAN_NO;
-  }
-
 }
