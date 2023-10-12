@@ -18,7 +18,6 @@ public class SchoolMapperHelper  {
 
   private static final String MAILING_ADDRESS_TYPE = "MAILING";
   private static final String PHYSICAL_ADDRESS_TYPE = "PHYSICAL";
-  private static final String PRINCIPAL_TYPE = "PRINCIPAL";
   private static final String BOOLEAN_YES = "Y";
 
   private static final String BOOLEAN_NO = "N";
@@ -161,31 +160,12 @@ public class SchoolMapperHelper  {
     }
 
     //Principal
-    var principal = getPrincipalIfExists(s);
-    if(principal.isPresent()) {
-      var prince = principal.get();
-      schoolMasterEntity.setPrGivenName(StringUtils.substring(prince.getFirstName(),0,25));
-      schoolMasterEntity.setPrSurname(StringUtils.substring(prince.getLastName(),0,25));
-      schoolMasterEntity.setPrMiddleName(null);
-      schoolMasterEntity.setPrTitleCode(null);
-    } else {
-      schoolMasterEntity.setPrGivenName(null);
-      schoolMasterEntity.setPrSurname(null);
-      schoolMasterEntity.setPrMiddleName(null);
-      schoolMasterEntity.setPrTitleCode(null);
-    }
+    schoolMasterEntity.setPrGivenName(null);
+    schoolMasterEntity.setPrSurname(null);
+    schoolMasterEntity.setPrMiddleName(null);
+    schoolMasterEntity.setPrTitleCode(null);
 
     return schoolMasterEntity;
-  }
-
-  private Optional<SchoolContact> getPrincipalIfExists(School school){
-    if(school.getContacts() != null){
-      var principals = school.getContacts().stream().filter(schoolContact -> schoolContact.getSchoolContactTypeCode().equals(PRINCIPAL_TYPE)).toList();
-      if(!principals.isEmpty()){
-        return Optional.of(principals.get(0));
-      }
-    }
-    return Optional.empty();
   }
 
   private Optional<SchoolAddress> getAddressValueIfExists(School school, String addressTypeCode){
