@@ -14,8 +14,6 @@ import java.util.Optional;
 public class AuthorityMapperHelper {
 
   private static final String MAILING_ADDRESS_TYPE = "MAILING";
-
-  private static final String INDAUTHREP = "INDAUTHREP";
   private RestUtils restUtils;
   private LocalDateTimeMapper dateTimeMapper = new LocalDateTimeMapper();
 
@@ -86,29 +84,12 @@ public class AuthorityMapperHelper {
     }
 
     //Contact
-    var contact = getAuthorityContactIfExists(ia);
-    if(contact.isPresent()) {
-      var prince = contact.get();
-      authorityMasterEntity.setGivenName(StringUtils.substring(prince.getFirstName(),0,25));
-      authorityMasterEntity.setSurname(StringUtils.substring(prince.getLastName(),0,25));
-    } else {
-      authorityMasterEntity.setGivenName(null);
-      authorityMasterEntity.setSurname(null);
-    }
+    authorityMasterEntity.setGivenName(null);
+    authorityMasterEntity.setSurname(null);
     authorityMasterEntity.setMiddleName(null);
     authorityMasterEntity.setTitleCode(null);
 
     return authorityMasterEntity;
-  }
-
-  private Optional<AuthorityContact> getAuthorityContactIfExists(IndependentAuthority authority){
-    if(authority.getContacts() != null){
-      var principals = authority.getContacts().stream().filter(authorityContact -> authorityContact.getAuthorityContactTypeCode().equals(INDAUTHREP)).toList();
-      if(!principals.isEmpty()){
-        return Optional.of(principals.get(0));
-      }
-    }
-    return Optional.empty();
   }
 
   private Optional<AuthorityAddress> getAddressValueIfExists(IndependentAuthority ia, String addressTypeCode){
