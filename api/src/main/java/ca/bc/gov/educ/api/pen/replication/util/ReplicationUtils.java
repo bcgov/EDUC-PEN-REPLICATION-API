@@ -35,7 +35,7 @@ public final class ReplicationUtils {
   public static void setCloseDateIfRequired(School school, SchoolMasterEntity entity){
     if (StringUtils.isNotEmpty(school.getClosedDate()) && dateTimeMapper.map(school.getClosedDate()).isAfter(LocalDateTime.now())){
       if(entity != null) {
-        school.setClosedDate(entity.getClosedDate());
+        school.setClosedDate(dateTimeMapper.map(entity.getDateClosed()));
       }else{
         school.setClosedDate(null);
       }
@@ -45,7 +45,7 @@ public final class ReplicationUtils {
   public static void setCloseDateIfRequired(IndependentAuthority authority, AuthorityMasterEntity entity){
     if (StringUtils.isNotEmpty(authority.getClosedDate()) && dateTimeMapper.map(authority.getClosedDate()).isAfter(LocalDateTime.now())){
       if(entity != null) {
-        authority.setClosedDate(entity.getClosedDate());
+        authority.setClosedDate(dateTimeMapper.map(entity.getDateClosed()));
       }else{
         authority.setClosedDate(null);
       }
