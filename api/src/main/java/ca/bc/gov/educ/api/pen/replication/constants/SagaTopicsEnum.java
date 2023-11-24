@@ -15,6 +15,10 @@ public enum SagaTopicsEnum {
    */
   PEN_REPLICATION_STUDENT_CREATE_SAGA_TOPIC("PEN_REPLICATION_STUDENT_CREATE_SAGA_TOPIC"),
   /**
+   * Pen replication student create saga topic saga topics enum.
+   */
+  PEN_REPLICATION_AUTHORITY_CREATE_SAGA_TOPIC("PEN_REPLICATION_AUTHORITY_CREATE_SAGA_TOPIC"),
+  /**
    * Pen services api topic saga topics enum.
    */
   PEN_SERVICES_API_TOPIC("PEN_SERVICES_API_TOPIC"),

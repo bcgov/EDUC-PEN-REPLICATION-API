@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -17,22 +18,10 @@ import java.util.UUID;
  */
 @Repository
 public interface SagaRepository extends JpaRepository<Saga, UUID>, JpaSpecificationExecutor<Saga> {
-  /**
-   * Find all by status in list.
-   *
-   * @param statuses the statuses
-   * @return the list
-   */
+
   List<Saga> findAllByStatusInOrderByCreateDate(List<String> statuses);
 
-
-  /**
-   * Find all by create date before list.
-   *
-   * @param createDate the create date
-   * @return the list
-   */
-  List<Saga> findAllByCreateDateBefore(LocalDateTime createDate);
+  Optional<Saga> findByCreatedFromEventID(UUID createdFromEventID);
 
   long countSagasBySagaNameInAndStatusIn(List<String> sagaNames, List<String> statuses);
 

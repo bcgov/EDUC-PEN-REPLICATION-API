@@ -94,7 +94,7 @@ public class PenReplicationSagaControllerTest extends BasePenReplicationAPITest 
   @Test
   @SuppressWarnings("java:S100")
   public void testGetSagaBySagaID_whenSagaIDIsValidWithNoEvents_shouldReturnStatusOk() throws Exception {
-    var saga = this.sagaService.createSagaRecordInDB(SagaEnum.PEN_REPLICATION_STUDENT_CREATE_SAGA.getCode(), "JOCOX", "test");
+    var saga = this.sagaService.createSagaRecordInDB(SagaEnum.PEN_REPLICATION_STUDENT_CREATE_SAGA.getCode(), "JOCOX", "test", null);
     this.repository.save(saga);
     this.mockMvc.perform(get("/api/v1/pen-replication/saga//{sagaID}/events", saga.getSagaId()).with(jwt().jwt((jwt) -> jwt.claim("scope", "PEN_REPLICATION_READ_SAGA")))).andDo(print()).andExpect(status().isOk());
   }

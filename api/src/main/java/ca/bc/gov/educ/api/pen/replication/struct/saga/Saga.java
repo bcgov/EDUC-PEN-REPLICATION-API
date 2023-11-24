@@ -20,6 +20,10 @@ public class Saga {
    */
   UUID sagaId;
   /**
+   * Created by event id.
+   */
+  UUID createdFromEventID;
+  /**
    * The Saga name.
    */
   String sagaName;

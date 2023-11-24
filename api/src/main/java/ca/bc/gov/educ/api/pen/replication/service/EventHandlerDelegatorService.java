@@ -1,15 +1,23 @@
 package ca.bc.gov.educ.api.pen.replication.service;
 
 import ca.bc.gov.educ.api.pen.replication.choreographer.ChoreographEventHandler;
+import ca.bc.gov.educ.api.pen.replication.constants.SagaEnum;
 import ca.bc.gov.educ.api.pen.replication.exception.BusinessException;
+import ca.bc.gov.educ.api.pen.replication.orchestrator.base.Orchestrator;
+import ca.bc.gov.educ.api.pen.replication.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.pen.replication.struct.ChoreographedEvent;
 import io.nats.client.Message;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.EnumMap;
+import java.util.Map;
+
+import static ca.bc.gov.educ.api.pen.replication.constants.SagaEnum.PEN_REPLICATION_AUTHORITY_CREATE_SAGA;
 
 
 /**
@@ -21,17 +29,20 @@ public class EventHandlerDelegatorService {
 
   private final ChoreographedEventPersistenceService choreographedEventPersistenceService;
   private final ChoreographEventHandler choreographer;
-
+  private final SagaService sagaService;
+  private final Map<SagaEnum, Orchestrator> sagaEnumOrchestratorMap = new EnumMap<>(SagaEnum.class);
   /**
    * Instantiates a new Event handler delegator service.
    *
    * @param choreographedEventPersistenceService the choreographed event persistence service
    * @param choreographer                        the choreographer
+   * @param sagaService
    */
   @Autowired
-  public EventHandlerDelegatorService(final ChoreographedEventPersistenceService choreographedEventPersistenceService, final ChoreographEventHandler choreographer) {
+  public EventHandlerDelegatorService(final ChoreographedEventPersistenceService choreographedEventPersistenceService, final ChoreographEventHandler choreographer, SagaService sagaService) {
     this.choreographedEventPersistenceService = choreographedEventPersistenceService;
     this.choreographer = choreographer;
+    this.sagaService = sagaService;
   }
 
   /**
@@ -46,10 +57,23 @@ public class EventHandlerDelegatorService {
    */
   public void handleChoreographyEvent(@NonNull final ChoreographedEvent choreographedEvent, final Message message) throws IOException {
     try {
-      final var persistedEvent = this.choreographedEventPersistenceService.persistEventToDB(choreographedEvent);
-      message.ack(); // acknowledge to Jet Stream that api got the message and it is now in DB.
-      log.info("acknowledged to Jet Stream...");
-      this.choreographer.handleEvent(persistedEvent);
+      switch (choreographedEvent.getEventType()) {
+        case CREATE_AUTHORITY:
+          log.info("Persisting CREATE_AUTHORITY event record for Saga processing :: {} ", choreographedEvent);
+          val orchestrator = this.sagaEnumOrchestratorMap.get(PEN_REPLICATION_AUTHORITY_CREATE_SAGA);
+          val saga = this.sagaService.persistSagaData(orchestrator.getSagaName().getCode(), ApplicationProperties.API_NAME, choreographedEvent.getEventPayload(), choreographedEvent.getEventID());
+          message.ack();
+          log.info("Acknowledged CREATE_AUTHORITY event to Jet Stream...");
+          orchestrator.startSaga(saga);
+          break;
+        default:
+          log.info("Persisting event record for choreography processing :: {} ", choreographedEvent);
+          final var persistedEvent = this.choreographedEventPersistenceService.persistEventToDB(choreographedEvent);
+          message.ack(); // acknowledge to Jet Stream that api got the message and it is now in DB.
+          log.info("Acknowledged to Jet Stream...");
+          this.choreographer.handleEvent(persistedEvent);
+          break;
+      }
     } catch (final BusinessException businessException) {
       message.ack(); // acknowledge to Jet Stream that api got the message already...
       log.info("acknowledged to Jet Stream...");

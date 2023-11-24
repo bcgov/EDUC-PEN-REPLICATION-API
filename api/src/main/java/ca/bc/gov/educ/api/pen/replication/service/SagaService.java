@@ -3,6 +3,8 @@ package ca.bc.gov.educ.api.pen.replication.service;
 import ca.bc.gov.educ.api.pen.replication.constants.EventType;
 import ca.bc.gov.educ.api.pen.replication.constants.SagaEnum;
 import ca.bc.gov.educ.api.pen.replication.constants.SagaStatusEnum;
+import ca.bc.gov.educ.api.pen.replication.exception.BusinessError;
+import ca.bc.gov.educ.api.pen.replication.exception.BusinessException;
 import ca.bc.gov.educ.api.pen.replication.model.Saga;
 import ca.bc.gov.educ.api.pen.replication.model.SagaEvent;
 import ca.bc.gov.educ.api.pen.replication.repository.SagaEventRepository;
@@ -110,7 +112,6 @@ public class SagaService {
     return this.getSagaEventRepository().findBySaga(saga);
   }
 
-
   /**
    * Update saga record.
    *
@@ -132,7 +133,6 @@ public class SagaService {
     this.getSagaRepository().save(saga);
   }
 
-
   /**
    * Create saga record in db saga.
    *
@@ -141,13 +141,14 @@ public class SagaService {
    * @param payload  the payload
    * @return the saga
    */
-  public Saga createSagaRecordInDB(final String sagaName, final String userName, final String payload) {
+  public Saga createSagaRecordInDB(final String sagaName, final String userName, final String payload, final UUID createFromEventID) {
     final var saga = Saga
       .builder()
       .payload(payload)
       .sagaName(sagaName)
       .status(SagaStatusEnum.STARTED.toString())
       .sagaState(EventType.INITIATED.toString())
+      .createdFromEventID(createFromEventID)
       .createDate(LocalDateTime.now())
       .createUser(userName)
       .updateUser(userName)
@@ -156,6 +157,14 @@ public class SagaService {
     return this.createSagaRecord(saga);
   }
 
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public Saga persistSagaData(final String sagaName, final String userName, final String payload, final UUID createdByEventID) throws BusinessException {
+    final var eventOptional = this.getSagaRepository().findByCreatedFromEventID(createdByEventID);
+    if (eventOptional.isPresent()) {
+      throw new BusinessException(BusinessError.SAGA_ALREADY_PERSISTED, createdByEventID.toString());
+    }
+    return this.createSagaRecordInDB(sagaName, userName, payload, createdByEventID);
+  }
 
   /**
    * Find all completable future.

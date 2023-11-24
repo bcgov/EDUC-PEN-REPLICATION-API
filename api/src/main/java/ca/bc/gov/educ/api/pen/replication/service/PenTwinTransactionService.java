@@ -44,6 +44,6 @@ public class PenTwinTransactionService {
       twinTransaction.setTransactionStatus(TransactionStatus.IN_PROGRESS.getCode());
       this.penTwinTransactionRepository.save(twinTransaction);
     });
-    return this.sagaService.createSagaRecordInDB(sagaName, userName, payload);
+    return this.sagaService.createSagaRecordInDB(sagaName, userName, payload, null);
   }
 }
