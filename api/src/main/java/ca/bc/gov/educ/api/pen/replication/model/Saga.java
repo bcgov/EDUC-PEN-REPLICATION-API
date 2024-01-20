@@ -38,6 +38,11 @@ public class Saga implements Serializable {
   @Column(name = "SAGA_ID", unique = true, updatable = false, columnDefinition = "BINARY(16)")
   UUID sagaId;
 
+  /**
+   * Created by event ID.
+   */
+  @Column(name = "CREATED_FROM_EVENT_ID")
+  UUID createdFromEventID;
 
   /**
    * The Saga name.

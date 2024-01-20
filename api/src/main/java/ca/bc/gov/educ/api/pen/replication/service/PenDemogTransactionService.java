@@ -48,7 +48,7 @@ public class PenDemogTransactionService {
       demogTransaction.setTransactionStatus(TransactionStatus.IN_PROGRESS.getCode());
       this.penDemogTransactionRepository.save(demogTransaction);
     });
-    return this.sagaService.createSagaRecordInDB(sagaName, userName, payload);
+    return this.sagaService.createSagaRecordInDB(sagaName, userName, payload, null);
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)

@@ -68,7 +68,7 @@ public class StudentCreateOrchestratorTest extends BasePenReplicationAPITest {
     val penDemogTx = this.createMockPenDemogTransaction();
     penReplicationTestUtils.getPenDemogTransactionRepository().save(penDemogTx);
     this.sagaData = StudentCreateSagaData.builder().penDemogTransaction(penDemogTx).studentCreate(StudentMapper.mapper.toStudentCreate(this.createMockPenDemogTransaction())).build();
-    this.saga = this.sagaService.createSagaRecordInDB(SagaEnum.PEN_REPLICATION_STUDENT_CREATE_SAGA.getCode(), "Test", JsonUtil.objectMapper.writeValueAsString(this.sagaData));
+    this.saga = this.sagaService.createSagaRecordInDB(SagaEnum.PEN_REPLICATION_STUDENT_CREATE_SAGA.getCode(), "Test", JsonUtil.objectMapper.writeValueAsString(this.sagaData), null);
   }
 
 

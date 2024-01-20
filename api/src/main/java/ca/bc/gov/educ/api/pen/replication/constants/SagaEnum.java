@@ -7,21 +7,25 @@ import lombok.Getter;
  */
 public enum SagaEnum {
   /**
-   * Pen replication student update saga saga enum.
+   * Pen replication student update saga enum.
    */
   PEN_REPLICATION_STUDENT_UPDATE_SAGA("PEN_REPLICATION_STUDENT_UPDATE_SAGA"),
   /**
-   * Pen replication student create saga saga enum.
+   * Pen replication student create saga enum.
    */
   PEN_REPLICATION_STUDENT_CREATE_SAGA("PEN_REPLICATION_STUDENT_CREATE_SAGA"),
   /**
-   * Pen replication possible match create saga saga enum.
+   * Pen replication possible match create saga enum.
    */
   PEN_REPLICATION_POSSIBLE_MATCH_CREATE_SAGA("PEN_REPLICATION_POSSIBLE_MATCH_CREATE_SAGA"),
   /**
-   * Pen replication possible match delete saga saga enum.
+   * Pen replication possible match delete saga enum.
    */
-  PEN_REPLICATION_POSSIBLE_MATCH_DELETE_SAGA("PEN_REPLICATION_POSSIBLE_MATCH_DELETE_SAGA");
+  PEN_REPLICATION_POSSIBLE_MATCH_DELETE_SAGA("PEN_REPLICATION_POSSIBLE_MATCH_DELETE_SAGA"),
+  /**
+   * Pen replication authority create saga enum.
+   */
+  PEN_REPLICATION_AUTHORITY_CREATE_SAGA("PEN_REPLICATION_AUTHORITY_CREATE_SAGA");
   @Getter
   private final String code;
 

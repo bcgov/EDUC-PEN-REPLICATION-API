@@ -65,4 +65,7 @@ public class ApplicationProperties {
 
   @Value("${url.api.institute}")
   private String instituteApiURL;
+
+  @Value("${url.api.independent.schools}")
+  private String independentSchoolsAPI;
 }

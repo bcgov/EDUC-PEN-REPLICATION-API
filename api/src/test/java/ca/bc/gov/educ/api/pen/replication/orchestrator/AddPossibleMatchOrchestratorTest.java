@@ -72,7 +72,7 @@ public class AddPossibleMatchOrchestratorTest extends BasePenReplicationAPITest 
   public void setUp() throws IOException {
     MockitoAnnotations.openMocks(this);
     this.sagaData = PossibleMatchSagaData.builder().penTwinTransaction(this.createMockPenTwinTransaction()).build();
-    this.saga = this.sagaService.createSagaRecordInDB(SagaEnum.PEN_REPLICATION_POSSIBLE_MATCH_CREATE_SAGA.getCode(), "Test", JsonUtil.objectMapper.writeValueAsString(this.sagaData));
+    this.saga = this.sagaService.createSagaRecordInDB(SagaEnum.PEN_REPLICATION_POSSIBLE_MATCH_CREATE_SAGA.getCode(), "Test", JsonUtil.objectMapper.writeValueAsString(this.sagaData), null);
   }
 
   /**
