@@ -2,6 +2,7 @@ package ca.bc.gov.educ.api.pen.replication.rest;
 
 import ca.bc.gov.educ.api.pen.replication.constants.EventOutcome;
 import ca.bc.gov.educ.api.pen.replication.constants.EventType;
+import ca.bc.gov.educ.api.pen.replication.constants.IndependentSchoolSystem;
 import ca.bc.gov.educ.api.pen.replication.exception.PenReplicationAPIRuntimeException;
 import ca.bc.gov.educ.api.pen.replication.filter.FilterOperation;
 import ca.bc.gov.educ.api.pen.replication.messaging.MessagePublisher;
@@ -25,6 +26,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -234,6 +236,16 @@ public class RestUtils {
       Thread.currentThread().interrupt();
       throw new PenReplicationAPIRuntimeException(NATS_TIMED_OUT + correlationID + ex.getMessage());
     }
+  }
+
+  public void createOrUpdateAuthorityInIndependentSchoolSystem(final IndependentAuthority authority, final IndependentSchoolSystem system) {
+     this.webClient.post()
+            .uri(this.props.getIndependentSchoolsAPI() + "/api/School/" + system.getCode() + "/AuthorityUpsert")
+            .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .body(Mono.just(authority), IndependentAuthority.class)
+            .retrieve()
+            .bodyToMono(String.class)
+            .block();
   }
 
   private SearchCriteria getCriteria(final String key, final FilterOperation operation, final String value, final ValueType valueType) {

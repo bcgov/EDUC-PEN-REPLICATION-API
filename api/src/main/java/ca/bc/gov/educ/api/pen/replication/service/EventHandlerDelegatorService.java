@@ -6,6 +6,9 @@ import ca.bc.gov.educ.api.pen.replication.exception.BusinessException;
 import ca.bc.gov.educ.api.pen.replication.orchestrator.base.Orchestrator;
 import ca.bc.gov.educ.api.pen.replication.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.pen.replication.struct.ChoreographedEvent;
+import ca.bc.gov.educ.api.pen.replication.struct.IndependentAuthority;
+import ca.bc.gov.educ.api.pen.replication.struct.saga.AuthorityCreateSagaData;
+import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import io.nats.client.Message;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.SagaEnum.PEN_REPLICATION_AUTHORITY_CREATE_SAGA;
@@ -39,10 +43,11 @@ public class EventHandlerDelegatorService {
    * @param sagaService
    */
   @Autowired
-  public EventHandlerDelegatorService(final ChoreographedEventPersistenceService choreographedEventPersistenceService, final ChoreographEventHandler choreographer, SagaService sagaService) {
+  public EventHandlerDelegatorService(final ChoreographedEventPersistenceService choreographedEventPersistenceService, final List<Orchestrator> orchestrators, final ChoreographEventHandler choreographer, SagaService sagaService) {
     this.choreographedEventPersistenceService = choreographedEventPersistenceService;
     this.choreographer = choreographer;
     this.sagaService = sagaService;
+    orchestrators.forEach(el -> this.sagaEnumOrchestratorMap.put(el.getSagaName(), el));
   }
 
   /**
@@ -61,7 +66,11 @@ public class EventHandlerDelegatorService {
         case CREATE_AUTHORITY:
           log.info("Persisting CREATE_AUTHORITY event record for Saga processing :: {} ", choreographedEvent);
           val orchestrator = this.sagaEnumOrchestratorMap.get(PEN_REPLICATION_AUTHORITY_CREATE_SAGA);
-          val saga = this.sagaService.persistSagaData(orchestrator.getSagaName().getCode(), ApplicationProperties.API_NAME, choreographedEvent.getEventPayload(), choreographedEvent.getEventID());
+          val authority = JsonUtil.getJsonObjectFromString(IndependentAuthority.class, choreographedEvent.getEventPayload());
+          final AuthorityCreateSagaData authorityCreateSagaData = AuthorityCreateSagaData.builder()
+                  .independentAuthority(authority)
+                  .build();
+          val saga = this.sagaService.persistSagaData(orchestrator.getSagaName().getCode(), ApplicationProperties.API_NAME, JsonUtil.getJsonStringFromObject(authorityCreateSagaData), choreographedEvent.getEventID());
           message.ack();
           log.info("Acknowledged CREATE_AUTHORITY event to Jet Stream...");
           orchestrator.startSaga(saga);
