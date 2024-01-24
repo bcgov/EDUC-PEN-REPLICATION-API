@@ -9,6 +9,7 @@ import ca.bc.gov.educ.api.pen.replication.messaging.MessagePublisher;
 import ca.bc.gov.educ.api.pen.replication.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.pen.replication.struct.*;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
@@ -26,6 +27,8 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -238,14 +241,67 @@ public class RestUtils {
     }
   }
 
-  public void createOrUpdateAuthorityInIndependentSchoolSystem(final IndependentAuthority authority, final IndependentSchoolSystem system) {
-     this.webClient.post()
-            .uri(this.props.getIndependentSchoolsAPI() + "/api/School/" + system.getCode() + "/AuthorityUpsert")
-            .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .body(Mono.just(authority), IndependentAuthority.class)
-            .retrieve()
-            .bodyToMono(String.class)
-            .block();
+  public void createOrUpdateAuthorityInIndependentSchoolSystem(final IndependentAuthority authority, final IndependentSchoolSystem system) throws JsonProcessingException {
+     log.info("Sending the following authority payload to independent school system for upsert :: {}", Mono.just(Arrays.asList(authority)).block());
+    try {
+      this.webClient.post()
+             .uri(this.props.getIndependentSchoolsAPI() + "/api/School/" + system.getCode() + "/AuthorityUpsert")
+             .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+             .bodyValue(JsonUtil.getJsonStringFromObject(Arrays.asList(authority)))
+             .retrieve()
+             .bodyToMono(String.class)
+             .block();
+    }
+    catch (WebClientResponseException wce) {
+      log.error("Error occurred trying to upsert authority into independent schools system :: {} :: {} :: Further detail: {}", authority.getIndependentAuthorityId(), wce.getMessage(), wce.getResponseBodyAsString());
+      throw new RuntimeException(wce);
+    }
+    catch (Exception e) {
+      log.error("Error occurred trying to upsert authority into independent schools system :: {} :: {}", authority.getIndependentAuthorityId(), e.getMessage());
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void createOrUpdateSchoolInIndependentSchoolSystem(final School school, final IndependentSchoolSystem system) throws JsonProcessingException {
+    log.info("Sending the following school payload to independent school system for upsert :: {}", Mono.just(Arrays.asList(school)).block());
+    try {
+      this.webClient.post()
+              .uri(this.props.getIndependentSchoolsAPI() + "/api/School/" + system.getCode() + "/SchoolUpsert")
+              .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .bodyValue(JsonUtil.getJsonStringFromObject(Arrays.asList(school)))
+              .retrieve()
+              .bodyToMono(String.class)
+              .block();
+    }
+    catch (WebClientResponseException wce) {
+      log.error("Error occurred trying to upsert school into independent schools system :: {} :: {} :: Further detail: {}", school.getSchoolId(), wce.getMessage(), wce.getResponseBodyAsString());
+      throw new RuntimeException(wce);
+    }
+    catch (Exception e) {
+      log.error("Error occurred trying to upsert school into independent schools system :: {} :: {}", school.getSchoolId(), e.getMessage());
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void createOrUpdateDistrictInIndependentSchoolSystem(final District district, final IndependentSchoolSystem system) throws JsonProcessingException {
+    log.info("Sending the following district payload to independent school system for upsert :: {}", Mono.just(Arrays.asList(district)).block());
+    try {
+      this.webClient.post()
+              .uri(this.props.getIndependentSchoolsAPI() + "/api/School/" + system.getCode() + "/DistrictUpsert")
+              .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+              .bodyValue(JsonUtil.getJsonStringFromObject(Arrays.asList(district)))
+              .retrieve()
+              .bodyToMono(String.class)
+              .block();
+    }
+    catch (WebClientResponseException wce) {
+      log.error("Error occurred trying to upsert district into independent schools system :: {} :: {} :: Further detail: {}", district.getDistrictId(), wce.getMessage(), wce.getResponseBodyAsString());
+      throw new RuntimeException(wce);
+    }
+    catch (Exception e) {
+      log.error("Error occurred trying to upsert district into independent schools system :: {} :: {}", district.getDistrictId(), e.getMessage());
+      throw new RuntimeException(e);
+    }
   }
 
   private SearchCriteria getCriteria(final String key, final FilterOperation operation, final String value, final ValueType valueType) {

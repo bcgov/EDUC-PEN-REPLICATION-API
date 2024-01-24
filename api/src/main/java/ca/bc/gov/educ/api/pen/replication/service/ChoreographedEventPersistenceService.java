@@ -5,8 +5,6 @@ import ca.bc.gov.educ.api.pen.replication.exception.BusinessException;
 import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.struct.ChoreographedEvent;
-import ca.bc.gov.educ.api.pen.replication.struct.IndependentAuthority;
-import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
@@ -18,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventStatus.DB_COMMITTED;
-import static ca.bc.gov.educ.api.pen.replication.constants.EventType.CREATE_AUTHORITY;
 
 
 /**

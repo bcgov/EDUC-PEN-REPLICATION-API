@@ -3,14 +3,11 @@ package ca.bc.gov.educ.api.pen.replication.orchestrator;
 import ca.bc.gov.educ.api.pen.replication.constants.IndependentSchoolSystem;
 import ca.bc.gov.educ.api.pen.replication.constants.SagaEnum;
 import ca.bc.gov.educ.api.pen.replication.constants.SagaTopicsEnum;
-import ca.bc.gov.educ.api.pen.replication.mappers.AuthorityMapperHelper;
-import ca.bc.gov.educ.api.pen.replication.mappers.LocalDateTimeMapper;
 import ca.bc.gov.educ.api.pen.replication.messaging.MessagePublisher;
 import ca.bc.gov.educ.api.pen.replication.model.AuthorityMasterEntity;
 import ca.bc.gov.educ.api.pen.replication.model.Saga;
 import ca.bc.gov.educ.api.pen.replication.model.SagaEvent;
 import ca.bc.gov.educ.api.pen.replication.orchestrator.base.BaseOrchestrator;
-import ca.bc.gov.educ.api.pen.replication.repository.AuthorityMasterRepository;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.service.AuthorityCreateService;
 import ca.bc.gov.educ.api.pen.replication.service.SagaService;
@@ -45,6 +42,7 @@ public class AuthorityCreateOrchestrator extends BaseOrchestrator<AuthorityCreat
     this.stepBuilder()
       .begin(CREATE_AUTHORITY_IN_SPM, this::createAuthorityInSPM)
       .step(CREATE_AUTHORITY_IN_SPM, AUTHORITY_CREATED_IN_SPM, CREATE_AUTHORITY_IN_IOSAS, this::createAuthorityInIOSAS)
+      .step(CREATE_AUTHORITY_IN_SPM, AUTHORITY_WRITE_SKIPPED_IN_SPM_FOR_DATES, CREATE_AUTHORITY_IN_IOSAS, this::createAuthorityInIOSAS)
       .step(CREATE_AUTHORITY_IN_IOSAS, AUTHORITY_CREATED_IN_IOSAS, CREATE_AUTHORITY_IN_ISFS, this::createAuthorityInISFS)
       .end(CREATE_AUTHORITY_IN_ISFS, AUTHORITY_CREATED_IN_ISFS);
   }
@@ -66,8 +64,8 @@ public class AuthorityCreateOrchestrator extends BaseOrchestrator<AuthorityCreat
     }else{
       nextEvent = Event.builder().sagaId(saga.getSagaId())
               .eventType(CREATE_AUTHORITY_IN_SPM)
-              .eventOutcome(AUTHORITY_CREATED_IN_SPM)
-              .eventPayload("No update required")
+              .eventOutcome(AUTHORITY_WRITE_SKIPPED_IN_SPM_FOR_DATES)
+              .eventPayload("Authority not written to SPM due to date")
               .build();
     }
     this.postMessageToTopic(this.getTopicToSubscribe().getCode(), nextEvent); // this will make it async and use pub/sub flow even though it is sending message to itself

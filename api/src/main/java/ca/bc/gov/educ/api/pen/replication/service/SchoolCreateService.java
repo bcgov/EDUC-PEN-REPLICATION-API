@@ -2,17 +2,17 @@ package ca.bc.gov.educ.api.pen.replication.service;
 
 import ca.bc.gov.educ.api.pen.replication.mappers.LocalDateTimeMapper;
 import ca.bc.gov.educ.api.pen.replication.mappers.SchoolMapperHelper;
-import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.model.Mincode;
-import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
+import ca.bc.gov.educ.api.pen.replication.model.SchoolMasterEntity;
 import ca.bc.gov.educ.api.pen.replication.repository.SchoolMasterRepository;
 import ca.bc.gov.educ.api.pen.replication.struct.School;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -23,34 +23,19 @@ import static ca.bc.gov.educ.api.pen.replication.constants.EventType.CREATE_SCHO
  */
 @Service
 @Slf4j
-public class SchoolCreateService extends BaseService<School> {
+public class SchoolCreateService {
 
   private final SchoolMapperHelper schoolMapperHelper;
   private final SchoolMasterRepository schoolMasterRepository;
   private LocalDateTimeMapper dateTimeMapper = new LocalDateTimeMapper();
-  /**
-   * Instantiates a new Student update service.
-   *
-   * @param emf                    the emf
-   * @param eventRepository        the event repository
-   * @param schoolMapperHelper
-   * @param schoolMasterRepository
-   */
-  public SchoolCreateService(final EntityManagerFactory emf, final EventRepository eventRepository, final SchoolMapperHelper schoolMapperHelper, SchoolMasterRepository schoolMasterRepository) {
-    super(eventRepository, emf);
+
+  public SchoolCreateService(final SchoolMapperHelper schoolMapperHelper, SchoolMasterRepository schoolMasterRepository) {
     this.schoolMapperHelper = schoolMapperHelper;
     this.schoolMasterRepository = schoolMasterRepository;
   }
 
-  /**
-   * Process event.
-   *
-   * @param event the event
-   */
-  @Override
-  public void processEvent(final School school, final Event event) {
-    log.info("Received and processing event: " + event.getEventId());
-
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public SchoolMasterEntity saveSchool(final School school) {
     if (StringUtils.isNotEmpty(school.getOpenedDate()) && dateTimeMapper.map(school.getOpenedDate()).isBefore(LocalDateTime.now())){
       var mincode = new Mincode();
       mincode.setSchlNo(school.getSchoolNumber());
@@ -58,26 +43,10 @@ public class SchoolCreateService extends BaseService<School> {
       val existingSchoolMasterRecord = this.schoolMasterRepository.findById(mincode);
       if (!existingSchoolMasterRecord.isPresent()) {
         val newSchoolMaster = schoolMapperHelper.toSchoolMaster(school, true);
-        log.info("Processing choreography update event with ID {} :: payload is: {}", event.getEventId(), newSchoolMaster);
         schoolMasterRepository.save(newSchoolMaster);
       }
     }
-    this.updateEvent(event);
+    return null;
   }
 
-
-  /**
-   * Gets event type.
-   *
-   * @return the event type
-   */
-  @Override
-  public String getEventType() {
-    return CREATE_SCHOOL.toString();
-  }
-
-  @Override
-  protected void buildAndExecutePreparedStatements(final EntityManager em, final School school) {
-    // Not required this child class use repository pattern of spring.
-  }
 }

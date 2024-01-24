@@ -5,8 +5,8 @@ import lombok.Getter;
 
 public enum IndependentSchoolSystem {
 
-  IOSAS("IOSAS"),
-  ISFS("ISFS");
+  IOSAS("iosas"),
+  ISFS("isfs");
   @Getter
   private final String code;
 
