@@ -20,7 +20,7 @@ public class AuthorityCreateServiceTest extends BasePenReplicationAPITest {
     final var request = TestUtils.createIndependentAuthority();
     final var event = TestUtils.createEvent("CREATE_AUTHORITY", request, this.penReplicationTestUtils.getEventRepository());
     this.penReplicationTestUtils.getEventRepository().save(event);
-    this.authorityCreateService.processEvent(request, event);
+    this.authorityCreateService.saveAuthority(request);
     final var authorityMaster = this.penReplicationTestUtils.getAuthorityMasterRepository().findById(request.getAuthorityNumber().trim());
     assertThat(authorityMaster).isPresent();
   }

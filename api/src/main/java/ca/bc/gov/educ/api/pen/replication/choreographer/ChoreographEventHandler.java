@@ -103,18 +103,6 @@ public class ChoreographEventHandler {
                 final EventService<School> schoolEventService = (EventService<School>) this.eventServiceMap.get(UPDATE_SCHOOL.toString());
                 schoolEventService.processEvent(school, event);
                 break;
-              case "CREATE_SCHOOL":
-                log.info("Processing CREATE_SCHOOL event record :: {} ", event);
-                val createSchool = JsonUtil.getJsonObjectFromString(School.class, event.getEventPayload());
-                final EventService<School> schoolEventServiceCreate = (EventService<School>) this.eventServiceMap.get(CREATE_SCHOOL.toString());
-                schoolEventServiceCreate.processEvent(createSchool, event);
-                break;
-              case "CREATE_AUTHORITY":
-                log.info("Processing CREATE_AUTHORITY event record :: {} ", event);
-                val createAuthority = JsonUtil.getJsonObjectFromString(IndependentAuthority.class, event.getEventPayload());
-                final EventService<IndependentAuthority> independentAuthorityEventService = (EventService<IndependentAuthority>) this.eventServiceMap.get(CREATE_AUTHORITY.toString());
-                independentAuthorityEventService.processEvent(createAuthority, event);
-                break;
               case "UPDATE_AUTHORITY":
                 log.info("Processing UPDATE_AUTHORITY event record :: {} ", event);
                 val updateAuthority = JsonUtil.getJsonObjectFromString(IndependentAuthority.class, event.getEventPayload());

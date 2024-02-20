@@ -44,7 +44,7 @@ public class SchoolCreateServiceTest extends BasePenReplicationAPITest {
     final var request = TestUtils.createSchoolData();
     final var event = TestUtils.createEvent("CREATE_SCHOOL", request, this.penReplicationTestUtils.getEventRepository());
     this.penReplicationTestUtils.getEventRepository().save(event);
-    this.schoolCreateService.processEvent(request, event);
+    this.schoolCreateService.saveSchool(request);
     Mincode mincode = new Mincode();
     mincode.setDistNo("098");
     mincode.setSchlNo("12345");
@@ -74,7 +74,7 @@ public class SchoolCreateServiceTest extends BasePenReplicationAPITest {
     request.setFacilityTypeCode("DIST_LEARN");
     final var event = TestUtils.createEvent("CREATE_SCHOOL", request, this.penReplicationTestUtils.getEventRepository());
     this.penReplicationTestUtils.getEventRepository().save(event);
-    this.schoolCreateService.processEvent(request, event);
+    this.schoolCreateService.saveSchool(request);
     Mincode mincode = new Mincode();
     mincode.setDistNo("098");
     mincode.setSchlNo("12345");
@@ -105,7 +105,7 @@ public class SchoolCreateServiceTest extends BasePenReplicationAPITest {
     request.setFacilityTypeCode("DIST_LEARN");
     final var event = TestUtils.createEvent("CREATE_SCHOOL", request, this.penReplicationTestUtils.getEventRepository());
     this.penReplicationTestUtils.getEventRepository().save(event);
-    this.schoolCreateService.processEvent(request, event);
+    this.schoolCreateService.saveSchool(request);
     Mincode mincode = new Mincode();
     mincode.setDistNo("098");
     mincode.setSchlNo("12345");
