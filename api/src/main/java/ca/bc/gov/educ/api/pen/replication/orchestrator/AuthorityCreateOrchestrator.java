@@ -76,7 +76,6 @@ public class AuthorityCreateOrchestrator extends BaseOrchestrator<AuthorityCreat
     saga.setSagaState(CREATE_AUTHORITY_IN_IOSAS.toString());
     final SagaEvent eventStates = this.createEventState(saga, event.getEventType(), event.getEventOutcome(), event.getEventPayload());
     this.getSagaService().updateAttachedSagaWithEvents(saga, eventStates);
-
     restUtils.createOrUpdateAuthorityInIndependentSchoolSystem(authorityCreateSagaData.getIndependentAuthority(), IndependentSchoolSystem.IOSAS);
 
     val nextEvent = Event.builder().sagaId(saga.getSagaId())
