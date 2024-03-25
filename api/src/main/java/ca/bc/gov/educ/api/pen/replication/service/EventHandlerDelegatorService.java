@@ -9,7 +9,9 @@ import ca.bc.gov.educ.api.pen.replication.struct.ChoreographedEvent;
 import ca.bc.gov.educ.api.pen.replication.struct.IndependentAuthority;
 import ca.bc.gov.educ.api.pen.replication.struct.School;
 import ca.bc.gov.educ.api.pen.replication.struct.saga.AuthorityCreateSagaData;
+import ca.bc.gov.educ.api.pen.replication.struct.saga.AuthorityUpdateSagaData;
 import ca.bc.gov.educ.api.pen.replication.struct.saga.SchoolCreateSagaData;
+import ca.bc.gov.educ.api.pen.replication.struct.saga.SchoolUpdateSagaData;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import io.nats.client.Message;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +25,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import static ca.bc.gov.educ.api.pen.replication.constants.SagaEnum.PEN_REPLICATION_AUTHORITY_CREATE_SAGA;
-import static ca.bc.gov.educ.api.pen.replication.constants.SagaEnum.PEN_REPLICATION_SCHOOL_CREATE_SAGA;
+import static ca.bc.gov.educ.api.pen.replication.constants.SagaEnum.*;
 
 
 /**
@@ -78,6 +79,18 @@ public class EventHandlerDelegatorService {
           log.info("Acknowledged CREATE_AUTHORITY event to Jet Stream...");
           orchestratorCreateAuthority.startSaga(saga);
           break;
+        case UPDATE_AUTHORITY:
+          log.info("Persisting UPDATE_AUTHORITY event record for Saga processing :: {} ", choreographedEvent);
+          val orchestratorUpdateAuthority = this.sagaEnumOrchestratorMap.get(PEN_REPLICATION_AUTHORITY_CREATE_SAGA);
+          val updateAuthority = JsonUtil.getJsonObjectFromString(IndependentAuthority.class, choreographedEvent.getEventPayload());
+          final AuthorityUpdateSagaData authorityUpdateSagaData = AuthorityUpdateSagaData.builder()
+                  .independentAuthority(updateAuthority)
+                  .build();
+          val updateAuthoritySaga = this.sagaService.persistSagaData(orchestratorUpdateAuthority.getSagaName().getCode(), ApplicationProperties.API_NAME, JsonUtil.getJsonStringFromObject(authorityUpdateSagaData), choreographedEvent.getEventID());
+          message.ack();
+          log.info("Acknowledged CREATE_AUTHORITY event to Jet Stream...");
+          orchestratorUpdateAuthority.startSaga(updateAuthoritySaga);
+          break;
         case CREATE_SCHOOL:
           log.info("Persisting CREATE_SCHOOL event record for Saga processing :: {} ", choreographedEvent);
           val orchestratorCreateSchool = this.sagaEnumOrchestratorMap.get(PEN_REPLICATION_SCHOOL_CREATE_SAGA);
@@ -89,6 +102,18 @@ public class EventHandlerDelegatorService {
           message.ack();
           log.info("Acknowledged CREATE_SCHOOL event to Jet Stream...");
           orchestratorCreateSchool.startSaga(sagaCreateSchool);
+          break;
+        case UPDATE_SCHOOL:
+          log.info("Persisting UPDATE_SCHOOL event record for Saga processing :: {} ", choreographedEvent);
+          val orchestratorUpdateSchool = this.sagaEnumOrchestratorMap.get(PEN_REPLICATION_SCHOOL_UPDATE_SAGA);
+          val updateSchool = JsonUtil.getJsonObjectFromString(School.class, choreographedEvent.getEventPayload());
+          final SchoolUpdateSagaData schoolUpdateSagaData = SchoolUpdateSagaData.builder()
+                  .school(updateSchool)
+                  .build();
+          val sagaUpdateSchool = this.sagaService.persistSagaData(orchestratorUpdateSchool.getSagaName().getCode(), ApplicationProperties.API_NAME, JsonUtil.getJsonStringFromObject(orchestratorUpdateSchool), choreographedEvent.getEventID());
+          message.ack();
+          log.info("Acknowledged UPDATE_SCHOOL event to Jet Stream...");
+          orchestratorUpdateSchool.startSaga(sagaUpdateSchool);
           break;
         default:
           log.info("Persisting event record for choreography processing :: {} ", choreographedEvent);

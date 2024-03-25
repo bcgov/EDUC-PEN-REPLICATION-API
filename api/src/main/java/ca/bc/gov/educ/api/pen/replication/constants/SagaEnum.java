@@ -31,6 +31,11 @@ public enum SagaEnum {
    */
   PEN_REPLICATION_SCHOOL_CREATE_SAGA("PEN_REPLICATION_SCHOOL_CREATE_SAGA"),
   /**
+   * Pen replication school update saga enum.
+   */
+  PEN_REPLICATION_SCHOOL_UPDATE_SAGA("PEN_REPLICATION_SCHOOL_UPDATE_SAGA"),
+
+  /**
    * Pen replication district create saga enum.
    */
   PEN_REPLICATION_DISTRICT_CREATE_SAGA("PEN_REPLICATION_DISTRICT_CREATE_SAGA");
