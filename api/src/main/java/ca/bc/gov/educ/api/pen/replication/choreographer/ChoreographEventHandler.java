@@ -97,6 +97,18 @@ public class ChoreographEventHandler {
                 final EventService<List<StudentMerge>> deleteMergeService = (EventService<List<StudentMerge>>) this.eventServiceMap.get(DELETE_MERGE.toString());
                 deleteMergeService.processEvent(deleteStudentMergeList, event);
                 break;
+              case "UPDATE_SCHOOL":
+                log.info("Processing UPDATE_SCHOOL event record :: {} ", event);
+                val school = JsonUtil.getJsonObjectFromString(School.class, event.getEventPayload());
+                final EventService<School> schoolEventService = (EventService<School>) this.eventServiceMap.get(UPDATE_SCHOOL.toString());
+                schoolEventService.processEvent(school, event);
+                break;
+              case "UPDATE_AUTHORITY":
+                log.info("Processing UPDATE_AUTHORITY event record :: {} ", event);
+                val updateAuthority = JsonUtil.getJsonObjectFromString(IndependentAuthority.class, event.getEventPayload());
+                final EventService<IndependentAuthority> authorityEventServiceUpdate = (EventService<IndependentAuthority>) this.eventServiceMap.get(UPDATE_AUTHORITY.toString());
+                authorityEventServiceUpdate.processEvent(updateAuthority, event);
+                break;
               case "UPDATE_DISTRICT":
                 log.info("Processing UPDATE_DISTRICT event record :: {} ", event);
                 val updateDistrict = JsonUtil.getJsonObjectFromString(District.class, event.getEventPayload());
