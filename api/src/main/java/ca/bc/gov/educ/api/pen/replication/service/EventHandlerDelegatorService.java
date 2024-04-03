@@ -81,14 +81,14 @@ public class EventHandlerDelegatorService {
           break;
         case UPDATE_AUTHORITY:
           log.info("Persisting UPDATE_AUTHORITY event record for Saga processing :: {} ", choreographedEvent);
-          val orchestratorUpdateAuthority = this.sagaEnumOrchestratorMap.get(PEN_REPLICATION_AUTHORITY_CREATE_SAGA);
+          val orchestratorUpdateAuthority = this.sagaEnumOrchestratorMap.get(PEN_REPLICATION_AUTHORITY_UPDATE_SAGA);
           val updateAuthority = JsonUtil.getJsonObjectFromString(IndependentAuthority.class, choreographedEvent.getEventPayload());
           final AuthorityUpdateSagaData authorityUpdateSagaData = AuthorityUpdateSagaData.builder()
                   .independentAuthority(updateAuthority)
                   .build();
           val updateAuthoritySaga = this.sagaService.persistSagaData(orchestratorUpdateAuthority.getSagaName().getCode(), ApplicationProperties.API_NAME, JsonUtil.getJsonStringFromObject(authorityUpdateSagaData), choreographedEvent.getEventID());
           message.ack();
-          log.info("Acknowledged CREATE_AUTHORITY event to Jet Stream...");
+          log.info("Acknowledged UPDATE_AUTHORITY event to Jet Stream...");
           orchestratorUpdateAuthority.startSaga(updateAuthoritySaga);
           break;
         case CREATE_SCHOOL:

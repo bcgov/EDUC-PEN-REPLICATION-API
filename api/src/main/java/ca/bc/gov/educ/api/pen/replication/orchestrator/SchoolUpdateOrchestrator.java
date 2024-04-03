@@ -128,7 +128,7 @@ public class SchoolUpdateOrchestrator extends BaseOrchestrator<SchoolUpdateSagaD
 
         val nextEvent = Event.builder().sagaId(saga.getSagaId())
                 .eventType(UPDATE_SCHOOL_IN_IOSAS)
-                .eventOutcome(SCHOOL_CREATED_IN_IOSAS)
+                .eventOutcome(SCHOOL_UPDATED_IN_IOSAS)
                 .eventPayload(JsonUtil.getJsonStringFromObject(schoolCreateSagaData.getSchool()))
                 .build();
         this.postMessageToTopic(this.getTopicToSubscribe().getCode(), nextEvent); // this will make it async and use pub/sub flow even though it is sending message to itself
