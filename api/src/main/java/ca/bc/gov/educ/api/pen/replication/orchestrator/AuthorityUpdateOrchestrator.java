@@ -12,8 +12,10 @@ import ca.bc.gov.educ.api.pen.replication.model.SagaEvent;
 import ca.bc.gov.educ.api.pen.replication.orchestrator.base.BaseOrchestrator;
 import ca.bc.gov.educ.api.pen.replication.repository.AuthorityMasterRepository;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
+import ca.bc.gov.educ.api.pen.replication.service.AuthorityCreateService;
 import ca.bc.gov.educ.api.pen.replication.service.SagaService;
 import ca.bc.gov.educ.api.pen.replication.struct.Event;
+import ca.bc.gov.educ.api.pen.replication.struct.saga.AuthorityCreateSagaData;
 import ca.bc.gov.educ.api.pen.replication.struct.saga.AuthorityUpdateSagaData;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -33,26 +35,13 @@ public class AuthorityUpdateOrchestrator extends BaseOrchestrator<AuthorityUpdat
     public static final String RESPONDED_VIA_NATS_TO_FOR_EVENT = "responded via NATS to {} for {} Event. :: {}";
     private final RestUtils restUtils;
 
-    private final AuthorityMasterRepository authorityMasterRepository;
-    private final AuthorityMapperHelper authorityMapperHelper;
+    private AuthorityMasterRepository authorityMasterRepository = null;
+    private AuthorityMapperHelper authorityMapperHelper = null;
     private static final AuthorityMapper authorityMapper = AuthorityMapper.mapper;
 
 
-    /**
-     * Instantiates a new Base orchestrator.
-     *
-     * @param emf                       the entity manager factory
-     * @param sagaService               the saga service
-     * @param messagePublisher          the message publisher
-     * @param clazz                     the clazz
-     * @param sagaName                  the saga name
-     * @param topicToSubscribe          the topic to subscribe
-     * @param restUtils
-     * @param authorityMasterRepository
-     * @param authorityMapperHelper
-     */
-    protected AuthorityUpdateOrchestrator(EntityManagerFactory emf, SagaService sagaService, MessagePublisher messagePublisher, Class<AuthorityUpdateSagaData> clazz, SagaEnum sagaName, SagaTopicsEnum topicToSubscribe, RestUtils restUtils, AuthorityMasterRepository authorityMasterRepository, AuthorityMapperHelper authorityMapperHelper) {
-        super(emf, sagaService, messagePublisher, clazz, sagaName, topicToSubscribe);
+    protected AuthorityUpdateOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher, final EntityManagerFactory entityManagerFactory, final RestUtils restUtils, AuthorityCreateService authorityCreateService) {
+        super(entityManagerFactory, sagaService, messagePublisher, AuthorityUpdateSagaData.class, SagaEnum.PEN_REPLICATION_AUTHORITY_UPDATE_SAGA, SagaTopicsEnum.PEN_REPLICATION_AUTHORITY_CREATE_SAGA_TOPIC);
         this.restUtils = restUtils;
         this.authorityMasterRepository = authorityMasterRepository;
         this.authorityMapperHelper = authorityMapperHelper;
