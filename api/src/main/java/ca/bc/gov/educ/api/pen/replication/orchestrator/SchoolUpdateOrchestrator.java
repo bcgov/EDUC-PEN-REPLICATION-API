@@ -50,7 +50,7 @@ public class SchoolUpdateOrchestrator extends BaseOrchestrator<SchoolUpdateSagaD
 
 
     protected SchoolUpdateOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher, final EntityManagerFactory entityManagerFactory, final RestUtils restUtils, SchoolCreateService schoolCreateService, SchoolMasterRepository schoolMasterRepository, final SchoolMapperHelper schoolMapperHelper) {
-        super(entityManagerFactory, sagaService, messagePublisher, SchoolUpdateSagaData.class, SagaEnum.PEN_REPLICATION_SCHOOL_CREATE_SAGA, SagaTopicsEnum.PEN_REPLICATION_SCHOOL_CREATE_SAGA_TOPIC);
+        super(entityManagerFactory, sagaService, messagePublisher, SchoolUpdateSagaData.class, SagaEnum.PEN_REPLICATION_SCHOOL_UPDATE_SAGA, SagaTopicsEnum.PEN_REPLICATION_SCHOOL_UPDATE_SAGA_TOPIC);
         this.restUtils = restUtils;
         this.schoolCreateService = schoolCreateService;
         this.schoolMasterRepository = schoolMasterRepository;
