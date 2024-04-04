@@ -34,7 +34,6 @@ import static ca.bc.gov.educ.api.pen.replication.constants.SagaEnum.*;
 @Service
 @Slf4j
 public class EventHandlerDelegatorService {
-
   private final ChoreographedEventPersistenceService choreographedEventPersistenceService;
   private final ChoreographEventHandler choreographer;
   private final SagaService sagaService;
