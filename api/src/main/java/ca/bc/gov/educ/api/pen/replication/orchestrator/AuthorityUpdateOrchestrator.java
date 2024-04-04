@@ -41,7 +41,7 @@ public class AuthorityUpdateOrchestrator extends BaseOrchestrator<AuthorityUpdat
 
 
     protected AuthorityUpdateOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher, final EntityManagerFactory entityManagerFactory, final RestUtils restUtils, AuthorityCreateService authorityCreateService) {
-        super(entityManagerFactory, sagaService, messagePublisher, AuthorityUpdateSagaData.class, SagaEnum.PEN_REPLICATION_AUTHORITY_UPDATE_SAGA, SagaTopicsEnum.PEN_REPLICATION_AUTHORITY_CREATE_SAGA_TOPIC);
+        super(entityManagerFactory, sagaService, messagePublisher, AuthorityUpdateSagaData.class, SagaEnum.PEN_REPLICATION_AUTHORITY_UPDATE_SAGA, SagaTopicsEnum.PEN_REPLICATION_AUTHORITY_UPDATE_SAGA_TOPIC);
         this.restUtils = restUtils;
         this.authorityMasterRepository = authorityMasterRepository;
         this.authorityMapperHelper = authorityMapperHelper;
