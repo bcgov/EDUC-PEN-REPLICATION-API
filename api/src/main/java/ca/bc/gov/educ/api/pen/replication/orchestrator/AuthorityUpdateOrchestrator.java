@@ -35,8 +35,8 @@ public class AuthorityUpdateOrchestrator extends BaseOrchestrator<AuthorityUpdat
     public static final String RESPONDED_VIA_NATS_TO_FOR_EVENT = "responded via NATS to {} for {} Event. :: {}";
     private final RestUtils restUtils;
 
-    private AuthorityMasterRepository authorityMasterRepository = null;
-    private AuthorityMapperHelper authorityMapperHelper = null;
+    private AuthorityMasterRepository authorityMasterRepository;
+    private AuthorityMapperHelper authorityMapperHelper;
     private static final AuthorityMapper authorityMapper = AuthorityMapper.mapper;
 
 
