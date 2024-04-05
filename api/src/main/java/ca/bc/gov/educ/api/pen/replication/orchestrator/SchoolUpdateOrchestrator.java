@@ -123,33 +123,54 @@ public class SchoolUpdateOrchestrator extends BaseOrchestrator<SchoolUpdateSagaD
         saga.setSagaState(UPDATE_SCHOOL_IN_IOSAS.toString());
         final SagaEvent eventStates = this.createEventState(saga, event.getEventType(), event.getEventOutcome(), event.getEventPayload());
         this.getSagaService().updateAttachedSagaWithEvents(saga, eventStates);
+        if (StringUtils.equalsAnyIgnoreCase("INDEPEND", schoolCreateSagaData.getSchool().getSchoolCategoryCode().toString()) || StringUtils.equalsAnyIgnoreCase("INDP_FNS", schoolCreateSagaData.getSchool().getSchoolCategoryCode().toString())) {
+            restUtils.createOrUpdateSchoolInIndependentSchoolSystem(schoolCreateSagaData.getSchool(), IndependentSchoolSystem.IOSAS);
 
-        restUtils.createOrUpdateSchoolInIndependentSchoolSystem(schoolCreateSagaData.getSchool(), IndependentSchoolSystem.IOSAS);
-
-        val nextEvent = Event.builder().sagaId(saga.getSagaId())
-                .eventType(UPDATE_SCHOOL_IN_IOSAS)
-                .eventOutcome(SCHOOL_UPDATED_IN_IOSAS)
-                .eventPayload(JsonUtil.getJsonStringFromObject(schoolCreateSagaData.getSchool()))
-                .build();
-        this.postMessageToTopic(this.getTopicToSubscribe().getCode(), nextEvent); // this will make it async and use pub/sub flow even though it is sending message to itself
-        log.info(RESPONDED_VIA_NATS_TO_FOR_EVENT, this.getTopicToSubscribe(), UPDATE_SCHOOL_IN_IOSAS, saga.getSagaId());
+            val nextEvent = Event.builder().sagaId(saga.getSagaId())
+                    .eventType(UPDATE_SCHOOL_IN_IOSAS)
+                    .eventOutcome(SCHOOL_UPDATED_IN_IOSAS)
+                    .eventPayload(JsonUtil.getJsonStringFromObject(schoolCreateSagaData.getSchool()))
+                    .build();
+            this.postMessageToTopic(this.getTopicToSubscribe().getCode(), nextEvent); // this will make it async and use pub/sub flow even though it is sending message to itself
+            log.info(RESPONDED_VIA_NATS_TO_FOR_EVENT, this.getTopicToSubscribe(), UPDATE_SCHOOL_IN_IOSAS, saga.getSagaId());
+        } else {
+            val nextEvent = Event.builder().sagaId(saga.getSagaId())
+                    .eventType(UPDATE_SCHOOL_IN_IOSAS)
+                    .eventOutcome(SCHOOL_UPDATE_SKIPPED_IN_IOSAS)
+                    .eventPayload(JsonUtil.getJsonStringFromObject(schoolCreateSagaData.getSchool()))
+                    .build();
+            this.postMessageToTopic(this.getTopicToSubscribe().getCode(), nextEvent); // this will make it async and use pub/sub flow even though it is sending message to itself
+            log.info(RESPONDED_VIA_NATS_TO_FOR_EVENT, this.getTopicToSubscribe(), UPDATE_SCHOOL_IN_IOSAS, saga.getSagaId());
+        }
     }
+
 
     private void updateSchoolInISFS(final Event event, final Saga saga, final SchoolUpdateSagaData schoolCreateSagaData) throws JsonProcessingException {
         saga.setSagaState(UPDATE_SCHOOL_IN_ISFS.toString());
         final SagaEvent eventStates = this.createEventState(saga, event.getEventType(), event.getEventOutcome(), event.getEventPayload());
         this.getSagaService().updateAttachedSagaWithEvents(saga, eventStates);
+        if (StringUtils.equalsAnyIgnoreCase("INDEPEND", schoolCreateSagaData.getSchool().getSchoolCategoryCode().toString()) || StringUtils.equalsAnyIgnoreCase("INDP_FNS", schoolCreateSagaData.getSchool().getSchoolCategoryCode().toString())) {
+            restUtils.createOrUpdateSchoolInIndependentSchoolSystem(schoolCreateSagaData.getSchool(), IndependentSchoolSystem.ISFS);
 
-        restUtils.createOrUpdateSchoolInIndependentSchoolSystem(schoolCreateSagaData.getSchool(), IndependentSchoolSystem.ISFS);
+            val nextEvent = Event.builder().sagaId(saga.getSagaId())
+                    .eventType(UPDATE_SCHOOL_IN_ISFS)
+                    .eventOutcome(SCHOOL_UPDATED_IN_ISFS)
+                    .eventPayload(JsonUtil.getJsonStringFromObject(schoolCreateSagaData.getSchool()))
+                    .build();
+            this.postMessageToTopic(this.getTopicToSubscribe().getCode(), nextEvent); // this will make it async and use pub/sub flow even though it is sending message to itself
+            log.info(RESPONDED_VIA_NATS_TO_FOR_EVENT, this.getTopicToSubscribe(), UPDATE_SCHOOL_IN_ISFS, saga.getSagaId());
+        } else {
+            val nextEvent = Event.builder().sagaId(saga.getSagaId())
+                    .eventType(UPDATE_SCHOOL_IN_ISFS)
+                    .eventOutcome(SCHOOL_UPDATE_SKIPPED_IN_ISFS)
+                    .eventPayload(JsonUtil.getJsonStringFromObject(schoolCreateSagaData.getSchool()))
+                    .build();
+            this.postMessageToTopic(this.getTopicToSubscribe().getCode(), nextEvent); // this will make it async and use pub/sub flow even though it is sending message to itself
+            log.info(RESPONDED_VIA_NATS_TO_FOR_EVENT, this.getTopicToSubscribe(), UPDATE_SCHOOL_IN_ISFS, saga.getSagaId());
 
-        val nextEvent = Event.builder().sagaId(saga.getSagaId())
-                .eventType(UPDATE_SCHOOL_IN_ISFS)
-                .eventOutcome(SCHOOL_UPDATED_IN_ISFS)
-                .eventPayload(JsonUtil.getJsonStringFromObject(schoolCreateSagaData.getSchool()))
-                .build();
-        this.postMessageToTopic(this.getTopicToSubscribe().getCode(), nextEvent); // this will make it async and use pub/sub flow even though it is sending message to itself
-        log.info(RESPONDED_VIA_NATS_TO_FOR_EVENT, this.getTopicToSubscribe(), UPDATE_SCHOOL_IN_ISFS, saga.getSagaId());
+        }
     }
+
 
 }
 
