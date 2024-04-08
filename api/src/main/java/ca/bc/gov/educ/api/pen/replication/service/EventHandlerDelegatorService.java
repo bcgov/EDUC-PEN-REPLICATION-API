@@ -109,7 +109,7 @@ public class EventHandlerDelegatorService {
           final SchoolUpdateSagaData schoolUpdateSagaData = SchoolUpdateSagaData.builder()
                   .school(updateSchool)
                   .build();
-          val sagaUpdateSchool = this.sagaService.persistSagaData(orchestratorUpdateSchool.getSagaName().getCode(), ApplicationProperties.API_NAME, JsonUtil.getJsonStringFromObject(orchestratorUpdateSchool), choreographedEvent.getEventID());
+          val sagaUpdateSchool = this.sagaService.persistSagaData(orchestratorUpdateSchool.getSagaName().getCode(), ApplicationProperties.API_NAME, JsonUtil.getJsonStringFromObject(schoolUpdateSagaData), choreographedEvent.getEventID());
           message.ack();
           log.info("Acknowledged UPDATE_SCHOOL event to Jet Stream...");
           orchestratorUpdateSchool.startSaga(sagaUpdateSchool);
