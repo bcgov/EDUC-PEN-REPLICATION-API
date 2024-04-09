@@ -15,7 +15,6 @@ import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.service.AuthorityCreateService;
 import ca.bc.gov.educ.api.pen.replication.service.SagaService;
 import ca.bc.gov.educ.api.pen.replication.struct.Event;
-import ca.bc.gov.educ.api.pen.replication.struct.saga.AuthorityCreateSagaData;
 import ca.bc.gov.educ.api.pen.replication.struct.saga.AuthorityUpdateSagaData;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -40,7 +39,7 @@ public class AuthorityUpdateOrchestrator extends BaseOrchestrator<AuthorityUpdat
     private static final AuthorityMapper authorityMapper = AuthorityMapper.mapper;
 
 
-    protected AuthorityUpdateOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher, final EntityManagerFactory entityManagerFactory, final RestUtils restUtils, AuthorityCreateService authorityCreateService) {
+    protected AuthorityUpdateOrchestrator(final SagaService sagaService, final MessagePublisher messagePublisher, final EntityManagerFactory entityManagerFactory, final RestUtils restUtils, AuthorityCreateService authorityCreateService, AuthorityMasterRepository authorityMasterRepository, AuthorityMapperHelper authorityMapperHelper) {
         super(entityManagerFactory, sagaService, messagePublisher, AuthorityUpdateSagaData.class, SagaEnum.PEN_REPLICATION_AUTHORITY_UPDATE_SAGA, SagaTopicsEnum.PEN_REPLICATION_AUTHORITY_UPDATE_SAGA_TOPIC);
         this.restUtils = restUtils;
         this.authorityMasterRepository = authorityMasterRepository;
