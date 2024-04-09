@@ -65,6 +65,9 @@ public class SchoolUpdateOrchestrator extends BaseOrchestrator<SchoolUpdateSagaD
                 .step(UPDATE_SCHOOL_IN_SPM, SCHOOL_UPDATED_IN_SPM, UPDATE_SCHOOL_IN_IOSAS, this::updateSchoolInIOSAS)
                 .step(UPDATE_SCHOOL_IN_SPM, SCHOOL_WRITE_SKIPPED_IN_SPM_FOR_DATES, UPDATE_SCHOOL_IN_IOSAS, this::updateSchoolInIOSAS)
                 .step(UPDATE_SCHOOL_IN_IOSAS, SCHOOL_UPDATED_IN_IOSAS, UPDATE_SCHOOL_IN_ISFS, this::updateSchoolInISFS)
+                .step(UPDATE_SCHOOL_IN_IOSAS, SCHOOL_UPDATE_SKIPPED_IN_IOSAS, UPDATE_SCHOOL_IN_ISFS, this::updateSchoolInISFS)
+                .end(UPDATE_SCHOOL_IN_ISFS,SCHOOL_UPDATE_SKIPPED_IN_ISFS)
+                .or()
                 .end(UPDATE_SCHOOL_IN_ISFS, SCHOOL_UPDATED_IN_ISFS);
     }
 
