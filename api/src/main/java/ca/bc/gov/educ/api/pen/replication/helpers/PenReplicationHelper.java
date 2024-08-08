@@ -34,6 +34,8 @@ public final class PenReplicationHelper {
 
   public static PenDemographicsEntity getPenDemogFromStudentUpdate(final StudentUpdate studentUpdate, final PenDemographicsEntity existingPenDemog, final RestUtils restUtils) {
     val penDemog = PenDemogStudentMapper.mapper.toPenDemog(studentUpdate);
+    penDemog.setCreateUser(studentUpdate.getCreateUser().substring(0,15));
+    penDemog.setUpdateUser(studentUpdate.getUpdateUser().substring(0,15));
     penDemog.setUpdateDate(LocalDateTime.now());
     penDemog.setStudBirth(StringUtils.replace(penDemog.getStudBirth(), "-", ""));
     if (StringUtils.isNotBlank(studentUpdate.getTrueStudentID()) && StringUtils.isBlank(existingPenDemog.getStudentTrueNo())) {
