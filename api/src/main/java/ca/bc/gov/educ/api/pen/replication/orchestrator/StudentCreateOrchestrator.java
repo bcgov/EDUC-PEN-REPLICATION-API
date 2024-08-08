@@ -121,8 +121,8 @@ public class StudentCreateOrchestrator extends BaseOrchestrator<StudentCreateSag
       penDemographicsEntity.setStudNo(penDemogTxFromDBOptional.get().getPen());
       penDemographicsEntity.setCreateDate(LocalDateTime.now());
       penDemographicsEntity.setUpdateDate(LocalDateTime.now());
-      penDemographicsEntity.setCreateUser(studentCreateSagaData.getStudentCreate().getCreateUser().substring(0,15));
-      penDemographicsEntity.setUpdateUser(studentCreateSagaData.getStudentCreate().getUpdateUser().substring(0,15));
+      penDemographicsEntity.setCreateUser(StringUtils.substring(studentCreateSagaData.getStudentCreate().getCreateUser(),0,15));
+      penDemographicsEntity.setUpdateUser(StringUtils.substring(studentCreateSagaData.getStudentCreate().getUpdateUser(), 0,15));
       penDemographicsEntity.setStudBirth(StringUtils.replace(penDemographicsEntity.getStudBirth(), "-", ""));
       if (studentCreateSagaData.getPenDemogTransaction().getUpdateDemogDate() != null) {
         penDemographicsEntity.setUpdateDemogDate(studentCreateSagaData.getPenDemogTransaction().getUpdateDemogDate().toLocalDate());
