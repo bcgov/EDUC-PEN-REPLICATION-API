@@ -56,5 +56,5 @@ public enum EventType {
 
   GET_PAGINATED_AUTHORITIES,
 
-  SCHOOL_MOVED
+  MOVE_SCHOOL
 }
