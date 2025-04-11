@@ -55,8 +55,6 @@ public class StudentCreateService extends BaseService<StudentCreate> {
       val penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(request);
       penDemographicsEntity.setCreateDate(LocalDateTime.now());
       penDemographicsEntity.setUpdateDate(LocalDateTime.now());
-      penDemographicsEntity.setCreateUser(StringUtils.substring(request.getCreateUser(),0,15));
-      penDemographicsEntity.setUpdateUser(StringUtils.substring(request.getUpdateUser(), 0,15));
       penDemographicsEntity.setStudBirth(StringUtils.replace(penDemographicsEntity.getStudBirth(), "-", ""));
       if (StringUtils.isNotBlank(request.getGradeYear()) && StringUtils.isNumeric(request.getGradeYear())) {
         penDemographicsEntity.setGradeYear(request.getGradeYear());

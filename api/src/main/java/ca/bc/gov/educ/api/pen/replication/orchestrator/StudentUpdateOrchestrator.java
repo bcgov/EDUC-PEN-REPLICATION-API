@@ -143,8 +143,6 @@ public class StudentUpdateOrchestrator extends BaseOrchestrator<StudentUpdateSag
       val penDemographicsEntity = PenDemogStudentMapper.mapper.toPenDemog(StudentMapper.mapper.toStudentCreate(studentDataFromEventResponse));
       penDemographicsEntity.setCreateDate(LocalDateTime.now());
       penDemographicsEntity.setUpdateDate(LocalDateTime.now());
-      penDemographicsEntity.setCreateUser(StringUtils.substring(studentUpdateSagaData.getStudentUpdate().getCreateUser(),0,15));
-      penDemographicsEntity.setUpdateUser(StringUtils.substring(studentUpdateSagaData.getStudentUpdate().getUpdateUser(), 0,15));
       penDemographicsEntity.setStudBirth(StringUtils.replace(penDemographicsEntity.getStudBirth(), "-", ""));
       if (studentUpdateSagaData.getPenDemogTransaction().getUpdateDemogDate() != null) {
         penDemographicsEntity.setUpdateDemogDate(studentUpdateSagaData.getPenDemogTransaction().getUpdateDemogDate().toLocalDate());

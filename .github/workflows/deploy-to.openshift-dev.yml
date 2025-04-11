@@ -7,6 +7,8 @@ env:
   OPENSHIFT_TOKEN: ${{ secrets.OPENSHIFT_TOKEN }}
   OPENSHIFT_NAMESPACE_DEV: ${{ secrets.APP_NAMESPACE_NO_ENV }}-dev
 
+  INDEPENDENT_SCHOOLS_NAMESPACE: ${{ secrets.INDEPENDENT_SCHOOLS_NAMESPACE_NO_ENV }}
+
   DB_JDBC_CONNECT_STRING: ${{ secrets.DB_JDBC_CONNECT_STRING }}
   DB_PWD: ${{ secrets.DB_PWD }}
   DB_USER: ${{ secrets.DB_USER }}
@@ -40,7 +42,6 @@ env:
 
 on:
   # https://docs.github.com/en/actions/reference/events-that-trigger-workflows
-  workflow_dispatch:
   push:
     branches:
       - main
@@ -48,7 +49,8 @@ on:
 jobs:
   build-and-deploy-dev:
     name: Build and deploy to OpenShift DEV
-    runs-on: ubuntu-22.04
+    # ubuntu-20.04 can also be used.
+    runs-on: ubuntu-20.04
     environment: dev
 
     outputs:
@@ -57,7 +59,7 @@ jobs:
 
     steps:
     - name: Check for required secrets
-      uses: actions/github-script@v7
+      uses: actions/github-script@v4
       with:
         script: |
           const secrets = {
@@ -95,7 +97,7 @@ jobs:
           }
 
     - name: Check out repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v2
 
     - name: Determine image tags
       if: env.IMAGE_TAGS == ''
@@ -103,7 +105,7 @@ jobs:
         echo "IMAGE_TAGS=latest ${GITHUB_SHA::12}" | tee -a $GITHUB_ENV
 
     - name: Login to Docker Hub
-      uses: docker/login-action@v3
+      uses: docker/login-action@v1
       with:
         registry: ${{ env.DOCKER_ARTIFACTORY_REPO }}
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -142,7 +144,7 @@ jobs:
         oc: 4
 
       # https://github.com/redhat-actions/oc-login#readme
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v2
 
     - name: Deploy API
       run: |
@@ -160,8 +162,7 @@ jobs:
         oc process -f tools/openshift/api.dc.yaml -p APP_NAME=${{ env.APP_NAME }} -p REPO_NAME=${{ env.REPO_NAME }} -p BRANCH=${{ env.BRANCH }} -p NAMESPACE=${{ env.OPENSHIFT_NAMESPACE_DEV }} -p TAG=${{ env.TAG }} -p MIN_REPLICAS=${{ env.MIN_REPLICAS_DEV }} -p MAX_REPLICAS=${{ env.MAX_REPLICAS_DEV }} -p MIN_CPU=${{ env.MIN_CPU }} -p MAX_CPU=${{ env.MAX_CPU }} -p MIN_MEM=${{ env.MIN_MEM }} -p MAX_MEM=${{ env.MAX_MEM }} \
         | oc apply -f -
         
-        curl -s https://raw.githubusercontent.com/bcgov/${{ env.REPO_NAME }}/main/tools/config/update-configmap.sh | bash /dev/stdin dev ${{ env.APP_NAME }} ${{ env.NAMESPACE }} ${{ env.COMMON_NAMESPACE }} ${{ env.DB_JDBC_CONNECT_STRING }} ${{ env.DB_PWD }} ${{ env.DB_USER }} ${{ env.SPLUNK_TOKEN }}
-        curl -s https://raw.githubusercontent.com/bcgov/${{ env.REPO_NAME }}/main/tools/config/update-configmap.sh | bash /dev/stdin dev ${{ env.APP_NAME }} ${{ env.NAMESPACE }} ${{ env.COMMON_NAMESPACE }} ${{ env.DB_JDBC_CONNECT_STRING }} ${{ env.DB_PWD }} ${{ env.DB_USER }} ${{ env.SPLUNK_TOKEN }}
+        curl -s https://raw.githubusercontent.com/bcgov/${{ env.REPO_NAME }}/main/tools/config/update-configmap.sh | bash /dev/stdin dev ${{ env.APP_NAME }} ${{ env.NAMESPACE }} ${{ env.COMMON_NAMESPACE }} ${{ env.DB_JDBC_CONNECT_STRING }} ${{ env.DB_PWD }} ${{ env.DB_USER }} ${{ env.SPLUNK_TOKEN }} ${{ env.INDEPENDENT_SCHOOLS_NAMESPACE }}
         
         # Start rollout (if necessary) and follow it
         oc rollout latest dc/${{ env.SPRING_BOOT_IMAGE_NAME }} 2> /dev/null \
@@ -171,7 +172,7 @@ jobs:
         oc rollout status dc/${{ env.SPRING_BOOT_IMAGE_NAME }}
 
     - name: ZAP Scan
-      uses: zaproxy/action-api-scan@v0.9.0
+      uses: zaproxy/action-api-scan@v0.7.0
       with:
         target: 'https://${{ env.APP_NAME }}-${{ env.OPENSHIFT_NAMESPACE_DEV }}-dev.apps.silver.devops.gov.bc.ca/v3/api-docs'
 
