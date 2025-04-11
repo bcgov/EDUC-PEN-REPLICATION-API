@@ -46,7 +46,7 @@ public class JetStreamEventScheduler {
   @SchedulerLock(name = "PROCESS_CHOREOGRAPHED_EVENTS_FROM_JET_STREAM", lockAtLeastFor = "${cron.scheduled.process.events.stan.lockAtLeastFor}", lockAtMostFor = "${cron.scheduled.process.events.stan.lockAtMostFor}")
   public void findAndProcessEvents() {
     LockAssert.assertLocked();
-    final var results = this.eventRepository.findAllByEventStatusAndCreateDateBeforeOrderByCreateDate(DB_COMMITTED.toString(), LocalDateTime.now().minusMinutes(1));
+    final var results = this.eventRepository.findAllByEventStatusAndCreateDateBeforeOrderByCreateDate(DB_COMMITTED.toString(), LocalDateTime.now().minusMinutes(1), 500);
     if (!results.isEmpty()) {
       log.info("found {} choreographed events which needs to be processed.", results.size());
       results.forEach(this.choreographer::handleEvent);
