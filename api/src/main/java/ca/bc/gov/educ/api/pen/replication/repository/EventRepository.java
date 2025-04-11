@@ -25,7 +25,11 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
    */
   Optional<Event> findByEventId(UUID eventId);
 
-  List<Event> findAllByEventStatusAndCreateDateBeforeOrderByCreateDate(String eventStatus, LocalDateTime createDate);
+  @Query(value = "select event.* from PEN_REPLICATION_EVENT event where event.EVENT_STATUS = :eventStatus " +
+          "AND event.CREATE_DATE < :createDate " +
+          "ORDER BY event.CREATE_DATE asc " +
+          "FETCH FIRST :limit ROWS ONLY", nativeQuery=true)
+  List<Event> findAllByEventStatusAndCreateDateBeforeOrderByCreateDate(String eventStatus, LocalDateTime createDate, int limit);
 
   @Transactional
   @Modifying
