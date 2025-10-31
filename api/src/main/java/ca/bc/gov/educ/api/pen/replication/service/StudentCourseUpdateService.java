@@ -64,8 +64,8 @@ public class StudentCourseUpdateService extends BaseService<StudentCourseUpdate>
     studentCourse.forEach(student -> {
       TraxStudentCourseEntity traxStudentCourseEntity = new TraxStudentCourseEntity();
       setCourseCodeAndLevel(traxStudentCourseEntity, student.getCourseID());
-      traxStudentCourseEntity.setStudNo(studentPEN);
-      traxStudentCourseEntity.setCourseSession(student.getCourseSession());
+      traxStudentCourseEntity.getStudXcrseId().setStudNo(studentPEN);
+      traxStudentCourseEntity.getStudXcrseId().setCourseSession(student.getCourseSession());
       traxStudentCourseEntity.setFinalLetterGrade(student.getFinalLetterGrade());
       traxStudentCourseEntity.setFinalPercentage(student.getFinalPercent() != null ? student.getFinalPercent().toString() : null);
       traxStudentCourseEntity.setNumberOfCredits(student.getCredits() != null ? student.getCredits().toString() : null);
@@ -80,8 +80,8 @@ public class StudentCourseUpdateService extends BaseService<StudentCourseUpdate>
     var optionalCourse = restUtils.getCoreg39CourseByID(courseID);
     if (optionalCourse.isPresent()) {
       var course = optionalCourse.get();
-      traxStudentCourseEntity.setCourseCode(course.getExternalCode().substring(0, 4));
-      traxStudentCourseEntity.setCourseLevel(course.getExternalCode().substring(5));
+      traxStudentCourseEntity.getStudXcrseId().setCourseCode(course.getExternalCode().substring(0, 4));
+      traxStudentCourseEntity.getStudXcrseId().setCourseLevel(course.getExternalCode().substring(5));
     }else{
       log.info("No course was found for ID {} :: this should not have happened", courseID);
       throw new PenReplicationAPIRuntimeException("No course was found for ID " + courseID + " :: this should not have happened");
