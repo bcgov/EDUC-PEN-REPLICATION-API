@@ -1,6 +1,5 @@
 package ca.bc.gov.educ.api.pen.replication.struct;
 
-import ca.bc.gov.educ.api.gradstudent.model.dto.BaseModel;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
