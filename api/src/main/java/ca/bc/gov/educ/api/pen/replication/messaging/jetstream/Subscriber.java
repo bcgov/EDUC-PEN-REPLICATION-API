@@ -132,7 +132,6 @@ public class Subscriber {
 //      } catch (final Exception ex) {
 //        log.error("Exception ", ex);
 //      }
-      log.info("Received message: " + JsonUtil.getJsonString(message));
       message.ack();
       log.info("Message acknowledged");
     }
