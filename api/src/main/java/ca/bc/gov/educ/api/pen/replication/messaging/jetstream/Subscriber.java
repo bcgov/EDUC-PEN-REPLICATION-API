@@ -111,27 +111,30 @@ public class Subscriber {
    */
   public void onMessage(final Message message) {
     if (message != null) {
-      log.info("Received message Subject:: {} , SID :: {} , sequence :: {}, pending :: {} ", message.getSubject(), message.getSID(), message.metaData().consumerSequence(), message.metaData().pendingCount());
-      try {
-        val eventString = new String(message.getData());
-        LogHelper.logMessagingEventDetails(eventString);
-        final ChoreographedEvent event = JsonUtil.getJsonObjectFromString(ChoreographedEvent.class, eventString);
-        if (event.getEventPayload() == null) {
-          message.ack();
-          log.warn("payload is null, ignoring event :: {}", event);
-          return;
-        }
-        this.subscriberExecutor.execute(() -> {
-          try {
-            this.eventHandlerDelegatorService.handleChoreographyEvent(event, message);
-          } catch (final IOException e) {
-            log.error("IOException ", e);
-          }
-        });
-        log.info("received event :: {} ", event);
-      } catch (final Exception ex) {
-        log.error("Exception ", ex);
-      }
+//      log.info("Received message Subject:: {} , SID :: {} , sequence :: {}, pending :: {} ", message.getSubject(), message.getSID(), message.metaData().consumerSequence(), message.metaData().pendingCount());
+//      try {
+//        val eventString = new String(message.getData());
+//        LogHelper.logMessagingEventDetails(eventString);
+//        final ChoreographedEvent event = JsonUtil.getJsonObjectFromString(ChoreographedEvent.class, eventString);
+//        if (event.getEventPayload() == null) {
+//          message.ack();
+//          log.warn("payload is null, ignoring event :: {}", event);
+//          return;
+//        }
+//        this.subscriberExecutor.execute(() -> {
+//          try {
+//            this.eventHandlerDelegatorService.handleChoreographyEvent(event, message);
+//          } catch (final IOException e) {
+//            log.error("IOException ", e);
+//          }
+//        });
+//        log.info("received event :: {} ", event);
+//      } catch (final Exception ex) {
+//        log.error("Exception ", ex);
+//      }
+      log.info("Received message: " + JsonUtil.getJsonString(message));
+      message.ack();
+      log.info("Message acknowledged");
     }
   }
 
