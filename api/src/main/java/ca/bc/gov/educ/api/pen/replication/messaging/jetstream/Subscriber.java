@@ -95,6 +95,7 @@ public class Subscriber {
         final PushSubscribeOptions options = PushSubscribeOptions.builder().stream(entry.getKey())
           .durable(ApplicationProperties.API_NAME.concat("-DURABLE"))
           .configuration(ConsumerConfiguration.builder().deliverPolicy(DeliverPolicy.New).build()).build();
+        log.info("Subscribing to topic: " + topic);
         this.natsConnection.jetStream().subscribe(topic, qName, this.natsConnection.createDispatcher(), this::onMessage,
           autoAck, options);
       }
