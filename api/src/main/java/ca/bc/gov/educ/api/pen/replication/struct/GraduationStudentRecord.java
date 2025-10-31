@@ -1,5 +1,6 @@
 package ca.bc.gov.educ.api.pen.replication.struct;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,7 @@ import java.util.UUID;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Component
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class GraduationStudentRecord extends BaseRequest {
 
     private String studentGradData;
