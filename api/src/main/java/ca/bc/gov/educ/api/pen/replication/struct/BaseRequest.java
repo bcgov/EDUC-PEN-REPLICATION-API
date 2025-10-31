@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
 
@@ -12,6 +13,7 @@ import java.io.Serializable;
  * The type Base request.
  */
 @Data
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 public abstract class BaseRequest implements Serializable {

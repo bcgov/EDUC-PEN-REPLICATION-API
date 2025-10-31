@@ -67,10 +67,16 @@ public class Subscriber {
     studentEventsTopics.add("STUDENT_EVENTS_TOPIC");
     final List<String> instituteEventsTopics = new ArrayList<>();
     instituteEventsTopics.add("INSTITUTE_EVENTS_TOPIC");
+    final List<String> gradStatusEventsTopics = new ArrayList<>();
+    gradStatusEventsTopics.add("GRAD_STATUS_EVENT_TOPIC");
+    final List<String> scholarshipsEventsTopics = new ArrayList<>();
+    scholarshipsEventsTopics.add("SCHOLARSHIPS_EVENTS_TOPIC");
     this.streamTopicsMap.put("PEN_SERVICES_EVENTS", penServicesEventsTopics);
     this.streamTopicsMap.put("STUDENT_EVENTS", studentEventsTopics);
     this.streamTopicsMap.put("PEN_MATCH_EVENTS", penMatchEventsTopics);
     this.streamTopicsMap.put("INSTITUTE_EVENTS", instituteEventsTopics);
+    this.streamTopicsMap.put("SCHOLARSHIPS_EVENTS", scholarshipsEventsTopics);
+    this.streamTopicsMap.put("GRAD_STATUS_EVENTS", gradStatusEventsTopics);
   }
 
 
