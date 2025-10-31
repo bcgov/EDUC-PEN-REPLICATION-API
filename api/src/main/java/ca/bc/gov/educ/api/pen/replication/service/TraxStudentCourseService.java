@@ -22,7 +22,7 @@ public class TraxStudentCourseService {
   @Transactional(propagation = Propagation.REQUIRES_NEW, timeout = 60)
   public void deletePriorAndSaveTraxStudentCourses(final String pen, final List<TraxStudentCourseEntity> studentCourseEntityList) {
     try {
-      this.traxStudentCourseRepository.deleteAllByStudNo(pen);
+      this.traxStudentCourseRepository.deleteAllByStudXcrseId_StudNo(pen);
       this.traxStudentCourseRepository.saveAllAndFlush(studentCourseEntityList);
     } catch (Exception e) {
       log.warn("Exception", e);

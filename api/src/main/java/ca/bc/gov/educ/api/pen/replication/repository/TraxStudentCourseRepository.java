@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TraxStudentCourseRepository extends JpaRepository<TraxStudentCourseEntity, String> {
-    void deleteAllByStudNo(String studNo);
+    void deleteAllByStudXcrseId_StudNo(String studNo);
 }
