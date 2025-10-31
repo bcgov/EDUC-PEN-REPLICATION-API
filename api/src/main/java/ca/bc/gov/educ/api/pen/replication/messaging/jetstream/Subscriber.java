@@ -76,7 +76,7 @@ public class Subscriber {
     this.streamTopicsMap.put("PEN_MATCH_EVENTS", penMatchEventsTopics);
     this.streamTopicsMap.put("INSTITUTE_EVENTS", instituteEventsTopics);
     this.streamTopicsMap.put("SCHOLARSHIPS_EVENTS", scholarshipsEventsTopics);
-    this.streamTopicsMap.put("GRAD_STATUS_EVENTS", gradStatusEventsTopics);
+    this.streamTopicsMap.put("GRAD_STATUS_EVENT_STREAM", gradStatusEventsTopics);
   }
 
 
