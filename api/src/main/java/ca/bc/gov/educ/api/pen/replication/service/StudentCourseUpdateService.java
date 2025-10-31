@@ -19,9 +19,6 @@ import java.util.List;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventType.UPDATE_STUDENT_COURSES;
 
-/**
- * The type Student update service.
- */
 @Service
 @Slf4j
 public class StudentCourseUpdateService extends BaseService<StudentCourseUpdate> {
@@ -50,7 +47,8 @@ public class StudentCourseUpdateService extends BaseService<StudentCourseUpdate>
     var studentPEN = restUtils.getStudentPen(studentCourseUpdate.getStudentID());
     val existingTraxStudentRecord = this.traxStudentService.findTraxStudentByPen(StringUtils.rightPad(studentPEN, 10));
     if (existingTraxStudentRecord.isPresent()) {
-      this.traxStudentCourseService.deletePriorAndSaveTraxStudentCourses(studentPEN, getStudentCourseEntityList(studentPEN, studentCourseUpdate.getStudentCourses()));
+      var existingCourses = this.traxStudentCourseService.findTraxStudentCoursesByPen(studentPEN);
+      this.traxStudentCourseService.deletePriorAndSaveTraxStudentCourses(studentPEN, getStudentCourseEntityList(studentPEN, studentCourseUpdate.getStudentCourses(), existingCourses));
       log.info("Processing choreography update event with ID {} :: payload is: {}", event.getEventId(), studentCourseUpdate);
     }else{
       log.info("Student course event not processed {} :: payload is: {} :: student does not yet exist in TRAX STUDENT_MASTER", event.getEventId(), studentCourseUpdate);
@@ -59,7 +57,7 @@ public class StudentCourseUpdateService extends BaseService<StudentCourseUpdate>
     this.updateEvent(event);
   }
 
-  private List<TraxStudentCourseEntity> getStudentCourseEntityList(String studentPEN, List<StudentCourse> studentCourse) {
+  private List<TraxStudentCourseEntity> getStudentCourseEntityList(String studentPEN, List<StudentCourse> studentCourse, List<TraxStudentCourseEntity> existingTraxStudentCourses) {
     var entityList = new ArrayList<TraxStudentCourseEntity>();
     studentCourse.forEach(student -> {
       TraxStudentCourseEntity traxStudentCourseEntity = new TraxStudentCourseEntity();
@@ -69,11 +67,22 @@ public class StudentCourseUpdateService extends BaseService<StudentCourseUpdate>
       traxStudentCourseEntity.setFinalLetterGrade(student.getFinalLetterGrade());
       traxStudentCourseEntity.setFinalPercentage(student.getFinalPercent() != null ? student.getFinalPercent().toString() : null);
       traxStudentCourseEntity.setNumberOfCredits(student.getCredits() != null ? student.getCredits().toString() : null);
-//      traxStudentCourseEntity.setStudyType();
-//      traxStudentCourseEntity.setUsedForGrad();
+      setStudyTypeAndUsedForGradFields(traxStudentCourseEntity, existingTraxStudentCourses);
       entityList.add(traxStudentCourseEntity);
     });
     return entityList;
+  }
+  
+  private void setStudyTypeAndUsedForGradFields(TraxStudentCourseEntity traxStudentCourseEntity, List<TraxStudentCourseEntity> existingTraxStudentCourses){
+    for(TraxStudentCourseEntity course: existingTraxStudentCourses){
+      if(course.getStudXcrseId().getCourseCode().equals(traxStudentCourseEntity.getStudXcrseId().getCourseCode()) &&
+          course.getStudXcrseId().getCourseLevel().equals(traxStudentCourseEntity.getStudXcrseId().getCourseLevel()) &&
+          course.getStudXcrseId().getCourseSession().equals(traxStudentCourseEntity.getStudXcrseId().getCourseSession())){
+        traxStudentCourseEntity.setStudyType(course.getStudyType());
+        traxStudentCourseEntity.setUsedForGrad(course.getUsedForGrad());
+        break;
+      }
+    }
   }
   
   private void setCourseCodeAndLevel(TraxStudentCourseEntity traxStudentCourseEntity, String courseID){
