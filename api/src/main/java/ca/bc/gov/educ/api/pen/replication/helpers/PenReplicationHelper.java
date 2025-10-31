@@ -2,19 +2,13 @@ package ca.bc.gov.educ.api.pen.replication.helpers;
 
 import ca.bc.gov.educ.api.pen.replication.constants.MatchAndTwinReasonCode;
 import ca.bc.gov.educ.api.pen.replication.constants.MatchReasonCodes;
-import ca.bc.gov.educ.api.pen.replication.mappers.PenDemogStudentMapper;
-import ca.bc.gov.educ.api.pen.replication.model.PenDemographicsEntity;
 import ca.bc.gov.educ.api.pen.replication.model.PenTwinTransaction;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.PossibleMatch;
 import ca.bc.gov.educ.api.pen.replication.struct.Student;
-import ca.bc.gov.educ.api.pen.replication.struct.StudentUpdate;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.apache.commons.lang3.StringUtils;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -32,35 +26,6 @@ public final class PenReplicationHelper {
 
   }
 
-  public static PenDemographicsEntity getPenDemogFromStudentUpdate(final StudentUpdate studentUpdate, final PenDemographicsEntity existingPenDemog, final RestUtils restUtils) {
-    val penDemog = PenDemogStudentMapper.mapper.toPenDemog(studentUpdate);
-    penDemog.setCreateUser(StringUtils.substring(studentUpdate.getCreateUser(),0,15));
-    penDemog.setUpdateUser(StringUtils.substring(studentUpdate.getUpdateUser(), 0,15));
-    penDemog.setUpdateDate(LocalDateTime.now());
-    penDemog.setStudBirth(StringUtils.replace(penDemog.getStudBirth(), "-", ""));
-    if (StringUtils.isNotBlank(studentUpdate.getTrueStudentID()) && StringUtils.isBlank(existingPenDemog.getStudentTrueNo())) {
-      penDemog.setStudentTrueNo(restUtils.getStudentPen(studentUpdate.getTrueStudentID()));
-      penDemog.setMergeToDate(LocalDate.now());
-      penDemog.setMergeToCode("MI");
-    } else if (StringUtils.isBlank(studentUpdate.getTrueStudentID()) && StringUtils.isNotBlank(existingPenDemog.getStudentTrueNo())) {
-      penDemog.setStudentTrueNo(" ");
-      penDemog.setMergeToDate(null);
-      penDemog.setMergeToCode(" ");
-    }
-    return penDemog;
-  }
-
-
-
-
-
-  /**
-   * Build pen twin delete string.
-   *
-   * @param possibleMatch the possible match
-   * @param restUtils     the rest utils
-   * @return the string
-   */
   public static String buildPenTwinDelete(final PossibleMatch possibleMatch, final RestUtils restUtils) {
     val studentMap = restUtils.createStudentMapFromPossibleMatch(possibleMatch);
     return DELETE_FROM_PEN_TWINS_WHERE_PEN_TWIN_1

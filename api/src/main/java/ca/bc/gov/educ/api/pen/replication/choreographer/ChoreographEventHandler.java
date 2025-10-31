@@ -62,16 +62,35 @@ public class ChoreographEventHandler {
           log.info("Processing event with replication event ID :: {}", event.getPenReplicationEventId());
           try {
             switch (event.getEventType()) {
-              case "CREATE_STUDENT":
-                val studentCreate = JsonUtil.getJsonObjectFromString(StudentCreate.class, event.getEventPayload());
-                final EventService<StudentCreate> studentCreateEventService = (EventService<StudentCreate>) this.eventServiceMap.get(CREATE_STUDENT.toString());
-                studentCreateEventService.processEvent(studentCreate, event);
+              case "UPDATE_STUDENT_ADDRESS":
+                log.info("Processing UPDATE_STUDENT_ADDRESS event record :: {} ", event);
+                val studentAddress = JsonUtil.getJsonObjectFromString(StudentAddress.class, event.getEventPayload());
+                final EventService<StudentAddress> studentAddressUpdateEventService = (EventService<StudentAddress>) this.eventServiceMap.get(UPDATE_STUDENT_ADDRESS.toString());
+                studentAddressUpdateEventService.processEvent(studentAddress, event);
                 break;
               case "UPDATE_STUDENT":
                 log.info("Processing UPDATE_STUDENT event record :: {} ", event);
                 val studentUpdate = JsonUtil.getJsonObjectFromString(StudentUpdate.class, event.getEventPayload());
                 final EventService<StudentUpdate> studentUpdateEventService = (EventService<StudentUpdate>) this.eventServiceMap.get(UPDATE_STUDENT.toString());
                 studentUpdateEventService.processEvent(studentUpdate, event);
+                break;
+              case "UPDATE_STUDENT_COURSES":
+                log.info("Processing UPDATE_STUDENT_COURSES event record :: {} ", event);
+                val studentCourseUpdateList = JsonUtil.getJsonObjectFromString(StudentCourseUpdate.class, event.getEventPayload());
+                final EventService<StudentCourseUpdate> studentCourseEventService = (EventService<StudentCourseUpdate>) this.eventServiceMap.get(UPDATE_STUDENT_COURSES.toString());
+                studentCourseEventService.processEvent(studentCourseUpdateList, event);
+                break;
+              case "ADOPT_GRAD_STUDENT":
+                log.info("Processing ADOPT_GRAD_STUDENT event record :: {} ", event);
+                val gradStudentRecord = JsonUtil.getJsonObjectFromString(GraduationStudentRecord.class, event.getEventPayload());
+                final EventService<GraduationStudentRecord> gradStudentAdoptService = (EventService<GraduationStudentRecord>) this.eventServiceMap.get(ADOPT_GRAD_STUDENT.toString());
+                gradStudentAdoptService.processEvent(gradStudentRecord, event);
+                break;
+              case "UPDATE_GRAD_STUDENT_CITIZENSHIP":
+                log.info("Processing UPDATE_GRAD_STUDENT_CITIZENSHIP event record :: {} ", event);
+                val gradStudentRecordForCitz = JsonUtil.getJsonObjectFromString(GraduationStudentRecord.class, event.getEventPayload());
+                final EventService<GraduationStudentRecord> gradStudentCitzService = (EventService<GraduationStudentRecord>) this.eventServiceMap.get(UPDATE_GRAD_STUDENT_CITIZENSHIP.toString());
+                gradStudentCitzService.processEvent(gradStudentRecordForCitz, event);
                 break;
               case "ADD_POSSIBLE_MATCH":
                 final List<PossibleMatch> possibleMatchList = JsonUtil.objectMapper.readValue(event.getEventPayload(), new TypeReference<>() {

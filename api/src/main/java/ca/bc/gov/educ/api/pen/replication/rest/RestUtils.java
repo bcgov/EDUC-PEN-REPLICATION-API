@@ -56,6 +56,7 @@ public class RestUtils {
   private static final String AUTHORITY_NOT_FOUND_FOR = "Authority not found for , ";
   private static final String STUDENT_API_TOPIC = "STUDENT_API_TOPIC";
   private static final String INSTITUTE_API_TOPIC = "INSTITUTE_API_TOPIC";
+  private static final String SCHOLARSHIPS_API_TOPIC = "SCHOLARSHIPS_API_TOPIC";
   private final MessagePublisher messagePublisher;
   private final ObjectMapper objectMapper = new ObjectMapper();
   private final Map<String, SchoolCategoryCode> schoolCategoryCodesMap = new ConcurrentHashMap<>();
@@ -70,6 +71,10 @@ public class RestUtils {
   private final ReadWriteLock countryLock = new ReentrantReadWriteLock();
   private final Map<String, DistrictRegionCode> districtRegionCodesMap = new ConcurrentHashMap<>();
   private final ReadWriteLock districtRegionLock = new ReentrantReadWriteLock();
+  private final Map<String, GradCourseCode> coreg39Map = new ConcurrentHashMap<>();
+  private final ReadWriteLock coregLock = new ReentrantReadWriteLock();
+  private final Map<String, SchoolTombstone> schoolMap = new ConcurrentHashMap<>();
+  private final ReadWriteLock schoolLock = new ReentrantReadWriteLock();
   private final WebClient webClient;
   @Getter
   private final ApplicationProperties props;
@@ -110,6 +115,8 @@ public class RestUtils {
     this.setProvinceCodesMap();
     this.setCountryCodesMap();
     this.setDistrictRegionCodesMap();
+    this.populateCoregMap();
+    this.populateSchoolMap();
     log.info("Called institute api and loaded {} category codes", this.schoolCategoryCodesMap.values().size());
     log.info("Called institute api and loaded {} facility codes", this.facilityTypeCodesMap.values().size());
     log.info("Called institute api and loaded {} organization codes", this.schoolOrganizationCodesMap.values().size());
@@ -118,6 +125,76 @@ public class RestUtils {
     log.info("Called institute api and loaded {} district region codes", this.districtRegionCodesMap.values().size());
   }
 
+  public void populateSchoolMap() {
+    val writeLock = this.schoolLock.writeLock();
+    try {
+      writeLock.lock();
+      this.schoolMap.clear();
+      for (val school : this.getSchools()) {
+        this.schoolMap.put(school.getSchoolId(), school);
+      }
+    } catch (Exception ex) {
+      log.error("Unable to load map cache school {}", ex);
+    } finally {
+      writeLock.unlock();
+    }
+    log.info("Loaded  {} schools to memory", this.schoolMap.values().size());
+  }
+
+  private List<SchoolTombstone> getSchools() {
+    log.info("Calling Institute api to load schools to memory");
+    return this.webClient.get()
+            .uri(this.props.getInstituteApiURL() + "/school")
+            .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .retrieve()
+            .bodyToFlux(SchoolTombstone.class)
+            .collectList()
+            .block();
+  }
+
+  public Optional<SchoolTombstone> getSchoolBySchoolID(final String schoolID) {
+    if (this.schoolMap.isEmpty()) {
+      log.info("School map is empty reloading schools");
+      this.populateSchoolMap();
+    }
+    return Optional.ofNullable(this.schoolMap.get(schoolID));
+  }
+
+  public void populateCoregMap() {
+    val writeLock = this.coregLock.writeLock();
+    try {
+      writeLock.lock();
+      this.coreg39Map.clear();
+      for (val courseCode : this.getCoreg39Courses()) {
+        this.coreg39Map.put(courseCode.getCourseID(), courseCode);
+      }
+    } catch (Exception ex) {
+      log.error("Unable to load map cache coreg courses ", ex);
+    } finally {
+      writeLock.unlock();
+    }
+    log.info("Loaded  {} coreg39 courses to memory", this.coreg39Map.values().size());
+  }
+
+  private List<GradCourseCode> getCoreg39Courses() {
+    log.info("Calling COREG API to load courses to memory");
+    return this.webClient.get()
+            .uri(this.props.getCoregApiURL() + "/all/39")
+            .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .retrieve()
+            .bodyToFlux(GradCourseCode.class)
+            .collectList()
+            .block();
+  }
+
+  public Optional<GradCourseCode> getCoreg39CourseByID(final String courseID) {
+    if (this.coreg39Map.isEmpty()) {
+      log.info("Coreg 39 course map is empty reloading courses");
+      this.populateCoregMap();
+    }
+    return Optional.ofNullable(this.coreg39Map.get(courseID));
+  }
+  
   /**
    * Gets students by id.
    *
@@ -175,6 +252,39 @@ public class RestUtils {
       throw new PenReplicationAPIRuntimeException(AUTHORITY_NOT_FOUND_FOR + authorityID + " :: " + e.getMessage());
     } catch (final Exception e) {
       throw new PenReplicationAPIRuntimeException(AUTHORITY_NOT_FOUND_FOR + authorityID + " :: " + e.getMessage());
+    }
+  }
+
+  @Retryable(retryFor = {Exception.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
+  public Optional<StudentScholarshipAddress> getStudentScholarshipAddressByStudentID(UUID correlationID, String studentID) {
+    try {
+      final TypeReference<Event> refEvent = new TypeReference<>() {};
+      final TypeReference<StudentScholarshipAddress> refPenMatchResult = new TypeReference<>() {};
+      Object event = Event.builder().sagaId(correlationID).eventType(EventType.GET_STUDENT_SCHOLARSHIP_ADDRESS).eventPayload(studentID).build();
+      val responseMessage = this.messagePublisher.requestMessage(SCHOLARSHIPS_API_TOPIC, JsonUtil.getJsonBytesFromObject(event)).completeOnTimeout(null, 120, TimeUnit.SECONDS).get();
+      if (responseMessage != null) {
+        byte[] data = responseMessage.getData();
+        if (data == null || data.length == 0) {
+          log.debug("Empty response data for getStudentScholarshipAddressByStudentID; this not expected: {}", studentID);
+          throw new PenReplicationAPIRuntimeException("Empty response data for getStudentScholarshipAddressByStudentID - this is not expected");
+        }
+
+        log.debug("Response message for getStudentScholarshipAddressByStudentID: {}", responseMessage);
+        Event responseEvent = objectMapper.readValue(responseMessage.getData(), refEvent);
+
+        if (EventOutcome.STUDENT_SCHOLARSHIP_ADDRESS_NOT_FOUND.equals(responseEvent.getEventOutcome())) {
+          log.info("Student address not found for studentID: {}", studentID);
+          return Optional.empty();
+        }
+
+        return Optional.of(objectMapper.readValue(responseMessage.getData(), refPenMatchResult));
+      } else {
+        throw new PenReplicationAPIRuntimeException(NATS_TIMED_OUT + correlationID);
+      }
+    } catch (final Exception ex) {
+      log.error("Error occurred calling GET_STUDENT_SCHOLARSHIP_ADDRESS service :: {}", ex.getMessage());
+      Thread.currentThread().interrupt();
+      throw new PenReplicationAPIRuntimeException("Error occurred calling GET_STUDENT_SCHOLARSHIP_ADDRESS service :: " + correlationID + ex.getMessage());
     }
   }
 
