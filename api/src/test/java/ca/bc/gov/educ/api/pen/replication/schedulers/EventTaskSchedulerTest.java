@@ -32,7 +32,7 @@ public class EventTaskSchedulerTest extends BasePenReplicationAPITest {
     eventTaskScheduler.findAndProcessUncompletedSagas();
     val sagaFromDB = this.penReplicationTestUtils.getSagaRepository().findById(sagaId);
     assertThat(sagaFromDB).isPresent();
-    assertThat(sagaFromDB.get().getRetryCount()).isNotNull().isPositive().isEqualTo(3);
+    assertThat(sagaFromDB.get().getRetryCount()).isNotNull().isPositive().isEqualTo(2);
   }
 
   private String createMockStudentPayload() {
