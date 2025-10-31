@@ -92,6 +92,12 @@ public class ChoreographEventHandler {
                 final EventService<GraduationStudentRecord> gradStudentCitzService = (EventService<GraduationStudentRecord>) this.eventServiceMap.get(UPDATE_GRAD_STUDENT_CITIZENSHIP.toString());
                 gradStudentCitzService.processEvent(gradStudentRecordForCitz, event);
                 break;
+              case "UPDATE_SCHOOL_OF_RECORD":
+                log.info("Processing UPDATE_SCHOOL_OF_RECORD event record :: {} ", event);
+                val schoolOfRecordUpdate = JsonUtil.getJsonObjectFromString(StudentSchoolOfRecordUpdate.class, event.getEventPayload());
+                final EventService<StudentSchoolOfRecordUpdate> schoolOfRecordUpdateEventService = (EventService<StudentSchoolOfRecordUpdate>) this.eventServiceMap.get(UPDATE_SCHOOL_OF_RECORD.toString());
+                schoolOfRecordUpdateEventService.processEvent(schoolOfRecordUpdate, event);
+                break;
               case "ADD_POSSIBLE_MATCH":
                 final List<PossibleMatch> possibleMatchList = JsonUtil.objectMapper.readValue(event.getEventPayload(), new TypeReference<>() {
                 });
