@@ -86,5 +86,17 @@ public enum EventType {
 
   ADOPT_GRAD_STUDENT,
 
-  UPDATE_GRAD_STUDENT_CITIZENSHIP
+  UPDATE_GRAD_STUDENT_CITIZENSHIP;
+
+  public static boolean isValid(String value) {
+    if (value == null) {
+      return false;
+    }
+    try {
+      EventOutcome.valueOf(value);
+      return true;
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
+  }
 }
