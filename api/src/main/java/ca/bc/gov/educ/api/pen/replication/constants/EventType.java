@@ -93,7 +93,7 @@ public enum EventType {
       return false;
     }
     try {
-      EventOutcome.valueOf(value);
+      EventType.valueOf(value);
       return true;
     } catch (IllegalArgumentException e) {
       return false;
