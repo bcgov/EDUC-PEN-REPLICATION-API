@@ -1,10 +1,10 @@
 package ca.bc.gov.educ.api.pen.replication.messaging;
 
 import ca.bc.gov.educ.api.pen.replication.constants.SagaTopicsEnum;
+import ca.bc.gov.educ.api.pen.replication.exception.IgnoreEventException;
 import ca.bc.gov.educ.api.pen.replication.helpers.LogHelper;
 import ca.bc.gov.educ.api.pen.replication.orchestrator.base.EventHandler;
-import ca.bc.gov.educ.api.pen.replication.struct.Event;
-import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
+import ca.bc.gov.educ.api.pen.replication.util.EventUtils;
 import io.nats.client.Connection;
 import io.nats.client.Message;
 import io.nats.client.MessageHandler;
@@ -74,14 +74,16 @@ public class MessageSubscriber {
         try {
           final var eventString = new String(message.getData());
           LogHelper.logMessagingEventDetails(eventString);
-          val event = JsonUtil.getJsonObjectFromString(Event.class, eventString);
+          val event = EventUtils.getEventIfValid(eventString);
           if (SagaTopicsEnum.PEN_REPLICATION_STUDENT_CREATE_SAGA_TOPIC.getCode().equals(message.getSubject())
             || SagaTopicsEnum.PEN_REPLICATION_STUDENT_UPDATE_SAGA_TOPIC.getCode().equals(message.getSubject())) {
             eventHandler.handleEvent(event);
           } else {
             eventHandler.handleTwinTransEvent(event);
           }
-
+        } catch (final IgnoreEventException ex) {
+          log.warn("Ignoring event with type :: {} :: and event outcome :: {}", ex.getEventType(), ex.getEventOutcome());
+          message.ack();
         } catch (final Exception e) {
           log.error("Exception ", e);
         }
