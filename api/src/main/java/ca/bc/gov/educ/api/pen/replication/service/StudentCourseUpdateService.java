@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventType.UPDATE_STUDENT_COURSES;
 
@@ -65,9 +66,9 @@ public class StudentCourseUpdateService extends BaseService<StudentCourseUpdate>
       TraxStudentCourseEntity traxStudentCourseEntity = new TraxStudentCourseEntity();
       traxStudentCourseEntity.setStudXcrseId(new StudXcrseId());
       setCourseCodeAndLevel(traxStudentCourseEntity, student.getCourseID());
-      traxStudentCourseEntity.getStudXcrseId().setStudNo(studentPEN);
-      traxStudentCourseEntity.getStudXcrseId().setCourseSession(student.getCourseSession());
-      traxStudentCourseEntity.setFinalLetterGrade(student.getFinalLetterGrade());
+      traxStudentCourseEntity.getStudXcrseId().setStudNo(StringUtils.trimToNull(studentPEN));
+      traxStudentCourseEntity.getStudXcrseId().setCourseSession(StringUtils.trimToNull(student.getCourseSession()));
+      traxStudentCourseEntity.setFinalLetterGrade(StringUtils.trimToNull(student.getFinalLetterGrade()));
       traxStudentCourseEntity.setFinalPercentage(student.getFinalPercent() != null ? student.getFinalPercent().toString() : null);
       traxStudentCourseEntity.setNumberOfCredits(student.getCredits() != null ? student.getCredits().toString() : null);
       setStudyTypeAndUsedForGradFields(traxStudentCourseEntity, existingTraxStudentCourses);
@@ -78,12 +79,22 @@ public class StudentCourseUpdateService extends BaseService<StudentCourseUpdate>
   
   private void setStudyTypeAndUsedForGradFields(TraxStudentCourseEntity traxStudentCourseEntity, List<TraxStudentCourseEntity> existingTraxStudentCourses){
     for(TraxStudentCourseEntity course: existingTraxStudentCourses){
-      if(course.getStudXcrseId().getCourseCode().equals(traxStudentCourseEntity.getStudXcrseId().getCourseCode()) &&
-          course.getStudXcrseId().getCourseLevel().equals(traxStudentCourseEntity.getStudXcrseId().getCourseLevel()) &&
-          course.getStudXcrseId().getCourseSession().equals(traxStudentCourseEntity.getStudXcrseId().getCourseSession())){
-        traxStudentCourseEntity.setStudyType(course.getStudyType());
-        traxStudentCourseEntity.setUsedForGrad(course.getUsedForGrad());
-        break;
+      if(course != null) {
+        String courseCourseCode = course.getStudXcrseId().getCourseCode();
+        String courseCourseLevel = course.getStudXcrseId().getCourseLevel();
+        String courseCourseSession = course.getStudXcrseId().getCourseSession();
+
+        String traxCourseCode = traxStudentCourseEntity.getStudXcrseId().getCourseCode();
+        String traxCourseLevel = traxStudentCourseEntity.getStudXcrseId().getCourseLevel();
+        String traxCourseSession = traxStudentCourseEntity.getStudXcrseId().getCourseSession();
+
+        if (Objects.equals(courseCourseCode, traxCourseCode) &&
+                Objects.equals(courseCourseLevel, traxCourseLevel) &&
+                Objects.equals(courseCourseSession, traxCourseSession)) {
+          traxStudentCourseEntity.setStudyType(course.getStudyType());
+          traxStudentCourseEntity.setUsedForGrad(course.getUsedForGrad());
+          break;
+        }
       }
     }
   }
@@ -93,10 +104,10 @@ public class StudentCourseUpdateService extends BaseService<StudentCourseUpdate>
     if (optionalCourse.isPresent()) {
       var course = optionalCourse.get();
       if(course.getExternalCode().length() > 5) {
-        traxStudentCourseEntity.getStudXcrseId().setCourseCode(course.getExternalCode().substring(0, 4));
-        traxStudentCourseEntity.getStudXcrseId().setCourseLevel(course.getExternalCode().substring(5));
+        traxStudentCourseEntity.getStudXcrseId().setCourseCode(StringUtils.trimToNull(course.getExternalCode().substring(0, 4)));
+        traxStudentCourseEntity.getStudXcrseId().setCourseLevel(StringUtils.trimToNull(course.getExternalCode().substring(5)));
       }else{
-        traxStudentCourseEntity.getStudXcrseId().setCourseCode(course.getExternalCode());
+        traxStudentCourseEntity.getStudXcrseId().setCourseCode(StringUtils.trimToNull(course.getExternalCode()));
       }
     }else{
       log.info("No course was found for ID {} :: this should not have happened", courseID);
