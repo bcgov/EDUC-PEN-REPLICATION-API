@@ -91,9 +91,11 @@ public class StudentCourseUpdateService extends BaseService<StudentCourseUpdate>
     var optionalCourse = restUtils.getCoreg39CourseByID(courseID);
     if (optionalCourse.isPresent()) {
       var course = optionalCourse.get();
-      traxStudentCourseEntity.getStudXcrseId().setCourseCode(course.getExternalCode().substring(0, 4));
-      if(course.getExternalCode().length() > 5){
+      if(course.getExternalCode().length() > 5) {
+        traxStudentCourseEntity.getStudXcrseId().setCourseCode(course.getExternalCode().substring(0, 4));
         traxStudentCourseEntity.getStudXcrseId().setCourseLevel(course.getExternalCode().substring(5));
+      }else{
+        traxStudentCourseEntity.getStudXcrseId().setCourseCode(course.getExternalCode());
       }
     }else{
       log.info("No course was found for ID {} :: this should not have happened", courseID);
