@@ -2,6 +2,7 @@ package ca.bc.gov.educ.api.pen.replication.service;
 
 import ca.bc.gov.educ.api.pen.replication.exception.PenReplicationAPIRuntimeException;
 import ca.bc.gov.educ.api.pen.replication.model.Event;
+import ca.bc.gov.educ.api.pen.replication.model.StudXcrseId;
 import ca.bc.gov.educ.api.pen.replication.model.TraxStudentCourseEntity;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
@@ -61,6 +62,7 @@ public class StudentCourseUpdateService extends BaseService<StudentCourseUpdate>
     var entityList = new ArrayList<TraxStudentCourseEntity>();
     studentCourse.forEach(student -> {
       TraxStudentCourseEntity traxStudentCourseEntity = new TraxStudentCourseEntity();
+      traxStudentCourseEntity.setStudXcrseId(new StudXcrseId());
       setCourseCodeAndLevel(traxStudentCourseEntity, student.getCourseID());
       traxStudentCourseEntity.getStudXcrseId().setStudNo(studentPEN);
       traxStudentCourseEntity.getStudXcrseId().setCourseSession(student.getCourseSession());
