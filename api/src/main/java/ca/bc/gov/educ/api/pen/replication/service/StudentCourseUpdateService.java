@@ -80,13 +80,13 @@ public class StudentCourseUpdateService extends BaseService<StudentCourseUpdate>
   private void setStudyTypeAndUsedForGradFields(TraxStudentCourseEntity traxStudentCourseEntity, List<TraxStudentCourseEntity> existingTraxStudentCourses){
     for(TraxStudentCourseEntity course: existingTraxStudentCourses){
       if(course != null) {
-        String courseCourseCode = course.getStudXcrseId().getCourseCode();
-        String courseCourseLevel = course.getStudXcrseId().getCourseLevel();
-        String courseCourseSession = course.getStudXcrseId().getCourseSession();
+        String courseCourseCode = StringUtils.trimToNull(course.getStudXcrseId().getCourseCode());
+        String courseCourseLevel = StringUtils.trimToNull(course.getStudXcrseId().getCourseLevel());
+        String courseCourseSession = StringUtils.trimToNull(course.getStudXcrseId().getCourseSession());
 
-        String traxCourseCode = traxStudentCourseEntity.getStudXcrseId().getCourseCode();
-        String traxCourseLevel = traxStudentCourseEntity.getStudXcrseId().getCourseLevel();
-        String traxCourseSession = traxStudentCourseEntity.getStudXcrseId().getCourseSession();
+        String traxCourseCode = StringUtils.trimToNull(traxStudentCourseEntity.getStudXcrseId().getCourseCode());
+        String traxCourseLevel = StringUtils.trimToNull(traxStudentCourseEntity.getStudXcrseId().getCourseLevel());
+        String traxCourseSession = StringUtils.trimToNull(traxStudentCourseEntity.getStudXcrseId().getCourseSession());
 
         if (Objects.equals(courseCourseCode, traxCourseCode) &&
                 Objects.equals(courseCourseLevel, traxCourseLevel) &&
