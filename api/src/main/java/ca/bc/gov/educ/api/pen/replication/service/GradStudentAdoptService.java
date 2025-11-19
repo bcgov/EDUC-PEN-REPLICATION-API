@@ -39,13 +39,15 @@ public class GradStudentAdoptService extends BaseService<GraduationStudentRecord
     var gradProgramCode = StringUtils.isNotBlank(student.getProgram()) ? student.getProgram().substring(0, 4) : null;
     var studentAddress = restUtils.getStudentScholarshipAddressByStudentID(UUID.randomUUID(), student.getStudentID().toString());
     
-    String mincodeGrad;
+    String mincodeGrad = null;
     String gradDate;
     if(gradProgramCode != null && gradProgramCode.equalsIgnoreCase("SCCP")){
       mincodeGrad = null;
       gradDate = null;
     }else{
-      mincodeGrad = restUtils.getSchoolBySchoolID(student.getSchoolAtGradId().toString()).get().getMincode() ;
+      if(student.getSchoolAtGradId() != null){
+        mincodeGrad = restUtils.getSchoolBySchoolID(student.getSchoolAtGradId().toString()).get().getMincode() ;
+      }
       gradDate = StringUtils.isNotBlank(student.getProgramCompletionDate()) ?  student.getProgramCompletionDate().substring(0,7).replace("-","") : null ;
     }
     
