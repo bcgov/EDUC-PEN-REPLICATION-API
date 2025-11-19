@@ -258,26 +258,18 @@ public class RestUtils {
   @Retryable(retryFor = {Exception.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
   public Optional<StudentScholarshipAddress> getStudentScholarshipAddressByStudentID(UUID correlationID, String studentID) {
     try {
-      final TypeReference<Event> refEvent = new TypeReference<>() {};
-      final TypeReference<StudentScholarshipAddress> refPenMatchResult = new TypeReference<>() {};
+      final TypeReference<StudentScholarshipAddress> refResult = new TypeReference<>() {};
       Object event = Event.builder().sagaId(correlationID).eventType(EventType.GET_STUDENT_SCHOLARSHIP_ADDRESS).eventPayload(studentID).build();
       val responseMessage = this.messagePublisher.requestMessage(SCHOLARSHIPS_API_TOPIC, JsonUtil.getJsonBytesFromObject(event)).completeOnTimeout(null, 120, TimeUnit.SECONDS).get();
       if (responseMessage != null) {
         byte[] data = responseMessage.getData();
         if (data == null || data.length == 0) {
-          log.debug("Empty response data for getStudentScholarshipAddressByStudentID; this not expected: {}", studentID);
-          throw new PenReplicationAPIRuntimeException("Empty response data for getStudentScholarshipAddressByStudentID - this is not expected");
-        }
-
-        log.debug("Response message for getStudentScholarshipAddressByStudentID: {}", responseMessage);
-        Event responseEvent = objectMapper.readValue(responseMessage.getData(), refEvent);
-
-        if (EventOutcome.STUDENT_SCHOLARSHIP_ADDRESS_NOT_FOUND.equals(responseEvent.getEventOutcome())) {
           log.info("Student address not found for studentID: {}", studentID);
           return Optional.empty();
         }
 
-        return Optional.of(objectMapper.readValue(responseMessage.getData(), refPenMatchResult));
+        log.debug("Response message for getStudentScholarshipAddressByStudentID: {}", responseMessage);
+        return Optional.of(objectMapper.readValue(responseMessage.getData(), refResult));
       } else {
         throw new PenReplicationAPIRuntimeException(NATS_TIMED_OUT + correlationID);
       }
