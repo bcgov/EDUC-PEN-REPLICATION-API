@@ -33,6 +33,7 @@ public class GradStudentAdoptService extends BaseService<GraduationStudentRecord
 
   @Override
   public void processEvent(final GraduationStudentRecord student, final Event event) {
+    log.info("Grad Student in adopt flow is: {}", student);
     val existingTraxStudentRecord = this.traxStudentService.findTraxStudentByPen(StringUtils.rightPad(student.getPen(), 10));
     var studentFromStudentAPIList = this.restUtils.getStudentsByID(List.of(student.getStudentID().toString()));
     var schoolOfRecord = this.restUtils.getSchoolBySchoolID(student.getSchoolOfRecordId().toString());

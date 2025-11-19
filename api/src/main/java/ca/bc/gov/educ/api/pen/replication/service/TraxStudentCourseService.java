@@ -29,8 +29,16 @@ public class TraxStudentCourseService {
   @Transactional(propagation = Propagation.REQUIRES_NEW, timeout = 60)
   public void deletePriorAndSaveTraxStudentCourses(final List<TraxStudentCourseEntity> existingCourseList, final List<TraxStudentCourseEntity> studentCourseEntityList) {
     try {
-      this.traxStudentCourseRepository.deleteAll(existingCourseList);
-      this.traxStudentCourseRepository.saveAll(studentCourseEntityList);
+      if(!existingCourseList.isEmpty()) {
+        log.info("Removing existing course list for PEN: {}", existingCourseList.get(0).getStudXcrseId().getStudNo());
+        this.traxStudentCourseRepository.deleteAll(existingCourseList);
+      }
+      
+      if(!studentCourseEntityList.isEmpty()) {
+        this.traxStudentCourseRepository.findAllByStudXcrseId_StudNo(studentCourseEntityList.get(0).getStudXcrseId().getStudNo());
+        log.info("Removed all existing trax student courses from the database, PEN now has: {}", existingCourseList);
+        this.traxStudentCourseRepository.saveAll(studentCourseEntityList);  
+      }
     } catch (Exception e) {
       log.warn("Exception", e);
       throw e;
