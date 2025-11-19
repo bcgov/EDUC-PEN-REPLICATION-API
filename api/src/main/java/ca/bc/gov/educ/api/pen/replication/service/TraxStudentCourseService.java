@@ -30,7 +30,7 @@ public class TraxStudentCourseService {
   public void deletePriorAndSaveTraxStudentCourses(final List<TraxStudentCourseEntity> existingCourseList, final List<TraxStudentCourseEntity> studentCourseEntityList) {
     try {
       this.traxStudentCourseRepository.deleteAll(existingCourseList);
-      this.traxStudentCourseRepository.saveAllAndFlush(studentCourseEntityList);
+      this.traxStudentCourseRepository.saveAll(studentCourseEntityList);
     } catch (Exception e) {
       log.warn("Exception", e);
       throw e;
