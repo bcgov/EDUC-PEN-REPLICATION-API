@@ -50,8 +50,8 @@ public class StudentCourseUpdateService extends BaseService<StudentCourseUpdate>
     val existingTraxStudentRecord = this.traxStudentService.findTraxStudentByPen(StringUtils.rightPad(studentPEN, 10));
     if (existingTraxStudentRecord.isPresent()) {
       var existingCourses = this.traxStudentCourseService.findTraxStudentCoursesByPen(studentPEN);
-      log.info("Found the following existing courses: {}", existingCourses);
-      this.traxStudentCourseService.deletePriorAndSaveTraxStudentCourses(studentPEN, getStudentCourseEntityList(studentPEN, studentCourseUpdate.getStudentCourses(), existingCourses));
+      existingCourses = existingCourses.stream().filter(Objects::nonNull).toList();
+      this.traxStudentCourseService.deletePriorAndSaveTraxStudentCourses(existingCourses, getStudentCourseEntityList(studentPEN, studentCourseUpdate.getStudentCourses(), existingCourses));
       log.info("Processing choreography update event with ID {} :: payload is: {}", event.getEventId(), studentCourseUpdate);
     }else{
       log.info("Student course event not processed {} :: payload is: {} :: student does not yet exist in TRAX STUDENT_MASTER", event.getEventId(), studentCourseUpdate);

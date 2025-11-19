@@ -27,9 +27,9 @@ public class TraxStudentCourseService {
 
   // it is saved in a new transaction to make sure commit happens in DB.
   @Transactional(propagation = Propagation.REQUIRES_NEW, timeout = 60)
-  public void deletePriorAndSaveTraxStudentCourses(final String pen, final List<TraxStudentCourseEntity> studentCourseEntityList) {
+  public void deletePriorAndSaveTraxStudentCourses(final List<TraxStudentCourseEntity> existingCourseList, final List<TraxStudentCourseEntity> studentCourseEntityList) {
     try {
-      this.traxStudentCourseRepository.deleteAllByStudXcrseId_StudNo(pen);
+      this.traxStudentCourseRepository.deleteAll(existingCourseList);
       this.traxStudentCourseRepository.saveAllAndFlush(studentCourseEntityList);
     } catch (Exception e) {
       log.warn("Exception", e);
