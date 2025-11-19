@@ -34,7 +34,8 @@ public class GradStudentAdoptService extends BaseService<GraduationStudentRecord
   @Override
   public void processEvent(final GraduationStudentRecord student, final Event event) {
     var studentFromStudentAPIList = this.restUtils.getStudentsByID(List.of(student.getStudentID().toString()));
-    val existingTraxStudentRecord = this.traxStudentService.findTraxStudentByPen(StringUtils.rightPad(studentFromStudentAPIList.get(student.getStudentID().toString()).getPen(), 10));
+    var studentPen = studentFromStudentAPIList.get(student.getStudentID().toString()).getPen();
+    val existingTraxStudentRecord = this.traxStudentService.findTraxStudentByPen(StringUtils.rightPad(studentPen, 10));
     var schoolOfRecord = this.restUtils.getSchoolBySchoolID(student.getSchoolOfRecordId().toString());
     var gradProgramCode = StringUtils.isNotBlank(student.getProgram()) ? student.getProgram().substring(0, 4) : null;
     var studentAddress = restUtils.getStudentScholarshipAddressByStudentID(UUID.randomUUID(), student.getStudentID().toString());
@@ -54,7 +55,7 @@ public class GradStudentAdoptService extends BaseService<GraduationStudentRecord
     if (!existingTraxStudentRecord.isPresent() && !studentFromStudentAPIList.isEmpty()) {
       var stud = studentFromStudentAPIList.get(student.getStudentID().toString());
       TraxStudentEntity traxStudentEntity = new TraxStudentEntity();
-      traxStudentEntity.setStudNo(student.getPen());
+      traxStudentEntity.setStudNo(studentPen);
       traxStudentEntity.setArchiveFlag(getTraxArchiveFlag(student.getStudentStatus()));
       traxStudentEntity.setStudSurname(stud.getLegalLastName());
       traxStudentEntity.setStudGiven(stud.getLegalFirstName());

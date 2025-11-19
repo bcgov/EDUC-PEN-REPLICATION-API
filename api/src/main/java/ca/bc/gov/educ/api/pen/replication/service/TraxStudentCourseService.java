@@ -32,6 +32,7 @@ public class TraxStudentCourseService {
       if(!existingCourseList.isEmpty()) {
         log.info("Removing existing course list for PEN: {}", existingCourseList.get(0).getStudXcrseId().getStudNo());
         this.traxStudentCourseRepository.deleteAll(existingCourseList);
+        this.traxStudentCourseRepository.flush();
       }
       
       if(!studentCourseEntityList.isEmpty()) {
