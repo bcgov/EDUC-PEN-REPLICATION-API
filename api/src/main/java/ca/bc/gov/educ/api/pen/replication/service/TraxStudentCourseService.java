@@ -1,20 +1,23 @@
 package ca.bc.gov.educ.api.pen.replication.service;
 
 import ca.bc.gov.educ.api.pen.replication.model.TraxStudentCourseEntity;
-import ca.bc.gov.educ.api.pen.replication.model.TraxStudentEntity;
 import ca.bc.gov.educ.api.pen.replication.repository.TraxStudentCourseRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
 public class TraxStudentCourseService {
   private final TraxStudentCourseRepository traxStudentCourseRepository;
+
+  @PersistenceContext
+  private EntityManager entityManager;
 
   public TraxStudentCourseService(TraxStudentCourseRepository traxStudentCourseRepository) {
     this.traxStudentCourseRepository = traxStudentCourseRepository;
@@ -25,25 +28,37 @@ public class TraxStudentCourseService {
     return this.traxStudentCourseRepository.findAllByStudXcrseId_StudNo(pen);
   }
 
-  // it is saved in a new transaction to make sure commit happens in DB.
   @Transactional(propagation = Propagation.REQUIRES_NEW, timeout = 60)
-  public void deletePriorAndSaveTraxStudentCourses(final List<TraxStudentCourseEntity> existingCourseList, final List<TraxStudentCourseEntity> studentCourseEntityList) {
+  public void deleteTraxStudentCourses(final String pen) {
     try {
-      if(!existingCourseList.isEmpty()) {
-        log.info("Removing existing course list for PEN: {}", existingCourseList.get(0).getStudXcrseId().getStudNo());
-        this.traxStudentCourseRepository.deleteAll(existingCourseList);
-        this.traxStudentCourseRepository.flush();
-      }
-      
-      if(!studentCourseEntityList.isEmpty()) {
-        this.traxStudentCourseRepository.findAllByStudXcrseId_StudNo(studentCourseEntityList.get(0).getStudXcrseId().getStudNo());
-        log.info("Removed all existing trax student courses from the database, PEN now has: {}", existingCourseList);
-        this.traxStudentCourseRepository.saveAll(studentCourseEntityList);  
+      if (!pen.isEmpty()) {
+        log.debug("Removing existing course list for PEN: {}", pen);
+        this.traxStudentCourseRepository.deleteAllByStudNoNative(pen);
+        log.debug("Removed all existing trax student courses from the database for PEN: {}", pen);
       }
     } catch (Exception e) {
-      log.warn("Exception", e);
+      log.warn("Exception while deleting courses", e);
       throw e;
     }
   }
-  
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW, timeout = 180)
+  public void saveTraxStudentCourses(final List<TraxStudentCourseEntity> studentCourseEntityList) {
+    try {
+      if (!studentCourseEntityList.isEmpty()) {
+        log.debug("Saving new course list for PEN: {}, count: {}",
+            studentCourseEntityList.get(0).getStudXcrseId().getStudNo(),
+            studentCourseEntityList.size());
+        entityManager.clear();
+        for (TraxStudentCourseEntity entity : studentCourseEntityList) {
+          entityManager.persist(entity);
+        }
+        entityManager.flush();
+        log.debug("Saved new trax student courses to the database, count: {}", studentCourseEntityList.size());
+      }
+    } catch (Exception e) {
+      log.warn("Exception while saving courses", e);
+      throw e;
+    }
+  }
 }

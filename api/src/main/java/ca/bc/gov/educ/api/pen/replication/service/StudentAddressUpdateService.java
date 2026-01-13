@@ -43,12 +43,12 @@ public class StudentAddressUpdateService extends BaseService<StudentAddress> {
     val existingTraxStudentRecord = this.traxStudentService.findTraxStudentByPen(StringUtils.rightPad(studentPEN, 10));
     if (existingTraxStudentRecord.isPresent()) {
       val existingTraxStudent = existingTraxStudentRecord.get();
-      existingTraxStudent.setAddress1(studentAddress.getAddressLine1());
-      existingTraxStudent.setAddress2(studentAddress.getAddressLine2());
-      existingTraxStudent.setCity(studentAddress.getCity());
-      existingTraxStudent.setProvCode(studentAddress.getProvinceStateCode());
-      existingTraxStudent.setCntryCode(studentAddress.getCountryCode());
-      existingTraxStudent.setPostal(studentAddress.getPostalZip());
+      existingTraxStudent.setAddress1(StringUtils.substring(studentAddress.getAddressLine1(), 0, 40));
+      existingTraxStudent.setAddress2(StringUtils.substring(studentAddress.getAddressLine2(), 0, 40));
+      existingTraxStudent.setCity(StringUtils.substring(studentAddress.getCity(), 0, 30));
+      existingTraxStudent.setProvCode(StringUtils.substring(studentAddress.getProvinceStateCode(), 0, 2));
+      existingTraxStudent.setCntryCode(StringUtils.substring(studentAddress.getCountryCode(), 0, 2));
+      existingTraxStudent.setPostal(StringUtils.substring(studentAddress.getPostalZip(), 0, 7));
       
       log.info("Processing choreography update event with ID {} :: payload is: {}", event.getEventId(), existingTraxStudent);
       this.traxStudentService.saveTraxStudent(existingTraxStudent);

@@ -7,6 +7,8 @@ import ca.bc.gov.educ.api.pen.replication.model.Saga;
 import ca.bc.gov.educ.api.pen.replication.model.SagaEvent;
 import ca.bc.gov.educ.api.pen.replication.repository.SagaEventRepository;
 import ca.bc.gov.educ.api.pen.replication.repository.SagaRepository;
+import ca.bc.gov.educ.api.pen.replication.struct.saga.StudentCourseUpdateSagaData;
+import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -202,5 +204,33 @@ public class SagaService {
     sagaStatuses.add(SagaStatusEnum.STARTED.toString());
     sagaStatuses.add(SagaStatusEnum.IN_PROGRESS.toString());
     return this.sagaRepository.countSagasBySagaNameInAndStatusIn(sagaNames, sagaStatuses);
+  }
+
+  @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+  public List<Saga> findInProgressStudentCourseUpdateSagasByStudentID(String studentID) {
+    List<String> sagaNames = new ArrayList<>();
+    sagaNames.add(SagaEnum.PEN_REPLICATION_STUDENT_COURSE_UPDATE_SAGA.getCode());
+    
+    List<String> sagaStatuses = new ArrayList<>();
+    sagaStatuses.add(SagaStatusEnum.STARTED.toString());
+    sagaStatuses.add(SagaStatusEnum.IN_PROGRESS.toString());
+    
+    List<Saga> allInProgress = this.sagaRepository.findAllByStatusInOrderByCreateDate(sagaStatuses);
+
+    return allInProgress.stream()
+        .filter(saga -> sagaNames.contains(saga.getSagaName()))
+        .filter(saga -> {
+          try {
+            val sagaData = JsonUtil.getJsonObjectFromString(StudentCourseUpdateSagaData.class, saga.getPayload());
+            if (sagaData != null) {
+              return studentID != null && studentID.equals(sagaData.getStudentID());
+            }
+            return false;
+          } catch (Exception e) {
+            log.warn("Error parsing saga payload for saga {}: {}", saga.getSagaId(), e.getMessage());
+            return false;
+          }
+        })
+        .toList();
   }
 }

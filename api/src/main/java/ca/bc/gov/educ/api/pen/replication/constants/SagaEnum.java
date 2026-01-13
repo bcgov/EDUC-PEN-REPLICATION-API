@@ -21,7 +21,11 @@ public enum SagaEnum {
   /**
    * Pen replication possible match delete saga saga enum.
    */
-  PEN_REPLICATION_POSSIBLE_MATCH_DELETE_SAGA("PEN_REPLICATION_POSSIBLE_MATCH_DELETE_SAGA");
+  PEN_REPLICATION_POSSIBLE_MATCH_DELETE_SAGA("PEN_REPLICATION_POSSIBLE_MATCH_DELETE_SAGA"),
+  /**
+   * Pen replication student course update saga saga enum.
+   */
+  PEN_REPLICATION_STUDENT_COURSE_UPDATE_SAGA("PEN_REPLICATION_STUDENT_COURSE_UPDATE_SAGA");
   @Getter
   private final String code;
 

@@ -1,11 +1,15 @@
 package ca.bc.gov.educ.api.pen.replication.schedulers;
 
+import ca.bc.gov.educ.api.pen.replication.constants.EventType;
 import ca.bc.gov.educ.api.pen.replication.constants.SagaEnum;
 import ca.bc.gov.educ.api.pen.replication.constants.SagaStatusEnum;
 import ca.bc.gov.educ.api.pen.replication.helpers.LogHelper;
 import ca.bc.gov.educ.api.pen.replication.model.Saga;
 import ca.bc.gov.educ.api.pen.replication.orchestrator.base.Orchestrator;
 import ca.bc.gov.educ.api.pen.replication.repository.SagaRepository;
+import ca.bc.gov.educ.api.pen.replication.service.SagaService;
+import ca.bc.gov.educ.api.pen.replication.struct.saga.StudentCourseUpdateSagaData;
+import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -35,9 +39,15 @@ public class EventTaskScheduler {
    */
   @Getter(PRIVATE)
   private final SagaRepository sagaRepository;
+  /**
+   * The Saga service.
+   */
+  @Getter(PRIVATE)
+  private final SagaService sagaService;
 
-  public EventTaskScheduler(final SagaRepository sagaRepository, final List<Orchestrator> orchestrators) {
+  public EventTaskScheduler(final SagaRepository sagaRepository, final SagaService sagaService, final List<Orchestrator> orchestrators) {
     this.sagaRepository = sagaRepository;
+    this.sagaService = sagaService;
     orchestrators.forEach(orchestrator -> this.sagaEnumOrchestratorMap.put(orchestrator.getSagaName(), orchestrator));
     log.info("'{}' Saga Orchestrators are loaded.", this.sagaEnumOrchestratorMap.keySet().stream().map(SagaEnum::getCode).collect(Collectors.joining(",")));
   }
@@ -65,15 +75,40 @@ public class EventTaskScheduler {
       if (saga.getCreateDate().isBefore(compareDate)
         && this.getSagaEnumOrchestratorMap().containsKey(SagaEnum.getKeyFromValue(saga.getSagaName()))) {
         try {
-          this.setRetryCountAndLog(saga);
-          this.getSagaEnumOrchestratorMap().get(SagaEnum.getKeyFromValue(saga.getSagaName())).replaySaga(saga);
+          if (SagaStatusEnum.STARTED.toString().equals(saga.getStatus()) 
+              && EventType.INITIATED.toString().equals(saga.getSagaState())) {
+            this.processQueuedSaga(saga);
+          } else {
+            this.setRetryCountAndLog(saga);
+            this.getSagaEnumOrchestratorMap().get(SagaEnum.getKeyFromValue(saga.getSagaName())).replaySaga(saga);
+          }
         } catch (final InterruptedException ex) {
           Thread.currentThread().interrupt();
-          log.error("InterruptedException while findAndProcessPendingSagaEvents :: for saga :: {} :: {}", saga, ex);
+          log.error("InterruptedException while findAndProcessPendingSagaEvents :: for saga :: {} ", saga, ex);
         } catch (final Exception e) {
-          log.error("Exception while findAndProcessPendingSagaEvents :: for saga :: {} :: {}", saga, e);
+          log.error("Exception while findAndProcessPendingSagaEvents :: for saga :: {} ", saga, e);
         }
       }
+    }
+  }
+
+  private void processQueuedSaga(final Saga saga) {
+    try {
+      val sagaData = JsonUtil.getJsonObjectFromString(StudentCourseUpdateSagaData.class, saga.getPayload());
+
+      if (sagaData != null) {
+        val studentID = sagaData.getStudentID();
+        
+        // Check if there's a conflicting in-progress saga for this student
+        val conflictingSagas = this.getSagaService().findInProgressStudentCourseUpdateSagasByStudentID(studentID).stream().filter(s -> !s.getSagaId().equals(saga.getSagaId())).toList();
+
+        if (conflictingSagas.isEmpty()) {
+          this.getSagaEnumOrchestratorMap().get(SagaEnum.getKeyFromValue(saga.getSagaName())).startSaga(saga);
+          log.info("Started queued saga {} for studentID {}", saga.getSagaId(), studentID);
+        }
+      }
+    } catch (Exception e) {
+      log.error("Error processing queued saga {}: {}", saga.getSagaId(), e.getMessage(), e);
     }
   }
 
