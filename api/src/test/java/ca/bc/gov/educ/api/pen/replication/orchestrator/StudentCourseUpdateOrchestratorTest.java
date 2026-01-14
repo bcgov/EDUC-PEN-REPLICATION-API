@@ -137,7 +137,7 @@ public class StudentCourseUpdateOrchestratorTest extends BasePenReplicationAPITe
       JsonUtil.objectMapper.writeValueAsString(this.sagaData));
 
     final TraxStudentEntity traxStudent = TraxStudentEntity.builder()
-      .studNo(this.studentPEN)
+      .studNo(String.format("%-10s", this.studentPEN))
       .build();
     this.traxStudentService.saveTraxStudent(traxStudent);
 
