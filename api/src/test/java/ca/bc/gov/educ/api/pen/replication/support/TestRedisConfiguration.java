@@ -17,7 +17,7 @@ public class TestRedisConfiguration {
    * Instantiates a new Test redis configuration.
    */
   public TestRedisConfiguration() {
-    this.redisServer = RedisServer.builder().port(6370).build();
+    this.redisServer = RedisServer.builder().setting("maxmemory 128M").port(6370).build();
   }
 
   /**
