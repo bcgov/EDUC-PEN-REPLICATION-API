@@ -8,6 +8,8 @@ import ca.bc.gov.educ.api.pen.replication.model.StudXcrseId;
 import ca.bc.gov.educ.api.pen.replication.model.TraxStudentCourseEntity;
 import ca.bc.gov.educ.api.pen.replication.model.TraxStudentEntity;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
+import ca.bc.gov.educ.api.pen.replication.repository.TraxStudentCourseRepository;
+import ca.bc.gov.educ.api.pen.replication.repository.TraxStudentRepository;
 import ca.bc.gov.educ.api.pen.replication.service.SagaService;
 import ca.bc.gov.educ.api.pen.replication.service.TraxStudentCourseService;
 import ca.bc.gov.educ.api.pen.replication.service.TraxStudentService;
@@ -17,13 +19,13 @@ import ca.bc.gov.educ.api.pen.replication.struct.StudentCourse;
 import ca.bc.gov.educ.api.pen.replication.exception.PenReplicationAPIRuntimeException;
 import ca.bc.gov.educ.api.pen.replication.struct.saga.StudentCourseUpdateSagaData;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,8 +38,6 @@ import static ca.bc.gov.educ.api.pen.replication.constants.EventType.*;
 import static ca.bc.gov.educ.api.pen.replication.constants.SagaStatusEnum.COMPLETED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -45,7 +45,7 @@ import static org.mockito.Mockito.*;
  * The type Student course update orchestrator test.
  */
 public class StudentCourseUpdateOrchestratorTest extends BasePenReplicationAPITest {
-  private final String studentPEN = "123456789";
+  private String studentPEN;
   /**
    * The Event captor.
    */
@@ -57,11 +57,17 @@ public class StudentCourseUpdateOrchestratorTest extends BasePenReplicationAPITe
   @Autowired
   private RestUtils restUtils;
 
-  @SpyBean
+  @Autowired
   private TraxStudentCourseService traxStudentCourseService;
 
-  @SpyBean
+  @Autowired
   private TraxStudentService traxStudentService;
+
+  @Autowired
+  private TraxStudentCourseRepository traxStudentCourseRepository;
+
+  @Autowired
+  private TraxStudentRepository traxStudentRepository;
 
   @Autowired
   private StudentCourseUpdateOrchestrator orchestrator;
@@ -96,6 +102,8 @@ public class StudentCourseUpdateOrchestratorTest extends BasePenReplicationAPITe
   @Before
   public void setUp() throws IOException {
     MockitoAnnotations.openMocks(this);
+    // Generate unique PEN for each test to avoid constraint violations
+    this.studentPEN = String.valueOf(System.currentTimeMillis()).substring(0, 9);
     this.studentID = UUID.randomUUID().toString();
     this.courseID1 = UUID.randomUUID().toString();
     this.courseID2 = UUID.randomUUID().toString();
@@ -127,6 +135,36 @@ public class StudentCourseUpdateOrchestratorTest extends BasePenReplicationAPITe
       SagaEnum.PEN_REPLICATION_STUDENT_COURSE_UPDATE_SAGA.getCode(),
       "Test",
       JsonUtil.objectMapper.writeValueAsString(this.sagaData));
+
+    final TraxStudentEntity traxStudent = TraxStudentEntity.builder()
+      .studNo(this.studentPEN)
+      .build();
+    this.traxStudentService.saveTraxStudent(traxStudent);
+
+    final TraxStudentCourseEntity existingCourse = TraxStudentCourseEntity.builder()
+      .studXcrseId(StudXcrseId.builder()
+        .studNo(this.studentPEN)
+        .courseCode("MATH")
+        .courseLevel("11")
+        .courseSession("2022-09")
+        .build())
+      .studyType("REG")
+      .usedForGrad("Y")
+      .build();
+    final List<TraxStudentCourseEntity> existingCourses = new ArrayList<>();
+    existingCourses.add(existingCourse);
+    this.traxStudentCourseService.saveTraxStudentCourses(existingCourses);
+  }
+
+  /**
+   * Clean up after each test.
+   */
+  @After
+  public void tearDown() {
+    if (this.studentPEN != null) {
+        this.traxStudentCourseService.deleteTraxStudentCourses(this.studentPEN);
+        this.traxStudentRepository.deleteById(this.studentPEN);
+    }
   }
 
   /**
@@ -139,25 +177,7 @@ public class StudentCourseUpdateOrchestratorTest extends BasePenReplicationAPITe
   @Test
   public void testPrepareStudentCourseUpdate_givenEventAndSagaData_shouldPostEventToSagaTopic() throws IOException, InterruptedException, TimeoutException {
     when(this.restUtils.getStudentPen(this.studentID)).thenReturn(this.studentPEN);
-
-    final TraxStudentEntity traxStudent = TraxStudentEntity.builder()
-      .studNo(String.format("%-10s", this.studentPEN))
-      .build();
-    when(this.traxStudentService.findTraxStudentByPen(anyString())).thenReturn(Optional.of(traxStudent));
-
-    final List<TraxStudentCourseEntity> existingCourses = new ArrayList<>();
-    final TraxStudentCourseEntity existingCourse = TraxStudentCourseEntity.builder()
-      .studXcrseId(StudXcrseId.builder()
-        .studNo(this.studentPEN)
-        .courseCode("MATH")
-        .courseLevel("11")
-        .courseSession("2022-09")
-        .build())
-      .studyType("REG")
-      .usedForGrad("Y")
-      .build();
-    existingCourses.add(existingCourse);
-    when(this.traxStudentCourseService.findTraxStudentCoursesByPen(this.studentPEN)).thenReturn(existingCourses);
+    // Real student and course data is already in DB from setUp()
 
     final GradCourseCode course1 = new GradCourseCode();
     course1.setCourseID(this.courseID1);
@@ -193,8 +213,9 @@ public class StudentCourseUpdateOrchestratorTest extends BasePenReplicationAPITe
    */
   @Test
   public void testPrepareStudentCourseUpdate_givenEventAndSagaDataAndStudentNotFound_shouldThrowException() {
-    when(this.restUtils.getStudentPen(this.studentID)).thenReturn(this.studentPEN);
-    when(this.traxStudentService.findTraxStudentByPen(anyString())).thenReturn(Optional.empty());
+    // Use a different PEN that doesn't exist
+    String nonExistentPEN = "999999999";
+    when(this.restUtils.getStudentPen(this.studentID)).thenReturn(nonExistentPEN);
 
     final var event = Event.builder()
       .eventType(EventType.INITIATED)
@@ -203,7 +224,7 @@ public class StudentCourseUpdateOrchestratorTest extends BasePenReplicationAPITe
       .build();
     assertThatThrownBy(() -> this.orchestrator.handleEvent(event))
       .isInstanceOf(PenReplicationAPIRuntimeException.class)
-      .hasMessageContaining("Student not found in TRAX with ID: " + this.studentPEN);
+      .hasMessageContaining("Student not found in TRAX with ID: " + nonExistentPEN);
   }
 
   /**
@@ -219,13 +240,21 @@ public class StudentCourseUpdateOrchestratorTest extends BasePenReplicationAPITe
     this.saga.setPayload(JsonUtil.objectMapper.writeValueAsString(this.sagaData));
     this.sagaService.updateAttachedEntityDuringSagaProcess(this.saga);
 
+    // Verify courses exist before delete
+    List<TraxStudentCourseEntity> coursesBeforeDelete = this.traxStudentCourseRepository.findAllByStudXcrseId_StudNo(this.studentPEN);
+    assertThat(coursesBeforeDelete).isNotEmpty();
+
     final var event = Event.builder()
       .eventType(PREPARE_STUDENT_COURSE_UPDATE)
       .eventOutcome(EventOutcome.STUDENT_COURSE_UPDATE_PREPARED)
       .sagaId(this.saga.getSagaId())
       .build();
     this.orchestrator.handleEvent(event);
-    verify(this.traxStudentCourseService, times(1)).deleteTraxStudentCourses(this.studentPEN);
+
+    // Verify courses were deleted from database
+    List<TraxStudentCourseEntity> coursesAfterDelete = this.traxStudentCourseRepository.findAllByStudXcrseId_StudNo(this.studentPEN);
+    assertThat(coursesAfterDelete).isEmpty();
+
     verify(this.messagePublisher, atLeastOnce()).dispatchMessage(eq(this.orchestrator.getTopicToSubscribe().getCode()), this.eventCaptor.capture());
     final var newEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
     assertThat(newEvent.getEventType()).isEqualTo(DELETE_STUDENT_COURSES);
@@ -266,13 +295,23 @@ public class StudentCourseUpdateOrchestratorTest extends BasePenReplicationAPITe
     this.saga.setPayload(JsonUtil.objectMapper.writeValueAsString(this.sagaData));
     this.sagaService.updateAttachedEntityDuringSagaProcess(this.saga);
 
+    // Delete existing courses first to simulate the previous step
+    this.traxStudentCourseService.deleteTraxStudentCourses(this.studentPEN);
+
     final var event = Event.builder()
       .eventType(DELETE_STUDENT_COURSES)
       .eventOutcome(EventOutcome.STUDENT_COURSES_DELETED)
       .sagaId(this.saga.getSagaId())
       .build();
     this.orchestrator.handleEvent(event);
-    verify(this.traxStudentCourseService, times(1)).saveTraxStudentCourses(any());
+
+    // Verify courses were saved to database
+    List<TraxStudentCourseEntity> coursesAfterSave = this.traxStudentCourseRepository.findAllByStudXcrseId_StudNo(this.studentPEN);
+    assertThat(coursesAfterSave).hasSize(1);
+    assertThat(coursesAfterSave.get(0).getStudXcrseId().getCourseCode()).isEqualTo("MATH");
+    assertThat(coursesAfterSave.get(0).getStudXcrseId().getCourseLevel()).isEqualTo("11");
+    assertThat(coursesAfterSave.get(0).getFinalLetterGrade()).isEqualTo("A");
+
     verify(this.messagePublisher, atLeastOnce()).dispatchMessage(eq(this.orchestrator.getTopicToSubscribe().getCode()), this.eventCaptor.capture());
     final var newEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
     assertThat(newEvent.getEventType()).isEqualTo(SAVE_STUDENT_COURSES);
