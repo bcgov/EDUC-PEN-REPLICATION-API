@@ -2,8 +2,6 @@ package ca.bc.gov.educ.api.pen.replication.service;
 
 import ca.bc.gov.educ.api.pen.replication.model.TraxStudentCourseEntity;
 import ca.bc.gov.educ.api.pen.replication.repository.TraxStudentCourseRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -15,9 +13,6 @@ import java.util.List;
 @Slf4j
 public class TraxStudentCourseService {
   private final TraxStudentCourseRepository traxStudentCourseRepository;
-
-  @PersistenceContext
-  private EntityManager entityManager;
 
   public TraxStudentCourseService(TraxStudentCourseRepository traxStudentCourseRepository) {
     this.traxStudentCourseRepository = traxStudentCourseRepository;
@@ -49,11 +44,7 @@ public class TraxStudentCourseService {
         log.debug("Saving new course list for PEN: {}, count: {}",
             studentCourseEntityList.get(0).getStudXcrseId().getStudNo(),
             studentCourseEntityList.size());
-        entityManager.clear();
-        for (TraxStudentCourseEntity entity : studentCourseEntityList) {
-          entityManager.persist(entity);
-        }
-        entityManager.flush();
+        traxStudentCourseRepository.saveAllAndFlush(studentCourseEntityList);
         log.debug("Saved new trax student courses to the database, count: {}", studentCourseEntityList.size());
       }
     } catch (Exception e) {
