@@ -99,10 +99,10 @@ public class EventTaskScheduler {
       if (sagaData != null) {
         val studentID = sagaData.getStudentID();
         
-        // Check if there's a conflicting in-progress saga for this student
-        val conflictingSagas = this.getSagaService().findInProgressStudentCourseUpdateSagasByStudentID(studentID).stream().filter(s -> !s.getSagaId().equals(saga.getSagaId())).toList();
+        // If this saga isn't the oldest for this student, don't run it
+        val inProgressSagas = this.getSagaService().findInProgressStudentCourseUpdateSagasByStudentID(studentID);
 
-        if (conflictingSagas.isEmpty()) {
+        if (inProgressSagas.isEmpty() ||  inProgressSagas.get(0).getSagaId().equals(saga.getSagaId())) {
           this.getSagaEnumOrchestratorMap().get(SagaEnum.getKeyFromValue(saga.getSagaName())).startSaga(saga);
           log.info("Started queued saga {} for studentID {}", saga.getSagaId(), studentID);
         }

@@ -30,6 +30,7 @@ import java.util.Objects;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventOutcome.*;
 import static ca.bc.gov.educ.api.pen.replication.constants.EventType.*;
+import static ca.bc.gov.educ.api.pen.replication.constants.SagaStatusEnum.IN_PROGRESS;
 
 @Component
 @Slf4j
@@ -65,6 +66,7 @@ public class StudentCourseUpdateOrchestrator extends BaseOrchestrator<StudentCou
 
   private void prepareStudentCourseUpdate(final Event event, final Saga saga, final StudentCourseUpdateSagaData sagaData) {
     saga.setSagaState(PREPARE_STUDENT_COURSE_UPDATE.toString());
+    saga.setStatus(IN_PROGRESS.toString());
     final SagaEvent eventStates = this.createEventState(saga, event.getEventType(), event.getEventOutcome(), event.getEventPayload());
     this.getSagaService().updateAttachedSagaWithEvents(saga, eventStates);
     
