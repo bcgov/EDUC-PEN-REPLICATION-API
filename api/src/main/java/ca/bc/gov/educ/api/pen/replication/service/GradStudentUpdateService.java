@@ -43,6 +43,7 @@ public class GradStudentUpdateService extends BaseService<StudentUpdate> {
       existingTraxStudent.setStudGiven(studentUpdate.getLegalFirstName());
       existingTraxStudent.setStudMiddle(studentUpdate.getLegalMiddleNames());
       existingTraxStudent.setStudSex(studentUpdate.getSexCode());
+      existingTraxStudent.setStudSex(studentUpdate.getSexCode());
       existingTraxStudent.setStudBirth(StringUtils.replace(studentUpdate.getDob(), "-", ""));
       if (StringUtils.isNotBlank(studentUpdate.getTrueStudentID()) && StringUtils.isBlank(existingTraxStudent.getStudTrueNo())) {
         existingTraxStudent.setStudTrueNo(restUtils.getStudentPen(studentUpdate.getTrueStudentID()));
