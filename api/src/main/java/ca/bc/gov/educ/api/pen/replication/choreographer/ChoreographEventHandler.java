@@ -71,8 +71,8 @@ public class ChoreographEventHandler {
                 break;
               case "UPDATE_STUDENT_COURSES":
                 log.info("Processing UPDATE_STUDENT_COURSES event record :: {} ", event);
-                val studentCourseUpdateList = JsonUtil.getJsonObjectFromString(StudentCourseUpdateSagaData.class, event.getEventPayload());
-                final EventService<StudentCourseUpdateSagaData> studentCourseEventService = (EventService<StudentCourseUpdateSagaData>) this.eventServiceMap.get(UPDATE_STUDENT_COURSES.toString());
+                val studentCourseUpdateList = JsonUtil.getJsonObjectFromString(StudentCourseUpdate.class, event.getEventPayload());
+                final EventService<StudentCourseUpdate> studentCourseEventService = (EventService<StudentCourseUpdate>) this.eventServiceMap.get(UPDATE_STUDENT_COURSES.toString());
                 studentCourseEventService.processEvent(studentCourseUpdateList, event);
                 break;
               case "ADOPT_GRAD_STUDENT":
