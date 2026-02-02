@@ -18,12 +18,12 @@ import static ca.bc.gov.educ.api.pen.replication.constants.EventType.UPDATE_STUD
  */
 @Service
 @Slf4j
-public class GradStudentUpdateService extends BaseService<StudentUpdate> {
+public class StudentUpdateService extends BaseService<StudentUpdate> {
 
   private final TraxStudentService traxStudentService;
   private final RestUtils restUtils;
 
-  public GradStudentUpdateService(final EntityManagerFactory emf, final EventRepository eventRepository, TraxStudentService traxStudentService, final RestUtils restUtils) {
+  public StudentUpdateService(final EntityManagerFactory emf, final EventRepository eventRepository, TraxStudentService traxStudentService, final RestUtils restUtils) {
     super(eventRepository, emf);
     this.traxStudentService = traxStudentService;
     this.restUtils = restUtils;
