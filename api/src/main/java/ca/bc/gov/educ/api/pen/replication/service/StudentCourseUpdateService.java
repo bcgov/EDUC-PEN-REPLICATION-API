@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +47,7 @@ public class StudentCourseUpdateService extends BaseService<StudentCourseUpdate>
    * @param event the event
    */
   @Override
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void processEvent(final StudentCourseUpdate studentCourseUpdate, final Event event) {
     var studentPEN = restUtils.getStudentPen(studentCourseUpdate.getStudentID());
     val existingTraxStudentRecord = this.traxStudentService.findTraxStudentByPen(StringUtils.rightPad(studentPEN, 10));
