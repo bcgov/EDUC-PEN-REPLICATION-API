@@ -24,7 +24,7 @@ public class TraxStudentCourseService {
   }
 
   // it is saved in a new transaction to make sure commit happens in DB.
-  @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.MANDATORY)
   public void deletePriorAndSaveTraxStudentCourses(final List<TraxStudentCourseEntity> existingCourseList, final List<TraxStudentCourseEntity> studentCourseEntityList) {
     try {
       if(!existingCourseList.isEmpty()) {
