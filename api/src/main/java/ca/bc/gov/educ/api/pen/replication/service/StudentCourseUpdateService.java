@@ -111,6 +111,7 @@ public class StudentCourseUpdateService extends BaseService<StudentCourseUpdate>
         traxStudentCourseEntity.getStudXcrseId().setCourseLevel(StringUtils.trimToNull(course.getExternalCode().substring(5)));
       }else{
         traxStudentCourseEntity.getStudXcrseId().setCourseCode(StringUtils.trimToNull(course.getExternalCode()));
+        traxStudentCourseEntity.getStudXcrseId().setCourseLevel(" ");
       }
     }else{
       log.info("No course was found for ID {} :: this should not have happened", courseID);
