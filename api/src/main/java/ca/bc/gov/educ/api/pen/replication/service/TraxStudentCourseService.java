@@ -20,7 +20,7 @@ public class TraxStudentCourseService {
 
   @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
   public List<TraxStudentCourseEntity> findTraxStudentCoursesByPen(final String pen) {
-    return this.traxStudentCourseRepository.findAllByStudXcrseId_StudNo(pen);
+    return this.traxStudentCourseRepository.findAllByStudNo(pen);
   }
 
   // it is saved in a new transaction to make sure commit happens in DB.

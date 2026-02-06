@@ -11,11 +11,5 @@ import java.util.List;
 
 @Repository
 public interface TraxStudentCourseRepository extends JpaRepository<TraxStudentCourseEntity, String> {
-    void deleteAllByStudXcrseId_StudNo(String studNo);
-    List<TraxStudentCourseEntity> findAllByStudXcrseId_StudNo(String studNo);
-
-    @Modifying
-    @Query(value = "DELETE FROM STUD_XCRSE WHERE STUD_NO = ?", nativeQuery = true)
-    @Transactional
-    void deleteAllByStudNoNative(String studNo);
+    List<TraxStudentCourseEntity> findAllByStudNo(String studNo);
 }
