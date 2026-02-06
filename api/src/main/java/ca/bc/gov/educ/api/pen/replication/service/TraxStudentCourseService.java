@@ -28,7 +28,7 @@ public class TraxStudentCourseService {
   public void deletePriorAndSaveTraxStudentCourses(final List<TraxStudentCourseEntity> existingCourseList, final List<TraxStudentCourseEntity> studentCourseEntityList) {
     try {
       if(!existingCourseList.isEmpty()) {
-        log.info("Removing existing course list for PEN: {}", existingCourseList.get(0).getStudXcrseId().getStudNo());
+        log.info("Removing existing course list for PEN: {}", existingCourseList.get(0).getStudNo());
         this.traxStudentCourseRepository.deleteAll(existingCourseList);
       }
 
