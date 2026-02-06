@@ -2,7 +2,6 @@ package ca.bc.gov.educ.api.pen.replication.service;
 
 import ca.bc.gov.educ.api.pen.replication.exception.PenReplicationAPIRuntimeException;
 import ca.bc.gov.educ.api.pen.replication.model.Event;
-import ca.bc.gov.educ.api.pen.replication.model.StudXcrseId;
 import ca.bc.gov.educ.api.pen.replication.model.TraxStudentCourseEntity;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
@@ -67,10 +66,9 @@ public class StudentCourseUpdateService extends BaseService<StudentCourseUpdate>
     var entityList = new ArrayList<TraxStudentCourseEntity>();
     studentCourse.forEach(student -> {
       TraxStudentCourseEntity traxStudentCourseEntity = new TraxStudentCourseEntity();
-      traxStudentCourseEntity.setStudXcrseId(new StudXcrseId());
       setCourseCodeAndLevel(traxStudentCourseEntity, student.getCourseID());
-      traxStudentCourseEntity.getStudXcrseId().setStudNo(StringUtils.trimToNull(studentPEN));
-      traxStudentCourseEntity.getStudXcrseId().setCourseSession(StringUtils.trimToNull(student.getCourseSession()));
+      traxStudentCourseEntity.setStudNo(StringUtils.trimToNull(studentPEN));
+      traxStudentCourseEntity.setCourseSession(StringUtils.trimToNull(student.getCourseSession()));
       traxStudentCourseEntity.setFinalLetterGrade(StringUtils.trimToNull(student.getFinalLetterGrade()));
       traxStudentCourseEntity.setFinalPercentage(student.getFinalPercent() != null ? student.getFinalPercent().toString() : null);
       traxStudentCourseEntity.setNumberOfCredits(student.getCredits() != null ? student.getCredits().toString() : null);
@@ -83,13 +81,13 @@ public class StudentCourseUpdateService extends BaseService<StudentCourseUpdate>
   private void setStudyTypeAndUsedForGradFields(TraxStudentCourseEntity traxStudentCourseEntity, List<TraxStudentCourseEntity> existingTraxStudentCourses){
     for(TraxStudentCourseEntity course: existingTraxStudentCourses){
       if(course != null) {
-        String courseCourseCode = StringUtils.trimToNull(course.getStudXcrseId().getCourseCode());
-        String courseCourseLevel = StringUtils.trimToNull(course.getStudXcrseId().getCourseLevel());
-        String courseCourseSession = StringUtils.trimToNull(course.getStudXcrseId().getCourseSession());
+        String courseCourseCode = StringUtils.trimToNull(course.getCourseCode());
+        String courseCourseLevel = StringUtils.trimToNull(course.getCourseLevel());
+        String courseCourseSession = StringUtils.trimToNull(course.getCourseSession());
 
-        String traxCourseCode = StringUtils.trimToNull(traxStudentCourseEntity.getStudXcrseId().getCourseCode());
-        String traxCourseLevel = StringUtils.trimToNull(traxStudentCourseEntity.getStudXcrseId().getCourseLevel());
-        String traxCourseSession = StringUtils.trimToNull(traxStudentCourseEntity.getStudXcrseId().getCourseSession());
+        String traxCourseCode = StringUtils.trimToNull(traxStudentCourseEntity.getCourseCode());
+        String traxCourseLevel = StringUtils.trimToNull(traxStudentCourseEntity.getCourseLevel());
+        String traxCourseSession = StringUtils.trimToNull(traxStudentCourseEntity.getCourseSession());
 
         if (Objects.equals(courseCourseCode, traxCourseCode) &&
                 Objects.equals(courseCourseLevel, traxCourseLevel) &&
@@ -107,11 +105,11 @@ public class StudentCourseUpdateService extends BaseService<StudentCourseUpdate>
     if (optionalCourse.isPresent()) {
       var course = optionalCourse.get();
       if(course.getExternalCode().length() > 5) {
-        traxStudentCourseEntity.getStudXcrseId().setCourseCode(StringUtils.trimToNull(course.getExternalCode().substring(0, 4)));
-        traxStudentCourseEntity.getStudXcrseId().setCourseLevel(StringUtils.trimToNull(course.getExternalCode().substring(5)));
+        traxStudentCourseEntity.setCourseCode(StringUtils.trimToNull(course.getExternalCode().substring(0, 4)));
+        traxStudentCourseEntity.setCourseLevel(StringUtils.trimToNull(course.getExternalCode().substring(5)));
       }else{
-        traxStudentCourseEntity.getStudXcrseId().setCourseCode(StringUtils.trimToNull(course.getExternalCode()));
-        traxStudentCourseEntity.getStudXcrseId().setCourseLevel(" ");
+        traxStudentCourseEntity.setCourseCode(StringUtils.trimToNull(course.getExternalCode()));
+        traxStudentCourseEntity.setCourseLevel(" ");
       }
     }else{
       log.info("No course was found for ID {} :: this should not have happened", courseID);
