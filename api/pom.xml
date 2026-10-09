@@ -7,7 +7,8 @@
   <groupId>ca.bc.gov.educ.api.pen.replication</groupId>
   <artifactId>pen-replication-api</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <description>This API will be used for DATA replication using pub/sub model, different apis will publish choreographed
+  <description>This API will be used for DATA replication using pub/sub model, different apis will publish
+    choreographed
     events, this api will consume those events and update downstream records.
   </description>
 
@@ -215,7 +216,7 @@
         <plugin>
           <groupId>org.sonarsource.scanner.maven</groupId>
           <artifactId>sonar-maven-plugin</artifactId>
-          <version>3.6.0.1398</version>
+          <version>5.8.0.7211</version>
         </plugin>
         <plugin>
           <groupId>org.jacoco</groupId>
