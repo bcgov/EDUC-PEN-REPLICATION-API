@@ -81,6 +81,12 @@ public class ChoreographEventHandler {
                 final EventService<StudentCourseUpdate> studentCourseEventService = (EventService<StudentCourseUpdate>) this.eventServiceMap.get(UPDATE_STUDENT_COURSES.toString());
                 studentCourseEventService.processEvent(studentCourseUpdateList, event);
                 break;
+              case "GRAD_STUDENT_GRADUATED":
+                log.info("Processing GRAD_STUDENT_GRADUATED event record :: {} ", event);
+                val graduatedStudentRecord = JsonUtil.getJsonObjectFromString(GraduationStudentRecord.class, event.getEventPayload());
+                final EventService<GraduationStudentRecord> gradStudentGraduatedService = (EventService<GraduationStudentRecord>) this.eventServiceMap.get(GRAD_STUDENT_GRADUATED.toString());
+                gradStudentGraduatedService.processEvent(graduatedStudentRecord, event);
+                break;
               case "ADOPT_GRAD_STUDENT":
                 log.info("Processing ADOPT_GRAD_STUDENT event record :: {} ", event);
                 val gradStudentRecord = JsonUtil.getJsonObjectFromString(GraduationStudentRecord.class, event.getEventPayload());

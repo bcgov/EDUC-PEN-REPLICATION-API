@@ -31,7 +31,7 @@ public enum EventType {
   UPDATE_PEN_DEMOG,
 
   GET_STUDENT_SCHOLARSHIP_ADDRESS,
-  
+
   GET_STUDENT,
 
   ADD_STUDENT,
@@ -81,7 +81,7 @@ public enum EventType {
   UPDATE_AUTHORITY_CONTACT,
 
   DELETE_AUTHORITY_CONTACT,
-  
+
   UPDATE_STUDENT_COURSES,
 
   PREPARE_STUDENT_COURSE_UPDATE,
@@ -92,7 +92,8 @@ public enum EventType {
 
   ADOPT_GRAD_STUDENT,
 
-  UPDATE_GRAD_STUDENT_CITIZENSHIP;
+  UPDATE_GRAD_STUDENT_CITIZENSHIP,
+  GRAD_STUDENT_GRADUATED;
 
   public static boolean isValid(String value) {
     if (value == null) {

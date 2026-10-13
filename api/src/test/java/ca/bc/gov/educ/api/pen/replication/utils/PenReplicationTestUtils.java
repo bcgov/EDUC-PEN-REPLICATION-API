@@ -23,6 +23,8 @@ public class PenReplicationTestUtils {
   private final SagaRepository sagaRepository;
   private final SagaEventRepository sagaEventRepository;
   private final PenTwinsRepository penTwinsRepository;
+  private final TraxStudentCourseRepository traxStudentCourseRespository;
+  private final TraxStudentRepository traxStudentRepository;
 
   /**
    * Instantiates a new Pen replication test utils.
@@ -37,7 +39,7 @@ public class PenReplicationTestUtils {
    * @param sagaEventRepository           the saga event repository
    * @param penTwinsRepository            the pen twins repository
    */
-  public PenReplicationTestUtils(AuthorityMasterRepository authorityMasterRepository, SchoolMasterRepository schoolMasterRepository, final PenDemogRepository penDemogRepository, final EventRepository eventRepository, final PenDemogTransactionRepository penDemogTransactionRepository, final PenTwinTransactionRepository penTwinTransactionRepository, final SagaRepository sagaRepository, final SagaEventRepository sagaEventRepository, final PenTwinsRepository penTwinsRepository) {
+  public PenReplicationTestUtils(AuthorityMasterRepository authorityMasterRepository, SchoolMasterRepository schoolMasterRepository, final PenDemogRepository penDemogRepository, final EventRepository eventRepository, final PenDemogTransactionRepository penDemogTransactionRepository, final PenTwinTransactionRepository penTwinTransactionRepository, final SagaRepository sagaRepository, final SagaEventRepository sagaEventRepository, final PenTwinsRepository penTwinsRepository, final TraxStudentCourseRepository traxStudentCourseRepository, final TraxStudentRepository traxStudentRepository) {
     this.authorityMasterRepository = authorityMasterRepository;
     this.schoolMasterRepository = schoolMasterRepository;
     this.penDemogRepository = penDemogRepository;
@@ -47,6 +49,8 @@ public class PenReplicationTestUtils {
     this.sagaRepository = sagaRepository;
     this.sagaEventRepository = sagaEventRepository;
     this.penTwinsRepository = penTwinsRepository;
+    this.traxStudentCourseRespository = traxStudentCourseRepository;
+    this.traxStudentRepository = traxStudentRepository;
   }
 
   /**
@@ -61,5 +65,7 @@ public class PenReplicationTestUtils {
     this.penTwinTransactionRepository.deleteAll();
     this.penDemogTransactionRepository.deleteAll();
     this.penTwinsRepository.deleteAll();
+    this.traxStudentCourseRespository.deleteAll();
+    this.traxStudentRepository.deleteAll();
   }
 }
