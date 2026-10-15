@@ -1,4 +1,4 @@
-package ca.bc.gov.educ.api.pen.replication.model.dc;
+package ca.bc.gov.educ.api.pen.replication.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;

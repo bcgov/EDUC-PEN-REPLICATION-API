@@ -5,7 +5,6 @@ import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.service.EventService;
 import ca.bc.gov.educ.api.pen.replication.struct.*;
-import ca.bc.gov.educ.api.pen.replication.struct.saga.StudentCourseUpdateSagaData;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -31,8 +30,8 @@ import static ca.bc.gov.educ.api.pen.replication.constants.EventType.*;
 @Slf4j
 public class ChoreographEventHandler {
   private final Executor singleTaskExecutor = new EnhancedQueueExecutor.Builder()
-    .setThreadFactory(new ThreadFactoryBuilder().setNameFormat("task-executor-%d").build())
-    .setCorePoolSize(2).setMaximumPoolSize(2).build();
+      .setThreadFactory(new ThreadFactoryBuilder().setNameFormat("task-executor-%d").build())
+      .setCorePoolSize(2).setMaximumPoolSize(2).build();
   private final Map<String, EventService<?>> eventServiceMap;
   private final EventRepository eventRepository;
 
@@ -83,9 +82,9 @@ public class ChoreographEventHandler {
                 break;
               case "GRAD_STUDENT_GRADUATED":
                 log.info("Processing GRAD_STUDENT_GRADUATED event record :: {} ", event);
-                val graduatedStudentRecord = JsonUtil.getJsonObjectFromString(GraduationStudentRecord.class, event.getEventPayload());
-                final EventService<GraduationStudentRecord> gradStudentGraduatedService = (EventService<GraduationStudentRecord>) this.eventServiceMap.get(GRAD_STUDENT_GRADUATED.toString());
-                gradStudentGraduatedService.processEvent(graduatedStudentRecord, event);
+                val gradStatusEventPayload = JsonUtil.getJsonObjectFromString(GradStatusEventPayloadDTO.class, event.getEventPayload());
+                final EventService<GradStatusEventPayloadDTO> gradStudentGraduatedService = (EventService<GradStatusEventPayloadDTO>) this.eventServiceMap.get(GRAD_STUDENT_GRADUATED.toString());
+                gradStudentGraduatedService.processEvent(gradStatusEventPayload, event);
                 break;
               case "ADOPT_GRAD_STUDENT":
                 log.info("Processing ADOPT_GRAD_STUDENT event record :: {} ", event);

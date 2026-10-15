@@ -38,7 +38,7 @@ public enum EventOutcome {
   STUDENT_NOT_FOUND,
 
   STUDENT_SCHOLARSHIP_ADDRESS_FOUND,
-  
+
   STUDENT_SCHOLARSHIP_ADDRESS_NOT_FOUND,
 
   PEN_TWINS_CREATED,
@@ -99,7 +99,8 @@ public enum EventOutcome {
 
   GRAD_STUDENT_CITIZENSHIP_UPDATED,
 
-  STUDENT_ADDRESS_UPDATED;
+  STUDENT_ADDRESS_UPDATED,
+  GRAD_STATUS_UPDATED;
 
   public static boolean isValid(String value) {
     if (value == null) {
