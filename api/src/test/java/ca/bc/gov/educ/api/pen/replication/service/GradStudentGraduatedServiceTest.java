@@ -34,22 +34,20 @@ public class GradStudentGraduatedServiceTest extends BasePenReplicationAPITest {
     String pen = "123456789";
     List<GradStudentRecordCoursesLoad> expectedCourses = List.of(
         GradStudentRecordCoursesLoad.builder()
-            .pen(pen)
             .courseCode("MATH")
             .courseLevel("12")
             .sessionDate("2025/06")
             .finalLetterGrade("A")
-            .finalPercent("92")
-            .credits("4")
+            .finalPercent(92)
+            .credits(4)
             .build(),
         GradStudentRecordCoursesLoad.builder()
-            .pen(pen)
             .courseCode("EN")
             .courseLevel("12")
             .sessionDate("2025/06")
             .finalLetterGrade("B")
-            .finalPercent("80")
-            .credits("4")
+            .finalPercent(80)
+            .credits(4)
             .build()
     );
 

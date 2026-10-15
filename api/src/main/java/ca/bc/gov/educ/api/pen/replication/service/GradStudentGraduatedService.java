@@ -76,15 +76,17 @@ public class GradStudentGraduatedService extends BaseService<GradStatusEventPayl
 
   private List<TraxStudentCourseEntity> getStudentCourseEntityList(String studentPEN, List<GradStudentRecordCoursesLoad> studentCourse) {
     var entityList = new ArrayList<TraxStudentCourseEntity>();
-    studentCourse.forEach(student -> {
+    studentCourse.forEach(course -> {
       TraxStudentCourseEntity traxStudentCourseEntity = new TraxStudentCourseEntity();
-      traxStudentCourseEntity.setCourseCode(StringUtils.trimToNull(student.getCourseCode()));
-      traxStudentCourseEntity.setCourseLevel(StringUtils.trimToNull(student.getCourseLevel()));
+      traxStudentCourseEntity.setCourseCode(StringUtils.trimToNull(course.getCourseCode()));
+      traxStudentCourseEntity.setCourseLevel(StringUtils.trimToNull(course.getCourseLevel()));
       traxStudentCourseEntity.setStudNo(StringUtils.trimToNull(studentPEN));
-      traxStudentCourseEntity.setCourseSession(StringUtils.trimToNull(StringUtils.remove(student.getSessionDate(), "/")));
-      traxStudentCourseEntity.setFinalLetterGrade(StringUtils.trimToNull(student.getFinalLetterGrade()));
-      traxStudentCourseEntity.setFinalPercentage(student.getFinalPercent() != null ? student.getFinalPercent() : null);
-      traxStudentCourseEntity.setNumberOfCredits(student.getCredits() != null ? student.getCredits() : null);
+      traxStudentCourseEntity.setCourseSession(StringUtils.trimToNull(StringUtils.remove(course.getSessionDate(), "/")));
+      traxStudentCourseEntity.setFinalLetterGrade(StringUtils.trimToNull(course.getFinalLetterGrade()));
+      traxStudentCourseEntity.setFinalPercentage(course.getFinalPercent() != null ? course.getFinalPercent().toString() : null);
+      traxStudentCourseEntity.setNumberOfCredits(course.getCredits() != null ? course.getCredits().toString() : null);
+      traxStudentCourseEntity.setUsedForGrad(StringUtils.trimToNull(course.getCreditsUsedForGrad()));
+      traxStudentCourseEntity.setStudyType(StringUtils.trimToNull(course.getGradReqMet()));
       entityList.add(traxStudentCourseEntity);
     });
     return entityList;
