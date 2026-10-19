@@ -5,6 +5,7 @@ import ca.bc.gov.educ.api.pen.replication.constants.EventType;
 import ca.bc.gov.educ.api.pen.replication.exception.PenReplicationAPIRuntimeException;
 import ca.bc.gov.educ.api.pen.replication.filter.FilterOperation;
 import ca.bc.gov.educ.api.pen.replication.messaging.MessagePublisher;
+import ca.bc.gov.educ.api.pen.replication.model.GradStudentRecordCoursesLoad;
 import ca.bc.gov.educ.api.pen.replication.properties.ApplicationProperties;
 import ca.bc.gov.educ.api.pen.replication.struct.*;
 import ca.bc.gov.educ.api.pen.replication.util.JsonUtil;
@@ -144,12 +145,12 @@ public class RestUtils {
   private List<SchoolTombstone> getSchools() {
     log.info("Calling Institute api to load schools to memory");
     return this.webClient.get()
-            .uri(this.props.getInstituteApiURL() + "/school")
-            .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .retrieve()
-            .bodyToFlux(SchoolTombstone.class)
-            .collectList()
-            .block();
+        .uri(this.props.getInstituteApiURL() + "/school")
+        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .retrieve()
+        .bodyToFlux(SchoolTombstone.class)
+        .collectList()
+        .block();
   }
 
   public Optional<SchoolTombstone> getSchoolBySchoolID(final String schoolID) {
@@ -179,12 +180,12 @@ public class RestUtils {
   private List<GradCourseCode> getCoreg39Courses() {
     log.info("Calling COREG API to load courses to memory");
     return this.webClient.get()
-            .uri(this.props.getCoregApiURL() + "/all/39")
-            .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .retrieve()
-            .bodyToFlux(GradCourseCode.class)
-            .collectList()
-            .block();
+        .uri(this.props.getCoregApiURL() + "/all/39")
+        .header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .retrieve()
+        .bodyToFlux(GradCourseCode.class)
+        .collectList()
+        .block();
   }
 
   public Optional<GradCourseCode> getCoreg39CourseByID(final String courseID) {
@@ -194,7 +195,7 @@ public class RestUtils {
     }
     return Optional.ofNullable(this.coreg39Map.get(courseID));
   }
-  
+
   /**
    * Gets students by id.
    *
@@ -247,7 +248,7 @@ public class RestUtils {
       }
       log.info("Got response from INSTITUTE_API found authority :: {}", authority.getIndependentAuthorityId());
       return authority;
-    }  catch (final InterruptedException e){
+    } catch (final InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new PenReplicationAPIRuntimeException(AUTHORITY_NOT_FOUND_FOR + authorityID + " :: " + e.getMessage());
     } catch (final Exception e) {
@@ -258,7 +259,8 @@ public class RestUtils {
   @Retryable(retryFor = {Exception.class}, backoff = @Backoff(multiplier = 2, delay = 2000))
   public Optional<StudentScholarshipAddress> getStudentScholarshipAddressByStudentID(UUID correlationID, String studentID) {
     try {
-      final TypeReference<StudentScholarshipAddress> refResult = new TypeReference<>() {};
+      final TypeReference<StudentScholarshipAddress> refResult = new TypeReference<>() {
+      };
       Object event = Event.builder().sagaId(correlationID).eventType(EventType.GET_STUDENT_SCHOLARSHIP_ADDRESS).eventPayload(studentID).build();
       val responseMessage = this.messagePublisher.requestMessage(SCHOLARSHIPS_API_TOPIC, JsonUtil.getJsonBytesFromObject(event)).completeOnTimeout(null, 120, TimeUnit.SECONDS).get();
       if (responseMessage != null) {
@@ -285,8 +287,8 @@ public class RestUtils {
     try {
       var currentDate = LocalDateTime.now();
       var currentDateMinus3Days = LocalDateTime.now().minusDays(3);
-      final SearchCriteria openDateCriteria = this.getCriteria(OPEN_DATE, FilterOperation.BETWEEN, StringUtils.substring(currentDateMinus3Days.toString(),0,19) + "," + StringUtils.substring(currentDate.toString(),0,19) , ValueType.DATE_TIME);
-      final SearchCriteria closeDateCriteria = this.getCriteria(CLOSE_DATE, FilterOperation.BETWEEN, StringUtils.substring(currentDateMinus3Days.toString(),0,19) + "," + StringUtils.substring(currentDate.toString(),0,19) , ValueType.DATE_TIME);
+      final SearchCriteria openDateCriteria = this.getCriteria(OPEN_DATE, FilterOperation.BETWEEN, StringUtils.substring(currentDateMinus3Days.toString(), 0, 19) + "," + StringUtils.substring(currentDate.toString(), 0, 19), ValueType.DATE_TIME);
+      final SearchCriteria closeDateCriteria = this.getCriteria(CLOSE_DATE, FilterOperation.BETWEEN, StringUtils.substring(currentDateMinus3Days.toString(), 0, 19) + "," + StringUtils.substring(currentDate.toString(), 0, 19), ValueType.DATE_TIME);
       final List<SearchCriteria> criteriaListOpenDate = new LinkedList<>(Collections.singletonList(openDateCriteria));
       final List<SearchCriteria> criteriaListCloseDate = new LinkedList<>(Collections.singletonList(closeDateCriteria));
       final List<Search> searches = new LinkedList<>();
@@ -314,8 +316,8 @@ public class RestUtils {
     try {
       var currentDate = LocalDateTime.now();
       var currentDateMinus3Days = LocalDateTime.now().minusDays(3);
-      final SearchCriteria openDateCriteria = this.getCriteria(OPEN_DATE, FilterOperation.BETWEEN, StringUtils.substring(currentDateMinus3Days.toString(),0,19) + "," + StringUtils.substring(currentDate.toString(),0,19) , ValueType.DATE_TIME);
-      final SearchCriteria closeDateCriteria = this.getCriteria(CLOSE_DATE, FilterOperation.BETWEEN, StringUtils.substring(currentDateMinus3Days.toString(),0,19) + "," + StringUtils.substring(currentDate.toString(),0,19) , ValueType.DATE_TIME);
+      final SearchCriteria openDateCriteria = this.getCriteria(OPEN_DATE, FilterOperation.BETWEEN, StringUtils.substring(currentDateMinus3Days.toString(), 0, 19) + "," + StringUtils.substring(currentDate.toString(), 0, 19), ValueType.DATE_TIME);
+      final SearchCriteria closeDateCriteria = this.getCriteria(CLOSE_DATE, FilterOperation.BETWEEN, StringUtils.substring(currentDateMinus3Days.toString(), 0, 19) + "," + StringUtils.substring(currentDate.toString(), 0, 19), ValueType.DATE_TIME);
       final List<SearchCriteria> criteriaListOpenDate = new LinkedList<>(Collections.singletonList(openDateCriteria));
       final List<SearchCriteria> criteriaListCloseDate = new LinkedList<>(Collections.singletonList(closeDateCriteria));
       final List<Search> searches = new LinkedList<>();
@@ -373,20 +375,18 @@ public class RestUtils {
       writeLock.lock();
       this.schoolOrganizationCodesMap.clear();
       final List<SchoolOrganizationCode> organizationCodes = this.webClient.get().uri(this.props.getInstituteApiURL(), uri -> uri.path("/organization-codes").build()).header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).retrieve().bodyToFlux(SchoolOrganizationCode.class).collectList().block();
-      if(organizationCodes != null) {
+      if (organizationCodes != null) {
         this.schoolOrganizationCodesMap.putAll(organizationCodes.stream().collect(Collectors.toMap(SchoolOrganizationCode::getSchoolOrganizationCode, Function.identity())));
       }
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       log.error("Unable to load map cache organization codes {}", ex);
-    }
-    finally {
+    } finally {
       writeLock.unlock();
     }
   }
 
-  public Map<String,SchoolOrganizationCode> getSchoolOrganizationCodes() {
-    if(this.schoolOrganizationCodesMap.isEmpty()) {
+  public Map<String, SchoolOrganizationCode> getSchoolOrganizationCodes() {
+    if (this.schoolOrganizationCodesMap.isEmpty()) {
       setOrganizationCodesMap();
     }
     return this.schoolOrganizationCodesMap;
@@ -398,20 +398,18 @@ public class RestUtils {
       writeLock.lock();
       this.schoolCategoryCodesMap.clear();
       final List<SchoolCategoryCode> categoryCodes = this.webClient.get().uri(this.props.getInstituteApiURL(), uri -> uri.path("/category-codes").build()).header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).retrieve().bodyToFlux(SchoolCategoryCode.class).collectList().block();
-      if(categoryCodes != null) {
+      if (categoryCodes != null) {
         this.schoolCategoryCodesMap.putAll(categoryCodes.stream().collect(Collectors.toMap(SchoolCategoryCode::getSchoolCategoryCode, Function.identity())));
       }
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       log.error("Unable to load map cache category codes {}", ex);
-    }
-    finally {
+    } finally {
       writeLock.unlock();
     }
   }
 
-  public Map<String,SchoolCategoryCode> getSchoolCategoryCodes() {
-    if(this.schoolCategoryCodesMap.isEmpty()) {
+  public Map<String, SchoolCategoryCode> getSchoolCategoryCodes() {
+    if (this.schoolCategoryCodesMap.isEmpty()) {
       setCategoryCodesMap();
     }
     return this.schoolCategoryCodesMap;
@@ -423,20 +421,18 @@ public class RestUtils {
       writeLock.lock();
       this.facilityTypeCodesMap.clear();
       final List<FacilityTypeCode> facilityTypeCodes = this.webClient.get().uri(this.props.getInstituteApiURL(), uri -> uri.path("/facility-codes").build()).header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).retrieve().bodyToFlux(FacilityTypeCode.class).collectList().block();
-      if(facilityTypeCodes != null) {
+      if (facilityTypeCodes != null) {
         this.facilityTypeCodesMap.putAll(facilityTypeCodes.stream().collect(Collectors.toMap(FacilityTypeCode::getFacilityTypeCode, Function.identity())));
       }
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       log.error("Unable to load map cache facility type codes {}", ex);
-    }
-    finally {
+    } finally {
       writeLock.unlock();
     }
   }
 
-  public Map<String,FacilityTypeCode> getFacilityTypeCodes() {
-    if(this.facilityTypeCodesMap.isEmpty()) {
+  public Map<String, FacilityTypeCode> getFacilityTypeCodes() {
+    if (this.facilityTypeCodesMap.isEmpty()) {
       setFacilityTypeCodesMap();
     }
     return this.facilityTypeCodesMap;
@@ -448,20 +444,18 @@ public class RestUtils {
       writeLock.lock();
       this.provinceCodesMap.clear();
       final List<ProvinceCode> provinceCodes = this.webClient.get().uri(this.props.getInstituteApiURL(), uri -> uri.path("/province-codes").build()).header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).retrieve().bodyToFlux(ProvinceCode.class).collectList().block();
-      if(provinceCodes != null) {
+      if (provinceCodes != null) {
         this.provinceCodesMap.putAll(provinceCodes.stream().collect(Collectors.toMap(ProvinceCode::getProvinceCode, Function.identity())));
       }
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       log.error("Unable to load map cache province type codes {}", ex);
-    }
-    finally {
+    } finally {
       writeLock.unlock();
     }
   }
 
-  public Map<String,ProvinceCode> getProvinceCodes() {
-    if(this.provinceCodesMap.isEmpty()) {
+  public Map<String, ProvinceCode> getProvinceCodes() {
+    if (this.provinceCodesMap.isEmpty()) {
       setFacilityTypeCodesMap();
     }
     return this.provinceCodesMap;
@@ -473,20 +467,18 @@ public class RestUtils {
       writeLock.lock();
       this.countryCodesMap.clear();
       final List<CountryCode> countryCodes = this.webClient.get().uri(this.props.getInstituteApiURL(), uri -> uri.path("/country-codes").build()).header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).retrieve().bodyToFlux(CountryCode.class).collectList().block();
-      if(countryCodes != null) {
+      if (countryCodes != null) {
         this.countryCodesMap.putAll(countryCodes.stream().collect(Collectors.toMap(CountryCode::getCountryCode, Function.identity())));
       }
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       log.error("Unable to load map cache country type codes {}", ex);
-    }
-    finally {
+    } finally {
       writeLock.unlock();
     }
   }
 
-  public Map<String,CountryCode> getCountryCodes() {
-    if(this.countryCodesMap.isEmpty()) {
+  public Map<String, CountryCode> getCountryCodes() {
+    if (this.countryCodesMap.isEmpty()) {
       setFacilityTypeCodesMap();
     }
     return this.countryCodesMap;
@@ -498,20 +490,18 @@ public class RestUtils {
       writeLock.lock();
       this.districtRegionCodesMap.clear();
       final List<DistrictRegionCode> districtRegionCodes = this.webClient.get().uri(this.props.getInstituteApiURL(), uri -> uri.path("/district-region-codes").build()).header(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE).retrieve().bodyToFlux(DistrictRegionCode.class).collectList().block();
-      if(districtRegionCodes != null) {
+      if (districtRegionCodes != null) {
         this.districtRegionCodesMap.putAll(districtRegionCodes.stream().collect(Collectors.toMap(DistrictRegionCode::getDistrictRegionCode, Function.identity())));
       }
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       log.error("Unable to load map cache district region codes {}", ex);
-    }
-    finally {
+    } finally {
       writeLock.unlock();
     }
   }
 
-  public Map<String,DistrictRegionCode> getDistrictRegionCodes() {
-    if(this.districtRegionCodesMap.isEmpty()) {
+  public Map<String, DistrictRegionCode> getDistrictRegionCodes() {
+    if (this.districtRegionCodesMap.isEmpty()) {
       setDistrictRegionCodesMap();
     }
     return this.districtRegionCodesMap;
@@ -542,5 +532,20 @@ public class RestUtils {
     return penStudentMap;
   }
 
-
+  /**
+   * Gets the student's course list from the Grad Student API CLOB by PEN.
+   *
+   * @param pen the student's PEN
+   * @return the courses stored in the student's graduation data CLOB
+   */
+  public List<GradStudentRecordCoursesLoad> getGradStudentCourseListFromClobByPen(final String pen) {
+    return this.webClient.get()
+        .uri(this.props.getGradStudentApiURL(),
+            uriBuilder -> uriBuilder.path("/course-clob/pen/{pen}").build(pen))
+        .accept(MediaType.APPLICATION_JSON)
+        .retrieve()
+        .bodyToFlux(GradStudentRecordCoursesLoad.class)
+        .collectList()
+        .block();
+  }
 }

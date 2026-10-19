@@ -21,8 +21,8 @@ import java.util.concurrent.Executor;
 public class ApplicationProperties {
 
   public static final Executor bgTask = new EnhancedQueueExecutor.Builder()
-    .setThreadFactory(new ThreadFactoryBuilder().setNameFormat("bg-task-executor-%d").build())
-    .setCorePoolSize(1).setMaximumPoolSize(1).setKeepAliveTime(Duration.ofSeconds(60)).build();
+      .setThreadFactory(new ThreadFactoryBuilder().setNameFormat("bg-task-executor-%d").build())
+      .setCorePoolSize(1).setMaximumPoolSize(1).setKeepAliveTime(Duration.ofSeconds(60)).build();
   /**
    * The constant API_NAME.
    */
@@ -68,4 +68,7 @@ public class ApplicationProperties {
 
   @Value("${url.api.coreg}")
   private String coregApiURL;
+
+  @Value("${url.api.grad-student}")
+  private String gradStudentApiURL;
 }

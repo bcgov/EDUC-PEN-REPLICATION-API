@@ -28,6 +28,7 @@ env:
   NAMESPACE: ${{ secrets.PEN_NAMESPACE_NO_ENV }}
   COMMON_NAMESPACE: ${{ secrets.COMMON_NAMESPACE_NO_ENV }}
   COREG_NAMESPACE: ${{ secrets.COREG_NAMESPACE_NO_ENV }}
+  GRAD_NAMESPACE: ${{ secrets.GRAD_NAMESPACE_NO_ENV }}
   TAG: "latest"
   TARGET_ENV: "prod"
   MIN_REPLICAS: "2"
@@ -60,7 +61,7 @@ jobs:
               OPENSHIFT_SERVER: `${{ secrets.OPENSHIFT_SERVER }}`,
               OPENSHIFT_TOKEN: `${{ secrets.OPENSHIFT_TOKEN }}`,
             };
-  
+            
             const GHCR = "ghcr.io";
             if (`${{ env.IMAGE_REGISTRY }}`.startsWith(GHCR)) {
               core.info(`Image registry is ${GHCR} - no registry password required`);
@@ -69,7 +70,7 @@ jobs:
               core.info("A registry password is required");
               secrets["IMAGE_REGISTRY_PASSWORD"] = `${{ secrets.IMAGE_REGISTRY_PASSWORD }}`;
             }
-  
+            
             const missingSecrets = Object.entries(secrets).filter(([ name, value ]) => {
               if (value.length === 0) {
                 core.error(`Secret "${name}" is not set`);
@@ -78,7 +79,7 @@ jobs:
               core.info(`✔️ Secret "${name}" is set`);
               return false;
             });
-  
+            
             if (missingSecrets.length > 0) {
               core.setFailed(`❌ At least one required secret is not set in the repository. \n` +
                 "You can add it using:\n" +
@@ -121,7 +122,7 @@ jobs:
           oc process -f tools/openshift/api.deployment.yaml -p APP_NAME=${{ env.APP_NAME }} -p REPO_NAME=${{ env.REPO_NAME }} -p BRANCH=${{ env.BRANCH }} -p NAMESPACE=${{ env.OPENSHIFT_NAMESPACE }} -p TAG=${{ steps.get-latest-tag.outputs.tag }} -p MIN_REPLICAS=${{ env.MIN_REPLICAS }} -p MAX_REPLICAS=${{ env.MAX_REPLICAS }} -p MIN_CPU=${{ env.MIN_CPU }} -p MAX_CPU=${{ env.MAX_CPU }} -p MIN_MEM=${{ env.MIN_MEM }} -p MAX_MEM=${{ env.MAX_MEM }} \
           | oc apply -f -
           
-          curl -s https://raw.githubusercontent.com/bcgov/${{ env.REPO_NAME }}/${{ steps.get-latest-tag.outputs.tag }}/tools/config/update-configmap.sh | bash /dev/stdin ${{ env.TARGET_ENV }} ${{ env.APP_NAME }} ${{ env.NAMESPACE }} ${{ env.COMMON_NAMESPACE }} ${{env.COREG_NAMESPACE }} ${{ env.DB_JDBC_CONNECT_STRING }} ${{ env.DB_PWD }} ${{ env.DB_USER }} ${{ env.SPLUNK_TOKEN }}
+          curl -s https://raw.githubusercontent.com/bcgov/${{ env.REPO_NAME }}/${{ steps.get-latest-tag.outputs.tag }}/tools/config/update-configmap.sh | bash /dev/stdin ${{ env.TARGET_ENV }} ${{ env.APP_NAME }} ${{ env.NAMESPACE }} ${{ env.COMMON_NAMESPACE }} ${{env.COREG_NAMESPACE }} ${{ env.GRAD_NAMESPACE }} ${{ env.DB_JDBC_CONNECT_STRING }} ${{ env.DB_PWD }} ${{ env.DB_USER }} ${{ env.SPLUNK_TOKEN }}
           
           # Start rollout (if necessary) and follow it
           oc rollout restart deployment/${{ env.SPRING_BOOT_IMAGE_NAME }} 2> /dev/null \

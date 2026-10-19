@@ -1,4 +1,4 @@
-package ca.bc.gov.educ.api.pen.replication.model.dc;
+package ca.bc.gov.educ.api.pen.replication.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
@@ -15,11 +15,10 @@ public class GradStudentRecordCoursesLoad {
 
   private String courseCode;
   private String courseLevel;
-  private String credits;
+  private Integer credits;
   private String creditsUsedForGrad;
   private String finalLetterGrade;
-  private String finalPercent;
+  private Integer finalPercent;
   private String gradReqMet;
-  private String pen;
   private String sessionDate;
 }
