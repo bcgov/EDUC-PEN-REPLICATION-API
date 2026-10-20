@@ -7,10 +7,17 @@ import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.GradStatusEventPayloadDTO;
 import ca.bc.gov.educ.api.pen.replication.support.TestUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.context.junit4.rules.SpringClassRule;
+import org.springframework.test.context.junit4.rules.SpringMethodRule;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.List;
@@ -21,13 +28,46 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
+@RunWith(JUnitParamsRunner.class)
 public class GradStudentGraduatedServiceTest extends BasePenReplicationAPITest {
+
+  @ClassRule
+  public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
+
+  @Rule
+  public final SpringMethodRule springMethodRule = new SpringMethodRule();
 
   @Autowired
   private GradStudentGraduatedService gradStudentGraduatedService;
 
   @Autowired
   private RestUtils restUtils;
+
+  private Object[][] studyTypeParameters() {
+    return new Object[][]{
+        {null, null},
+        {"", null},
+        {"   ", null},
+        {"3", " 3"},
+        {" 3 ", " 3"},
+        {"3, 203, 204", " 3"},
+        {"203, 3, 204", " 3"},
+        {"203, 204, 3", " 3"},
+        {"203, 4, 204", null},
+        {"23, 24, 25", null},
+        {"13, 30, 203", null},
+        {",,,", null},
+        {", , ,", null},
+        {"203,,3,,", " 3"},
+        {"203,,204,,", null}
+    };
+  }
+
+  @Test
+  @Parameters(method = "studyTypeParameters")
+  public void testDetermineStudyType_givenGradReqMet_shouldReturnExpectedStudyType(String gradReqMet, String expectedStudyType) {
+    assertThat(this.gradStudentGraduatedService.determineStudyType(gradReqMet)).isEqualTo(expectedStudyType);
+  }
 
   @Test
   public void testProcessEvent_givenGRAD_STUDENT_GRADUATED_Event_shouldSaveCoursesInDB() throws JsonProcessingException {
@@ -40,6 +80,7 @@ public class GradStudentGraduatedServiceTest extends BasePenReplicationAPITest {
             .finalLetterGrade("A")
             .finalPercent(92)
             .credits(4)
+            .gradReqMet("3, 203, 204")
             .build(),
         GradStudentRecordCoursesLoad.builder()
             .courseCode("EN")
@@ -48,6 +89,7 @@ public class GradStudentGraduatedServiceTest extends BasePenReplicationAPITest {
             .finalLetterGrade("B")
             .finalPercent(80)
             .credits(4)
+            .gradReqMet("")
             .build()
     );
 
