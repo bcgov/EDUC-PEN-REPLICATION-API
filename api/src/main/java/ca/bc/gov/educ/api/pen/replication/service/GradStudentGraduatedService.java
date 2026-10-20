@@ -16,10 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventType.GRAD_STUDENT_GRADUATED;
 
@@ -86,7 +83,7 @@ public class GradStudentGraduatedService extends BaseService<GradStatusEventPayl
       traxStudentCourseEntity.setFinalPercentage(course.getFinalPercent() != null ? course.getFinalPercent().toString() : null);
       traxStudentCourseEntity.setNumberOfCredits(course.getCredits() != null ? course.getCredits().toString() : null);
       traxStudentCourseEntity.setUsedForGrad(StringUtils.trimToNull(course.getCreditsUsedForGrad()));
-      traxStudentCourseEntity.setStudyType(StringUtils.trimToNull(course.getGradReqMet()));
+      traxStudentCourseEntity.setStudyType(determineStudyType(course.getGradReqMet()));
       entityList.add(traxStudentCourseEntity);
     });
     return entityList;
@@ -105,5 +102,26 @@ public class GradStudentGraduatedService extends BaseService<GradStatusEventPayl
   @Override
   protected void buildAndExecutePreparedStatements(final EntityManager em, final GradStatusEventPayloadDTO gradStatusEventPayloadDTO) {
     // Not required this child class use repository pattern of spring.
+  }
+
+  /**
+   * Determines the TRAX study type from comma-separated graduation requirement codes.
+   * <p>
+   * A requirement code of "3" maps to " 3", including the leading space required
+   * by TRAX. All other codes are ignored. Whitespace around each code is trimmed
+   * before comparison.
+   *
+   * @param gradReqMet graduation requirement codes; may be null, empty, or blank
+   * @return " 3" if an exact code of "3" is present; otherwise null
+   */
+  public String determineStudyType(String gradReqMet) {
+    if (StringUtils.isBlank(gradReqMet)) {
+      return null;
+    }
+
+    boolean hasRequirementThree = Arrays.stream(gradReqMet.split(","))
+        .anyMatch(requirement -> "3".equals(requirement.trim()));
+
+    return hasRequirementThree ? " 3" : null;
   }
 }
