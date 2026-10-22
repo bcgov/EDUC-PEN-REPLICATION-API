@@ -53,7 +53,7 @@ public class GradStudentGraduatedService extends BaseService<GradStatusEventPayl
     val existingTraxStudentRecord = this.traxStudentService.findTraxStudentByPen(StringUtils.rightPad(studentPEN, 10));
     if (existingTraxStudentRecord.isPresent()) {
       val existingTraxStudent = populateExistingTraxStudentEntity(existingTraxStudentRecord.get(), gradStatusEventPayloadDTO);
-      this.traxStudentService.saveTraxStudent(existingTraxStudent);
+      this.traxStudentService.saveTraxStudentInCurrentTransaction(existingTraxStudent);
       var existingCourses = this.traxStudentCourseService.findTraxStudentCoursesByPen(StringUtils.rightPad(studentPEN, 10));
       existingCourses = existingCourses.stream().filter(Objects::nonNull).toList();
       this.traxStudentCourseService.deletePriorAndSaveTraxStudentCourses(existingCourses, getStudentCourseEntityList(studentPEN, courseListFromGradStudentClob));
