@@ -108,12 +108,35 @@ public class GradStudentGraduatedService extends BaseService<GradStatusEventPayl
       gradDate = StringUtils.isNotBlank(gradStatusEventPayloadDTO.getProgramCompletionDate()) ? gradStatusEventPayloadDTO.getProgramCompletionDate().substring(0, 7).replace("-", "") : null;
     }
 
-    existingTraxStudent.setMincode(schoolOfRecord.getMincode());
-    existingTraxStudent.setMincodeGrad(mincodeGrad);
     existingTraxStudent.setGradDate(StringUtils.isNotBlank(gradDate) ? Long.valueOf(gradDate) : null);
     existingTraxStudent.setGradReqtYear(gradProgramCode);
+    existingTraxStudent.setMincode(schoolOfRecord.getMincode());
+    existingTraxStudent.setMincodeGrad(mincodeGrad);
+    existingTraxStudent.setArchiveFlag(getTraxArchiveFlag(gradStatusEventPayloadDTO.getStudentStatus()));
+    existingTraxStudent.setStudStatus(getTraxStudentStatus(gradStatusEventPayloadDTO.getStudentStatus()));
+    existingTraxStudent.setStudGrade(gradStatusEventPayloadDTO.getStudentGrade());
 
     return existingTraxStudent;
+  }
+
+  private String getTraxArchiveFlag(String gradStudentStatus) {
+    if (gradStudentStatus.equalsIgnoreCase("CUR") || gradStudentStatus.equalsIgnoreCase("TER")) {
+      return "A";
+    }
+    return "I";
+  }
+
+  private String getTraxStudentStatus(String gradStudentStatus) {
+    if (gradStudentStatus.equalsIgnoreCase("CUR") || gradStudentStatus.equalsIgnoreCase("ARC")) {
+      return "A";
+    } else if (gradStudentStatus.equalsIgnoreCase("DEC")) {
+      return "D";
+    } else if (gradStudentStatus.equalsIgnoreCase("MER")) {
+      return "M";
+    } else if (gradStudentStatus.equalsIgnoreCase("TER")) {
+      return "T";
+    }
+    return "A";
   }
 
   /**
