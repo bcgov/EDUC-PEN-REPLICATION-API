@@ -93,7 +93,7 @@ public class GradStudentGraduatedService extends BaseService<GradStatusEventPayl
   }
 
   private TraxStudentEntity populateExistingTraxStudentEntity(TraxStudentEntity existingTraxStudent, GradStatusEventPayloadDTO gradStatusEventPayloadDTO) {
-    var schoolOfRecord = this.restUtils.getSchoolBySchoolID(gradStatusEventPayloadDTO.getSchoolOfRecordId().toString()).get();
+    var schoolOfRecord = this.restUtils.getSchoolBySchoolID(gradStatusEventPayloadDTO.getSchoolOfRecordId().toString()).orElseThrow();
     var gradProgramCode = StringUtils.isNotBlank(gradStatusEventPayloadDTO.getProgram()) ? gradStatusEventPayloadDTO.getProgram().substring(0, 4) : null;
 
     String mincodeGrad = null;
@@ -103,7 +103,7 @@ public class GradStudentGraduatedService extends BaseService<GradStatusEventPayl
       gradDate = null;
     } else {
       if (gradStatusEventPayloadDTO.getSchoolAtGradId() != null) {
-        mincodeGrad = restUtils.getSchoolBySchoolID(gradStatusEventPayloadDTO.getSchoolAtGradId().toString()).get().getMincode();
+        mincodeGrad = restUtils.getSchoolBySchoolID(gradStatusEventPayloadDTO.getSchoolAtGradId().toString()).orElseThrow().getMincode();
       }
       gradDate = StringUtils.isNotBlank(gradStatusEventPayloadDTO.getProgramCompletionDate()) ? gradStatusEventPayloadDTO.getProgramCompletionDate().substring(0, 7).replace("-", "") : null;
     }
