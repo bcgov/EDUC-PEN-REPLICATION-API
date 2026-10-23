@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventType.ADOPT_GRAD_STUDENT;
+import static ca.bc.gov.educ.api.pen.replication.util.ReplicationUtils.getTraxArchiveFlag;
+import static ca.bc.gov.educ.api.pen.replication.util.ReplicationUtils.getTraxStudentStatus;
 
 @Service
 @Slf4j
@@ -83,26 +85,6 @@ public class GradStudentAdoptService extends BaseService<GraduationStudentRecord
 
   }
 
-  private String getTraxArchiveFlag(String gradStudentStatus){
-    if(gradStudentStatus.equalsIgnoreCase("CUR") || gradStudentStatus.equalsIgnoreCase("TER")){
-      return "A";
-    }
-    return "I";
-  }
-  
-  private String getTraxStudentStatus(String gradStudentStatus){
-    if(gradStudentStatus.equalsIgnoreCase("CUR") || gradStudentStatus.equalsIgnoreCase("ARC")){
-      return "A";
-    }else if(gradStudentStatus.equalsIgnoreCase("DEC")){
-      return "D";
-    }else if(gradStudentStatus.equalsIgnoreCase("MER")){
-      return "M";
-    }else if(gradStudentStatus.equalsIgnoreCase("TER")){
-      return "T";
-    }
-    return "A";
-  }
-  
   @Override
   public String getEventType() {
     return ADOPT_GRAD_STUDENT.toString();

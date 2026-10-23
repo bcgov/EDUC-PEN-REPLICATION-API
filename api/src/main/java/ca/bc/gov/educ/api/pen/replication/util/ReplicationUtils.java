@@ -32,6 +32,38 @@ public final class ReplicationUtils {
     return " ";
   }
 
+  /**
+   * Translates the GRAD_STUDENT_RECORDS status to the STUDENT_MASTER ARCHIVE_FLAG.
+   *
+   * @param gradStudentStatus the GRAD_STUDENT_RECORDS student status
+   * @return "A" for CUR or TER, otherwise "I"
+   */
+  public static String getTraxArchiveFlag(final String gradStudentStatus) {
+    if (gradStudentStatus.equalsIgnoreCase("CUR") || gradStudentStatus.equalsIgnoreCase("TER")) {
+      return "A";
+    }
+    return "I";
+  }
+
+  /**
+   * Translates the GRAD_STUDENT_RECORDS status to the STUDENT_MASTER STUD_STATUS.
+   *
+   * @param gradStudentStatus the GRAD_STUDENT_RECORDS student status
+   * @return "A" for CUR/ARC, "D" for DEC, "M" for MER, "T" for TER, otherwise "A"
+   */
+  public static String getTraxStudentStatus(final String gradStudentStatus) {
+    if (gradStudentStatus.equalsIgnoreCase("CUR") || gradStudentStatus.equalsIgnoreCase("ARC")) {
+      return "A";
+    } else if (gradStudentStatus.equalsIgnoreCase("DEC")) {
+      return "D";
+    } else if (gradStudentStatus.equalsIgnoreCase("MER")) {
+      return "M";
+    } else if (gradStudentStatus.equalsIgnoreCase("TER")) {
+      return "T";
+    }
+    return "A";
+  }
+
   public static void setCloseDateIfRequired(School school, SchoolMasterEntity entity){
     if (StringUtils.isNotEmpty(school.getClosedDate()) && dateTimeMapper.map(school.getClosedDate()).isAfter(LocalDateTime.now())){
       if(entity != null) {

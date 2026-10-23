@@ -29,6 +29,11 @@ public class TraxStudentService {
     }
   }
 
+  @Transactional(propagation = Propagation.MANDATORY)
+  public void saveTraxStudentInCurrentTransaction(final TraxStudentEntity entity) {
+    this.traxStudentRepository.saveAndFlush(entity);
+  }
+
   @Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
   public Optional<TraxStudentEntity> findTraxStudentByPen(final String pen) {
     return this.traxStudentRepository.findById(pen);

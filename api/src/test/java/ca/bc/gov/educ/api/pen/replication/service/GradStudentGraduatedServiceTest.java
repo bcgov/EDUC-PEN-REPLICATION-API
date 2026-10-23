@@ -5,6 +5,7 @@ import ca.bc.gov.educ.api.pen.replication.model.GradStudentRecordCoursesLoad;
 import ca.bc.gov.educ.api.pen.replication.model.TraxStudentEntity;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.GradStatusEventPayloadDTO;
+import ca.bc.gov.educ.api.pen.replication.struct.SchoolTombstone;
 import ca.bc.gov.educ.api.pen.replication.support.TestUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import junitparams.JUnitParamsRunner;
@@ -21,6 +22,8 @@ import org.springframework.test.context.junit4.rules.SpringMethodRule;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventStatus.PROCESSED;
 import static ca.bc.gov.educ.api.pen.replication.constants.EventType.GRAD_STUDENT_GRADUATED;
@@ -96,11 +99,19 @@ public class GradStudentGraduatedServiceTest extends BasePenReplicationAPITest {
     GradStatusEventPayloadDTO request = GradStatusEventPayloadDTO.builder()
         .pen(pen)
         .program("2023-EN")
-        .programCompletionDate("2025/06")
-        .studentGrade("12")
-        .studentStatus("A")
+        .programCompletionDate("2012-06-01 00:00:00.000")
+        .studentGrade("GA")
+        .studentStatus("CUR")
+        .schoolOfRecordId(UUID.randomUUID())
+        .schoolAtGradId(UUID.randomUUID())
         .updateUser("TEST")
         .build();
+    var schoolOfRecord = new SchoolTombstone();
+    schoolOfRecord.setMincode("12345678");
+    var schoolAtGrad = new SchoolTombstone();
+    schoolAtGrad.setMincode("87654321");
+    when(this.restUtils.getSchoolBySchoolID(request.getSchoolOfRecordId().toString())).thenReturn(Optional.of(schoolOfRecord));
+    when(this.restUtils.getSchoolBySchoolID(request.getSchoolAtGradId().toString())).thenReturn(Optional.of(schoolAtGrad));
     when(this.restUtils.getGradStudentCourseListFromClobByPen(pen)).thenReturn(expectedCourses);
 
     String paddedPen = StringUtils.rightPad(request.getPen(), 10);
@@ -113,13 +124,94 @@ public class GradStudentGraduatedServiceTest extends BasePenReplicationAPITest {
 
     this.gradStudentGraduatedService.processEvent(request, event);
 
+    var savedStudent = traxStudentRepository.findById(paddedPen).orElseThrow();
+    assertThat(savedStudent.getMincode()).isEqualTo("12345678");
+    assertThat(savedStudent.getMincodeGrad()).isEqualTo("87654321");
+    assertThat(savedStudent.getGradDate()).isEqualTo(201206);
+    assertThat(savedStudent.getGradReqtYear()).isEqualTo("2023");
+    assertThat(savedStudent.getStudGrade()).isEqualTo("GA");
+    assertThat(savedStudent.getStudStatus()).isEqualTo("A");
+    assertThat(savedStudent.getArchiveFlag()).isEqualTo("A");
+    //student graduated in adult program so this column should be set to GA
+    assertThat(savedStudent.getGraduatedAdult()).isEqualTo("GA");
+
     var traxStudentCourseRespository = this.penReplicationTestUtils.getTraxStudentCourseRespository();
     var savedCourses = traxStudentCourseRespository.findAllByStudNo(request.getPen());
 
     assertThat(savedCourses.size()).isEqualTo(expectedCourses.size());
     assertThat(this.penReplicationTestUtils.getEventRepository().findByEventId(event.getEventId()))
         .hasValueSatisfying(savedEvent -> assertThat(savedEvent.getEventStatus()).isEqualTo(PROCESSED.toString()));
+  }
 
+  @Test
+  public void testProcessEvent_givenGRAD_STUDENT_GRADUATED_Event_ifPROGRAM_SCCP_saveStudentInSTUDENTMASTERDB_nullGRADDATEandMINCODEGRAD() throws JsonProcessingException {
+    String pen = "123456789";
+    List<GradStudentRecordCoursesLoad> expectedCourses = List.of(
+        GradStudentRecordCoursesLoad.builder()
+            .courseCode("MATH")
+            .courseLevel("12")
+            .sessionDate("2025/06")
+            .finalLetterGrade("A")
+            .finalPercent(92)
+            .credits(4)
+            .gradReqMet("3, 203, 204")
+            .build(),
+        GradStudentRecordCoursesLoad.builder()
+            .courseCode("EN")
+            .courseLevel("12")
+            .sessionDate("2025/06")
+            .finalLetterGrade("B")
+            .finalPercent(80)
+            .credits(4)
+            .gradReqMet("")
+            .build()
+    );
+
+    GradStatusEventPayloadDTO request = GradStatusEventPayloadDTO.builder()
+        .pen(pen)
+        .program("SCCP")
+        .programCompletionDate(null)
+        .studentGrade("12")
+        .studentStatus("DEC")
+        .schoolOfRecordId(UUID.randomUUID())
+        .schoolAtGradId(UUID.randomUUID())
+        .updateUser("TEST")
+        .build();
+    var schoolOfRecord = new SchoolTombstone();
+    schoolOfRecord.setMincode("12345678");
+    var schoolAtGrad = new SchoolTombstone();
+    schoolAtGrad.setMincode("87654321");
+    when(this.restUtils.getSchoolBySchoolID(request.getSchoolOfRecordId().toString())).thenReturn(Optional.of(schoolOfRecord));
+    when(this.restUtils.getSchoolBySchoolID(request.getSchoolAtGradId().toString())).thenReturn(Optional.of(schoolAtGrad));
+    when(this.restUtils.getGradStudentCourseListFromClobByPen(pen)).thenReturn(expectedCourses);
+
+    String paddedPen = StringUtils.rightPad(request.getPen(), 10);
+    var traxStudentRepository = this.penReplicationTestUtils.getTraxStudentRepository();
+    traxStudentRepository.saveAndFlush(TraxStudentEntity.builder().studNo(paddedPen).build());
+
+    final var event = TestUtils.createEvent(GRAD_STUDENT_GRADUATED.toString(), request,
+        this.penReplicationTestUtils.getEventRepository());
+    this.penReplicationTestUtils.getEventRepository().save(event);
+
+    this.gradStudentGraduatedService.processEvent(request, event);
+
+    var savedStudent = traxStudentRepository.findById(paddedPen).orElseThrow();
+    assertThat(savedStudent.getMincode()).isEqualTo("12345678");
+    assertThat(savedStudent.getMincodeGrad()).isNull();
+    assertThat(savedStudent.getGradDate()).isNull();
+    assertThat(savedStudent.getGradReqtYear()).isEqualTo("SCCP");
+    assertThat(savedStudent.getStudGrade()).isEqualTo("12");
+    assertThat(savedStudent.getStudStatus()).isEqualTo("D");
+    assertThat(savedStudent.getArchiveFlag()).isEqualTo("I");
+    assertThat(savedStudent.getGraduatedAdult()).isNull();
+
+
+    var traxStudentCourseRespository = this.penReplicationTestUtils.getTraxStudentCourseRespository();
+    var savedCourses = traxStudentCourseRespository.findAllByStudNo(request.getPen());
+
+    assertThat(savedCourses.size()).isEqualTo(expectedCourses.size());
+    assertThat(this.penReplicationTestUtils.getEventRepository().findByEventId(event.getEventId()))
+        .hasValueSatisfying(savedEvent -> assertThat(savedEvent.getEventStatus()).isEqualTo(PROCESSED.toString()));
   }
 
   @Test
