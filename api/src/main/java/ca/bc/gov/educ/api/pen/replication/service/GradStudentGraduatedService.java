@@ -20,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventType.GRAD_STUDENT_GRADUATED;
+import static ca.bc.gov.educ.api.pen.replication.util.ReplicationUtils.getTraxArchiveFlag;
+import static ca.bc.gov.educ.api.pen.replication.util.ReplicationUtils.getTraxStudentStatus;
 
 @Service
 @Slf4j
@@ -59,8 +61,8 @@ public class GradStudentGraduatedService extends BaseService<GradStatusEventPayl
       this.traxStudentCourseService.deletePriorAndSaveTraxStudentCourses(existingCourses, getStudentCourseEntityList(studentPEN, courseListFromGradStudentClob));
       log.info("Processing choreography update event with ID {} :: payload is: {}", event.getEventId(), gradStatusEventPayloadDTO);
     } else {
-      log.info("Student course event not processed {} :: payload is: {} :: student does not yet exist in TRAX STUDENT_MASTER", event.getEventId(), gradStatusEventPayloadDTO);
-      throw new PenReplicationAPIRuntimeException("GradStudentGraduatedService :: Student course event not processed");
+      log.info("Grad student graduated event not processed {} :: payload is: {} :: student does not yet exist in TRAX STUDENT_MASTER", event.getEventId(), gradStatusEventPayloadDTO);
+      throw new PenReplicationAPIRuntimeException("GradStudentGraduatedService :: Grad student graduated event not processed");
     }
     this.updateEvent(event);
   }
@@ -115,28 +117,9 @@ public class GradStudentGraduatedService extends BaseService<GradStatusEventPayl
     existingTraxStudent.setArchiveFlag(getTraxArchiveFlag(gradStatusEventPayloadDTO.getStudentStatus()));
     existingTraxStudent.setStudStatus(getTraxStudentStatus(gradStatusEventPayloadDTO.getStudentStatus()));
     existingTraxStudent.setStudGrade(gradStatusEventPayloadDTO.getStudentGrade());
+    existingTraxStudent.setGraduatedAdult(gradDate != null && StringUtils.equalsIgnoreCase(gradStatusEventPayloadDTO.getStudentGrade(), "GA") ? "GA" : null);
 
     return existingTraxStudent;
-  }
-
-  private String getTraxArchiveFlag(String gradStudentStatus) {
-    if (gradStudentStatus.equalsIgnoreCase("CUR") || gradStudentStatus.equalsIgnoreCase("TER")) {
-      return "A";
-    }
-    return "I";
-  }
-
-  private String getTraxStudentStatus(String gradStudentStatus) {
-    if (gradStudentStatus.equalsIgnoreCase("CUR") || gradStudentStatus.equalsIgnoreCase("ARC")) {
-      return "A";
-    } else if (gradStudentStatus.equalsIgnoreCase("DEC")) {
-      return "D";
-    } else if (gradStudentStatus.equalsIgnoreCase("MER")) {
-      return "M";
-    } else if (gradStudentStatus.equalsIgnoreCase("TER")) {
-      return "T";
-    }
-    return "A";
   }
 
   /**

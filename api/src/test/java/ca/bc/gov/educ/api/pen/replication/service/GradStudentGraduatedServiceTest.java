@@ -100,7 +100,7 @@ public class GradStudentGraduatedServiceTest extends BasePenReplicationAPITest {
         .pen(pen)
         .program("2023-EN")
         .programCompletionDate("2012-06-01 00:00:00.000")
-        .studentGrade("12")
+        .studentGrade("GA")
         .studentStatus("CUR")
         .schoolOfRecordId(UUID.randomUUID())
         .schoolAtGradId(UUID.randomUUID())
@@ -129,6 +129,11 @@ public class GradStudentGraduatedServiceTest extends BasePenReplicationAPITest {
     assertThat(savedStudent.getMincodeGrad()).isEqualTo("87654321");
     assertThat(savedStudent.getGradDate()).isEqualTo(201206);
     assertThat(savedStudent.getGradReqtYear()).isEqualTo("2023");
+    assertThat(savedStudent.getStudGrade()).isEqualTo("GA");
+    assertThat(savedStudent.getStudStatus()).isEqualTo("A");
+    assertThat(savedStudent.getArchiveFlag()).isEqualTo("A");
+    //student graduated in adult program so this column should be set to GA
+    assertThat(savedStudent.getGraduatedAdult()).isEqualTo("GA");
 
     var traxStudentCourseRespository = this.penReplicationTestUtils.getTraxStudentCourseRespository();
     var savedCourses = traxStudentCourseRespository.findAllByStudNo(request.getPen());
@@ -165,9 +170,9 @@ public class GradStudentGraduatedServiceTest extends BasePenReplicationAPITest {
     GradStatusEventPayloadDTO request = GradStatusEventPayloadDTO.builder()
         .pen(pen)
         .program("SCCP")
-        .programCompletionDate("2012-06-01 00:00:00.000")
+        .programCompletionDate(null)
         .studentGrade("12")
-        .studentStatus("ARC")
+        .studentStatus("DEC")
         .schoolOfRecordId(UUID.randomUUID())
         .schoolAtGradId(UUID.randomUUID())
         .updateUser("TEST")
@@ -195,6 +200,11 @@ public class GradStudentGraduatedServiceTest extends BasePenReplicationAPITest {
     assertThat(savedStudent.getMincodeGrad()).isNull();
     assertThat(savedStudent.getGradDate()).isNull();
     assertThat(savedStudent.getGradReqtYear()).isEqualTo("SCCP");
+    assertThat(savedStudent.getStudGrade()).isEqualTo("12");
+    assertThat(savedStudent.getStudStatus()).isEqualTo("D");
+    assertThat(savedStudent.getArchiveFlag()).isEqualTo("I");
+    assertThat(savedStudent.getGraduatedAdult()).isNull();
+
 
     var traxStudentCourseRespository = this.penReplicationTestUtils.getTraxStudentCourseRespository();
     var savedCourses = traxStudentCourseRespository.findAllByStudNo(request.getPen());
