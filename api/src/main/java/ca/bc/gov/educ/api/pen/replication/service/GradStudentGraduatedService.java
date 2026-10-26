@@ -4,6 +4,7 @@ import ca.bc.gov.educ.api.pen.replication.exception.PenReplicationAPIRuntimeExce
 import ca.bc.gov.educ.api.pen.replication.model.Event;
 import ca.bc.gov.educ.api.pen.replication.model.GradStudentRecordCoursesLoad;
 import ca.bc.gov.educ.api.pen.replication.model.TraxStudentCourseEntity;
+import ca.bc.gov.educ.api.pen.replication.model.TraxStudentEntity;
 import ca.bc.gov.educ.api.pen.replication.repository.EventRepository;
 import ca.bc.gov.educ.api.pen.replication.rest.RestUtils;
 import ca.bc.gov.educ.api.pen.replication.struct.GradStatusEventPayloadDTO;
@@ -19,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 import static ca.bc.gov.educ.api.pen.replication.constants.EventType.GRAD_STUDENT_GRADUATED;
+import static ca.bc.gov.educ.api.pen.replication.util.ReplicationUtils.getTraxArchiveFlag;
+import static ca.bc.gov.educ.api.pen.replication.util.ReplicationUtils.getTraxStudentStatus;
 
 @Service
 @Slf4j
@@ -51,13 +54,15 @@ public class GradStudentGraduatedService extends BaseService<GradStatusEventPayl
     log.debug("course list from grad student clob for pen {} :: response is {}", studentPEN, courseListFromGradStudentClob);
     val existingTraxStudentRecord = this.traxStudentService.findTraxStudentByPen(StringUtils.rightPad(studentPEN, 10));
     if (existingTraxStudentRecord.isPresent()) {
+      val existingTraxStudent = populateExistingTraxStudentEntity(existingTraxStudentRecord.get(), gradStatusEventPayloadDTO);
+      this.traxStudentService.saveTraxStudentInCurrentTransaction(existingTraxStudent);
       var existingCourses = this.traxStudentCourseService.findTraxStudentCoursesByPen(StringUtils.rightPad(studentPEN, 10));
       existingCourses = existingCourses.stream().filter(Objects::nonNull).toList();
       this.traxStudentCourseService.deletePriorAndSaveTraxStudentCourses(existingCourses, getStudentCourseEntityList(studentPEN, courseListFromGradStudentClob));
       log.info("Processing choreography update event with ID {} :: payload is: {}", event.getEventId(), gradStatusEventPayloadDTO);
     } else {
-      log.info("Student course event not processed {} :: payload is: {} :: student does not yet exist in TRAX STUDENT_MASTER", event.getEventId(), gradStatusEventPayloadDTO);
-      throw new PenReplicationAPIRuntimeException("GradStudentGraduatedService :: Student course event not processed");
+      log.info("Grad student graduated event not processed {} :: payload is: {} :: student does not yet exist in TRAX STUDENT_MASTER", event.getEventId(), gradStatusEventPayloadDTO);
+      throw new PenReplicationAPIRuntimeException("GradStudentGraduatedService :: Grad student graduated event not processed");
     }
     this.updateEvent(event);
   }
@@ -87,6 +92,34 @@ public class GradStudentGraduatedService extends BaseService<GradStatusEventPayl
       entityList.add(traxStudentCourseEntity);
     });
     return entityList;
+  }
+
+  private TraxStudentEntity populateExistingTraxStudentEntity(TraxStudentEntity existingTraxStudent, GradStatusEventPayloadDTO gradStatusEventPayloadDTO) {
+    var schoolOfRecord = this.restUtils.getSchoolBySchoolID(gradStatusEventPayloadDTO.getSchoolOfRecordId().toString()).orElseThrow();
+    var gradProgramCode = StringUtils.isNotBlank(gradStatusEventPayloadDTO.getProgram()) ? gradStatusEventPayloadDTO.getProgram().substring(0, 4) : null;
+
+    String mincodeGrad = null;
+    String gradDate;
+    if (gradProgramCode != null && gradProgramCode.equalsIgnoreCase("SCCP")) {
+      mincodeGrad = null;
+      gradDate = null;
+    } else {
+      if (gradStatusEventPayloadDTO.getSchoolAtGradId() != null) {
+        mincodeGrad = restUtils.getSchoolBySchoolID(gradStatusEventPayloadDTO.getSchoolAtGradId().toString()).orElseThrow().getMincode();
+      }
+      gradDate = StringUtils.isNotBlank(gradStatusEventPayloadDTO.getProgramCompletionDate()) ? gradStatusEventPayloadDTO.getProgramCompletionDate().substring(0, 7).replace("-", "") : null;
+    }
+
+    existingTraxStudent.setGradDate(StringUtils.isNotBlank(gradDate) ? Long.valueOf(gradDate) : null);
+    existingTraxStudent.setGradReqtYear(gradProgramCode);
+    existingTraxStudent.setMincode(schoolOfRecord.getMincode());
+    existingTraxStudent.setMincodeGrad(mincodeGrad);
+    existingTraxStudent.setArchiveFlag(getTraxArchiveFlag(gradStatusEventPayloadDTO.getStudentStatus()));
+    existingTraxStudent.setStudStatus(getTraxStudentStatus(gradStatusEventPayloadDTO.getStudentStatus()));
+    existingTraxStudent.setStudGrade(gradStatusEventPayloadDTO.getStudentGrade());
+    existingTraxStudent.setGraduatedAdult(gradDate != null && StringUtils.equalsIgnoreCase(gradStatusEventPayloadDTO.getStudentGrade(), "GA") ? "GA" : null);
+
+    return existingTraxStudent;
   }
 
   /**
