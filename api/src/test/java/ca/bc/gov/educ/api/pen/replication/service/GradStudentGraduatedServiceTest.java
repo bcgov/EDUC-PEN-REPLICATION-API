@@ -140,7 +140,7 @@ public class GradStudentGraduatedServiceTest extends BasePenReplicationAPITest {
     var traxStudentCourseRespository = this.penReplicationTestUtils.getTraxStudentCourseRespository();
     var savedCourses = traxStudentCourseRespository.findAllByStudNo(request.getPen());
 
-    assertThat(savedCourses.size()).isEqualTo(expectedCourses.size());
+    assertThat(savedCourses).hasSameSizeAs(expectedCourses);
     assertThat(savedCourses).filteredOn(course -> "MATH".equals(course.getCourseCode().trim()))
         .singleElement().satisfies(course -> assertThat(course.getUsedForGrad().trim()).isEqualTo(expectedCreditsUsed));
     assertThat(this.penReplicationTestUtils.getEventRepository().findByEventId(event.getEventId()))
@@ -213,7 +213,7 @@ public class GradStudentGraduatedServiceTest extends BasePenReplicationAPITest {
     var traxStudentCourseRespository = this.penReplicationTestUtils.getTraxStudentCourseRespository();
     var savedCourses = traxStudentCourseRespository.findAllByStudNo(request.getPen());
 
-    assertThat(savedCourses.size()).isEqualTo(expectedCourses.size());
+    assertThat(savedCourses).hasSameSizeAs(expectedCourses);
     assertThat(this.penReplicationTestUtils.getEventRepository().findByEventId(event.getEventId()))
         .hasValueSatisfying(savedEvent -> assertThat(savedEvent.getEventStatus()).isEqualTo(PROCESSED.toString()));
   }

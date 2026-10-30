@@ -103,7 +103,6 @@ public class GradStudentGraduatedService extends BaseService<GradStatusEventPayl
     String mincodeGrad = null;
     String gradDate;
     if (gradProgramCode != null && gradProgramCode.equalsIgnoreCase("SCCP")) {
-      mincodeGrad = null;
       gradDate = null;
     } else {
       if (gradStatusEventPayloadDTO.getSchoolAtGradId() != null) {
