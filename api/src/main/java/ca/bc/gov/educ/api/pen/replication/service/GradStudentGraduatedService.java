@@ -87,7 +87,9 @@ public class GradStudentGraduatedService extends BaseService<GradStatusEventPayl
       traxStudentCourseEntity.setFinalLetterGrade(StringUtils.trimToNull(course.getFinalLetterGrade()));
       traxStudentCourseEntity.setFinalPercentage(course.getFinalPercent() != null ? course.getFinalPercent().toString() : null);
       traxStudentCourseEntity.setNumberOfCredits(course.getCredits() != null ? course.getCredits().toString() : null);
-      traxStudentCourseEntity.setUsedForGrad(StringUtils.trimToNull(course.getCreditsUsedForGrad()));
+      String creditsUsedForGrad = StringUtils.trimToNull(course.getCreditsUsedForGrad());
+      // GRAD may supply -1; replicate it as 1 per the confirmed business rule.
+      traxStudentCourseEntity.setUsedForGrad("-1".equals(creditsUsedForGrad) ? "1" : creditsUsedForGrad);
       traxStudentCourseEntity.setStudyType(determineStudyType(course.getGradReqMet()));
       entityList.add(traxStudentCourseEntity);
     });
@@ -101,7 +103,6 @@ public class GradStudentGraduatedService extends BaseService<GradStatusEventPayl
     String mincodeGrad = null;
     String gradDate;
     if (gradProgramCode != null && gradProgramCode.equalsIgnoreCase("SCCP")) {
-      mincodeGrad = null;
       gradDate = null;
     } else {
       if (gradStatusEventPayloadDTO.getSchoolAtGradId() != null) {
