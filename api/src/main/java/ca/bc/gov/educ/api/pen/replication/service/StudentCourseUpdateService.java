@@ -105,7 +105,7 @@ public class StudentCourseUpdateService extends BaseService<StudentCourseUpdate>
     if (optionalCourse.isPresent()) {
       var course = optionalCourse.get();
       if(course.getExternalCode().length() > 5) {
-        traxStudentCourseEntity.setCourseCode(StringUtils.trimToNull(course.getExternalCode().substring(0, 4)));
+        traxStudentCourseEntity.setCourseCode(StringUtils.trimToNull(course.getExternalCode().substring(0, 5)));
         traxStudentCourseEntity.setCourseLevel(StringUtils.trimToNull(course.getExternalCode().substring(5)));
       }else{
         traxStudentCourseEntity.setCourseCode(StringUtils.trimToNull(course.getExternalCode()));
