@@ -73,7 +73,7 @@ public class GradStudentGraduatedServiceTest extends BasePenReplicationAPITest {
   }
 
   @Test
-  @Parameters({"-1, 1", " -1 , 1", "0, 0", "4, 4"})
+  @Parameters({"-1, 1", " -1 , 1", "0, 0", "4, 4", ", 0"})
   public void testProcessEvent_givenGRAD_STUDENT_GRADUATED_Event_shouldSaveCoursesInDB(String suppliedCreditsUsed, String expectedCreditsUsed) throws JsonProcessingException {
     String pen = "123456789";
     List<GradStudentRecordCoursesLoad> expectedCourses = List.of(
