@@ -88,6 +88,7 @@ public class GradStudentGraduatedServiceTest extends BasePenReplicationAPITest {
             .gradReqMet("3, 203, 204")
             .build(),
         GradStudentRecordCoursesLoad.builder()
+            .creditsUsedForGrad(null)
             .courseCode("EN")
             .courseLevel("12")
             .sessionDate("2025/06")
@@ -143,6 +144,8 @@ public class GradStudentGraduatedServiceTest extends BasePenReplicationAPITest {
     assertThat(savedCourses).hasSameSizeAs(expectedCourses);
     assertThat(savedCourses).filteredOn(course -> "MATH".equals(course.getCourseCode().trim()))
         .singleElement().satisfies(course -> assertThat(course.getUsedForGrad().trim()).isEqualTo(expectedCreditsUsed));
+    assertThat(savedCourses).filteredOn(course -> "EN".equals(course.getCourseCode().trim()))
+        .singleElement().satisfies(course -> assertThat(course.getUsedForGrad().trim()).isEqualTo("0"));
     assertThat(this.penReplicationTestUtils.getEventRepository().findByEventId(event.getEventId()))
         .hasValueSatisfying(savedEvent -> assertThat(savedEvent.getEventStatus()).isEqualTo(PROCESSED.toString()));
   }
