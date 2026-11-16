@@ -73,11 +73,12 @@ public class GradStudentGraduatedServiceTest extends BasePenReplicationAPITest {
   }
 
   @Test
-  public void testProcessEvent_givenGRAD_STUDENT_GRADUATED_Event_shouldSaveCoursesInDB() throws JsonProcessingException {
+  @Parameters({"-1, 1", " -1 , 1", "0, 0", "4, 4"})
+  public void testProcessEvent_givenGRAD_STUDENT_GRADUATED_Event_shouldSaveCoursesInDB(String suppliedCreditsUsed, String expectedCreditsUsed) throws JsonProcessingException {
     String pen = "123456789";
     List<GradStudentRecordCoursesLoad> expectedCourses = List.of(
         GradStudentRecordCoursesLoad.builder()
-            .creditsUsedForGrad(null)
+            .creditsUsedForGrad(suppliedCreditsUsed)
             .courseCode("MATH")
             .courseLevel("12")
             .sessionDate("2025/06")
@@ -87,7 +88,6 @@ public class GradStudentGraduatedServiceTest extends BasePenReplicationAPITest {
             .gradReqMet("3, 203, 204")
             .build(),
         GradStudentRecordCoursesLoad.builder()
-            .creditsUsedForGrad("")
             .courseCode("EN")
             .courseLevel("12")
             .sessionDate("2025/06")
@@ -142,9 +142,7 @@ public class GradStudentGraduatedServiceTest extends BasePenReplicationAPITest {
 
     assertThat(savedCourses).hasSameSizeAs(expectedCourses);
     assertThat(savedCourses).filteredOn(course -> "MATH".equals(course.getCourseCode().trim()))
-        .singleElement().satisfies(course -> assertThat(course.getUsedForGrad().trim()).isEqualTo("0"));
-    assertThat(savedCourses).filteredOn(course -> "EN".equals(course.getCourseCode().trim()))
-        .singleElement().satisfies(course -> assertThat(course.getUsedForGrad().trim()).isEqualTo("0"));
+        .singleElement().satisfies(course -> assertThat(course.getUsedForGrad().trim()).isEqualTo(expectedCreditsUsed));
     assertThat(this.penReplicationTestUtils.getEventRepository().findByEventId(event.getEventId()))
         .hasValueSatisfying(savedEvent -> assertThat(savedEvent.getEventStatus()).isEqualTo(PROCESSED.toString()));
   }
